@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block titulo %}Veículos para Locação{% endblock %}
+
+{% block conteudo %}
+<h1>Veículos</h1>
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Modelo</th>
+      <th>Placa</th>
+      <th>Status</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for veiculo in veiculos %}
+    <tr>
+      <td>{{ veiculo.modelo }}</td>
+      <td>{{ veiculo.placa }}</td>
+      <td class="{{ veiculo.status }}">{{ veiculo.status|capitalize }}</td>
+      <td>
+        {% if veiculo.status == 'disponível' %}
+        <form method="POST" action="{{ url_for('locar_veiculo', id=veiculo.id) }}">
+          <button type="submit">Simular Locação</button>
+        </form>
+        {% else %}
+        <button disabled>Indisponível</button>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

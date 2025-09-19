@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block titulo %}Locadora{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('listagem_veiculos') }}">Veículos</a> |
+    <a href="{{ url_for('cadastro_cliente') }}">Cadastrar Cliente</a> |
+    <a href="{{ url_for('cadastro_veiculo') }}">Cadastrar Veículo</a> |
+    {% if session.usuario_logado %}
+      <a href="{{ url_for('logout') }}">Sair ({{ session.usuario_logado }})</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a> |
+      <a href="{{ url_for('cadastro') }}">Cadastro</a>
+    {% endif %}
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="mensagens">
+      {% for categoria, mensagem in messages %}
+        <li class="{{ categoria }}">{{ mensagem }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    {% block conteudo %}{% endblock %}
+  </main>
+</body>
+</html>
