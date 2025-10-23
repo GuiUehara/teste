@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cadastro de Funcionário{% endblock %}
+
+{% block conteudo %}
+<h2>Cadastro de Funcionário (Apenas gerentes)</h2>
+
+<form id="formFuncionario" method="POST" action="{{ url_for('cadastro_funcionario') }}">
+  <input type="text" id="nomeFuncionario" name="nomeFuncionario" placeholder="Nome completo" required />
+  <input type="text" id="cpfFuncionario" name="cpfFuncionario" placeholder="CPF" required />
+  <input type="text" id="rgFuncionario" name="rgFuncionario" placeholder="RG" required />
+  
+  <label for="dataNascFuncionario">Data de nascimento:</label>
+  <input type="date" id="dataNascFuncionario" name="dataNascFuncionario" required />
+  
+  <label for="sexoFuncionario">Sexo:</label>
+  <select id="sexoFuncionario" name="sexoFuncionario" required>
+    <option value="">Selecione</option>
+    <option value="Masculino">Masculino</option>
+    <option value="Feminino">Feminino</option>
+    <option value="Outro">Outro</option>
+  </select>
+
+  <label for="estadoCivilFuncionario">Estado Civil:</label>
+  <select id="estadoCivilFuncionario" name="estadoCivilFuncionario" required>
+    <option value="">Selecione</option>
+    <option value="Solteiro(a)">Solteiro(a)</option>
+    <option value="Casado(a)">Casado(a)</option>
+    <option value="Divorciado(a)">Divorciado(a)</option>
+    <option value="Viúvo(a)">Viúvo(a)</option>
+  </select>
+  
+  <input type="text" id="enderecoFuncionario" name="enderecoFuncionario" placeholder="Endereço completo" required />
+  
+  <input type="email" id="emailFuncionario" name="emailFuncionario" placeholder="Email" required />
+  
+  <input type="password" id="senhaFuncionario" name="senhaFuncionario" placeholder="Senha" required />
+  
+  <button type="submit">Cadastrar Funcionário</button>
+</form>
+
+<script src="{{ url_for('static', filename='js/cadastro_funcionario.js') }}"></script>
+{% endblock %}

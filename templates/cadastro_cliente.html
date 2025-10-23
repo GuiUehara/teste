@@ -7,8 +7,8 @@
 <form method="POST" action="{{ url_for('cadastro_cliente') }}" id="formCliente">
   <input type="text" name="nomeCliente" placeholder="Nome completo" required />
   <input type="text" name="cpfCliente" placeholder="CPF" pattern="\d{11}" title="Digite 11 números" required />
-<label>Data de nascimento:</label>
-<input type="date" name="dataNascCliente" required />
+  <label>Data de nascimento:</label>
+  <input type="date" name="dataNascCliente" required />
 
   <input type="tel" name="telefoneCliente" placeholder="Telefone" required />
   <input type="email" name="emailCliente" placeholder="Email" required />
@@ -16,11 +16,15 @@
   <input type="text" name="cnhCliente" placeholder="Número da CNH" required />
   <input type="text" name="categoriaCNHCliente" placeholder="Categoria da CNH (Ex: B)" maxlength="2" required />
 
-<label>Validade da CNH::</label>
-<input type="date" name="validadeCNHCliente" min="0" required />
+  <label>Validade da CNH::</label>
+  <input type="date" name="validadeCNHCliente" min="0" required />
 
   <input type="number" name="tempoHabilitacaoCliente" placeholder="Tempo de habilitação (anos)" min="0" required />
   <input type="text" name="formaPagamentoCliente" placeholder="Forma de pagamento" />
   <button type="submit">Registrar Cliente</button>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cadastro_cliente.js') }}"></script>
 {% endblock %}
