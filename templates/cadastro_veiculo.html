@@ -4,88 +4,92 @@
 
 {% block conteudo %}
 <h2>Cadastro de Veículo</h2>
+
 <form method="POST" action="{{ url_for('cadastro_veiculo') }}" id="formVeiculo">
-  
-  <label for="placaVeiculo">Placa (AAA1A23)</label>
-  <input type="text" name="placaVeiculo" id="placaVeiculo" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}" title="Formato: AAA1A23 - 3 letras, 1 número, letra ou número, 2 números" required />
-  
-  <label for="renavamVeiculo">Renavam (11 dígitos)</label>
-  <input type="text" name="renavamVeiculo" id="renavamVeiculo" pattern="\d{11}" title="Número Renavam deve ter 11 dígitos" required />
-  
-  <label for="chassiVeiculo">Chassi (17 caracteres)</label>
-  <input type="text" name="chassiVeiculo" id="chassiVeiculo" pattern="[A-HJ-NPR-Z0-9]{17}" title="17 caracteres alfanuméricos (sem I, O e Q)" required />
-  
-  <label for="marcaVeiculo">Marca</label>
-  <input type="text" name="marcaVeiculo" id="marcaVeiculo" required />
-  
-  <label for="modeloVeiculo">Modelo</label>
-  <input type="text" name="modeloVeiculo" id="modeloVeiculo" required />
-  
-  <label for="anoVeiculo">Ano (ex: 2023/2024)</label>
-<input type="text" name="anoVeiculo" id="anoVeiculo" pattern="\d{4}\/\d{4}" title="Formato: aaaa/aaaa, ex: 2023/2024" placeholder="AAAA/AAAA" required />
-  
+
+  <label for="placaVeiculo">Placa</label>
+  <input type="text" name="placaVeiculo" id="placaVeiculo" required />
+
+  <label for="chassiVeiculo">Chassi</label>
+  <input type="text" name="chassiVeiculo" id="chassiVeiculo" required />
+
+  <label for="anoVeiculo">Ano</label>
+  <input type="number" name="anoVeiculo" id="anoVeiculo" required />
+
   <label for="corVeiculo">Cor</label>
   <input type="text" name="corVeiculo" id="corVeiculo" required />
-  
+
   <label for="transmissaoVeiculo">Transmissão</label>
   <select name="transmissaoVeiculo" id="transmissaoVeiculo" required>
     <option value="">Selecione</option>
     <option value="manual">Manual</option>
     <option value="automatico">Automático</option>
   </select>
-  
-  <label for="motorVeiculo">Motor</label>
-  <input type="text" name="motorVeiculo" id="motorVeiculo" />
-  
+
   <label for="dataCompra">Data da Compra</label>
-  <input type="date" name="dataCompra" id="dataCompra" />
-  
+  <input type="date" name="dataCompra" id="dataCompra" required />
+
   <label for="valorCompra">Valor da Compra</label>
-  <input type="number" step="0.01" name="valorCompra" id="valorCompra" />
-  
+  <input type="number" step="0.01" name="valorCompra" id="valorCompra" required />
+
   <label for="odometro">Odômetro</label>
-  <input type="number" name="odometro" id="odometro" />
-  
-  <label for="vencimentoLicenciamento">Vencimento licenciamento</label>
-  <input type="date" name="vencimentoLicenciamento" id="vencimentoLicenciamento" />
-  
-  <label for="companhiaSeguro">Companhia do Seguro</label>
-  <input type="text" name="companhiaSeguro" id="companhiaSeguro" />
-  
-  <label for="vencimentoSeguro">Vencimento do Seguro</label>
-  <input type="date" name="vencimentoSeguro" id="vencimentoSeguro" />
-  
+  <input type="number" name="odometro" id="odometro" required />
+
+  <label for="vencimentoLicenciamento">Vencimento Licenciamento</label>
+  <input type="date" name="vencimentoLicenciamento" id="vencimentoLicenciamento" required />
+
   <label for="tanque">Tanque (litros)</label>
-  <input type="number" step="0.01" name="tanque" id="tanque" placeholder="Tanque (litros)" />
-  
+  <input type="number" name="tanque" id="tanque" required />
+
   <label for="tanqueFracao">Tanque Fração</label>
   <select name="tanqueFracao" id="tanqueFracao" required>
-    <option value="1">Cheio (1)</option>
+    <option value="1">Cheio (1/1)</option>
     <option value="0.875">7/8</option>
     <option value="0.75">6/8</option>
-    <option value="0.5">Meio (1/2)</option>
+    <option value="0.5">1/2</option>
     <option value="0.25">1/4</option>
     <option value="0.125">1/8</option>
     <option value="0.05">Reserva</option>
   </select>
-  
-  <label for="valorPorFracao">Valor por fração</label>
-  <input type="number" step="0.01" name="valorPorFracao" id="valorPorFracao" placeholder="Valor por fração" readonly />
-  
-  <label for="tipoCombustivel">Tipo de combustível</label>
- <select name="tipoCombustivel" id="tipoCombustivel" required>
-  <option value="gasolina">Gasolina</option>
-  <option value="alcool">Álcool</option>
-  <option value="diesel">Diesel</option>
-  <option value="flex">Flex</option>
-  <option value="eletrico">Elétrico</option>
-</select>
 
-  
+  <label for="combustivel">Combustível</label>
+  <select name="combustivel" id="combustivel" required>
+    <option value="">Selecione</option>
+    {% for comb in combustiveis %}
+      <option value="{{ comb[0] }}">{{ comb[1] }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="marca">Marca</label>
+  <select name="marca" id="marca" required>
+    <option value="">Selecione</option>
+    {% for m in marcas %}
+      <option value="{{ m[0] }}">{{ m[1] }}</option>
+    {% endfor %}
+  </select>
+
+<label for="categoria">Categoria</label>
+<input type="text" name="categoria" id="categoria" required />
+
+ <label for="modeloVeiculo">Modelo</label>
+  <select name="modeloVeiculo" id="modeloVeiculo" required>
+    <option value="">Selecione</option>
+    {% for mod in modelos %}
+      <option value="{{ mod[0] }}">{{ mod[1] }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="status">Status</label>
+   <select name="status" id="status" required>
+    <option value="">Selecione</option>
+    {% for s in status %}
+      <option value="{{ s[0] }}">{{ s[1] }}</option>
+    {% endfor %}
+  </select>
+
+
   <button type="submit">Registrar Veículo</button>
-</form>
-{% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/cadastro_veiculo.js') }}"></script>
+</form>
+
 {% endblock %}

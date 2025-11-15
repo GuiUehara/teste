@@ -1,0 +1,264 @@
+<!-- templates/cadastro.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Cadastro de Locação - Locadora</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Cadastro de Locação</h1>
+
+    <!-- CLIENTE -->
+    <div class="mb-4">
+      <label class="block font-medium">Cliente (digite CPF ou nome)</label>
+      <input id="campo_busca_cliente" type="text" class="border p-2 w-full" oninput="buscarCliente()" placeholder="Ex: 123.456.789-00 ou João">
+      <div id="lista_clientes" class="border mt-1 max-h-40 overflow-auto hidden bg-white"></div>
+      <div id="dados_cliente" class="mt-2 text-sm text-gray-700"></div>
+    </div>
+
+    <!-- CATEGORIA E VEICULO -->
+    <div class="mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium">Categoria</label>
+        <select id="categoria_select" class="border p-2 w-full" onchange="buscarVeiculos()"></select>
+      </div>
+      <div>
+        <label class="block font-medium">Veículo (placa - modelo)</label>
+        <select id="veiculo_select" class="border p-2 w-full" onchange="selecionarVeiculo()">
+          <option value="">--</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- DATAS E LOCAIS -->
+    <div class="mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium">Data de saída</label>
+        <input id="data_retirada" type="datetime-local" class="border p-2 w-full">
+      </div>
+      <div>
+        <label class="block font-medium">Data devolução prevista</label>
+        <input id="data_devolucao_prevista" type="datetime-local" class="border p-2 w-full">
+      </div>
+    </div>
+
+    <div class="mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium">Local retirada</label>
+        <input id="local_retirada" class="border p-2 w-full">
+      </div>
+      <div>
+        <label class="block font-medium">Local devolução</label>
+        <input id="local_devolucao" class="border p-2 w-full">
+      </div>
+    </div>
+
+    <!-- KM e TANQUE e CAUCAO -->
+    <div class="mb-4 grid grid-cols-3 gap-4">
+      <div>
+        <label class="block font-medium">KM saída (atual)</label>
+        <input id="quilometragem_retirada" type="number" class="border p-2 w-full" readonly>
+      </div>
+      <div>
+        <label class="block font-medium">Tanque saída (fração 1-8)</label>
+        <select id="tanque_saida" class="border p-2 w-full">
+          <option value="8">8/8</option><option value="7">7/8</option><option value="6">6/8</option><option value="5">5/8</option><option value="4" selected>4/8</option><option value="3">3/8</option><option value="2">2/8</option><option value="1">1/8</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-medium">Caução (R$)</label>
+        <input id="caucao" type="number" step="0.01" class="border p-2 w-full" value="0.00">
+      </div>
+    </div>
+
+    <!-- STATUS, Valor previsto e final -->
+    <div class="mb-4 grid grid-cols-3 gap-4">
+      <div>
+        <label class="block font-medium">Status</label>
+        <select id="status" class="border p-2 w-full" onchange="onStatusChange()">
+          <option value="Reserva">Reserva</option>
+          <option value="Locado">Locado</option>
+          <option value="Chegada">Chegada</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-medium">Valor total previsto (R$)</label>
+        <input id="valor_total_previsto" readonly class="border p-2 w-full bg-gray-100">
+      </div>
+      <div>
+        <label class="block font-medium">Valor final (R$)</label>
+        <input id="valor_final" readonly class="border p-2 w-full bg-gray-100">
+      </div>
+    </div>
+
+    <!-- KM e tanque chegada (aparecem somente em Chegada) -->
+    <div id="chegada_fields" class="hidden mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium">KM chegada (obrigatório na Chegada)</label>
+        <input id="quilometragem_devolucao" type="number" class="border p-2 w-full">
+      </div>
+      <div>
+        <label class="block font-medium">Tanque chegada (1-8)</label>
+        <select id="tanque_chegada" class="border p-2 w-full">
+          <option value="">--</option>
+          <option value="8">8/8</option><option value="7">7/8</option><option value="6">6/8</option><option value="5">5/8</option><option value="4">4/8</option><option value="3">3/8</option><option value="2">2/8</option><option value="1">1/8</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BOTAO CADASTRO -->
+    <div class="text-right">
+      <button id="btn_cadastrar" class="bg-green-600 text-white px-4 py-2 rounded" onclick="cadastrar()">CADASTRO</button>
+      <a class="ml-2 text-sm text-blue-600" href="/historico">Ver histórico</a>
+    </div>
+
+  </div>
+
+<script>
+const api = '/api';
+let veiculos = [];
+
+async function carregarCategorias() {
+  const res = await fetch(`${api}/categorias`);
+  const cats = await res.json();
+  const sel = document.getElementById('categoria_select');
+  sel.innerHTML = '<option value="">-- escolha --</option>';
+  cats.forEach(c=> {
+    const opt = document.createElement('option');
+    opt.value = c.id_categoria_veiculo;
+    opt.textContent = c.nome_categoria;
+    opt.dataset.valor_diaria = c.valor_diaria;
+    sel.appendChild(opt);
+  });
+}
+
+let buscaTimeout = null;
+function buscarCliente() {
+  clearTimeout(buscaTimeout);
+  buscaTimeout = setTimeout(async ()=>{
+    const termo = document.getElementById('campo_busca_cliente').value.trim();
+    const lista = document.getElementById('lista_clientes');
+    lista.innerHTML = '';
+    if (termo.length<2) { lista.classList.add('hidden'); return; }
+    const res = await fetch(`${api}/clientes?termo=${encodeURIComponent(termo)}`);
+    const dados = await res.json();
+    if (!Array.isArray(dados) || dados.length==0) { lista.classList.add('hidden'); return; }
+    dados.forEach(c=>{
+      const div = document.createElement('div');
+      div.className = 'p-2 border-b cursor-pointer hover:bg-gray-50';
+      div.textContent = c.texto;
+      div.onclick = () => {
+        document.getElementById('campo_busca_cliente').value = c.texto;
+        document.getElementById('lista_clientes').classList.add('hidden');
+        document.getElementById('dados_cliente').innerHTML = `<b>CPF:</b> ${c.cpf} <br><b>CNH:</b> ${c.cnh_numero} <br><b>Validade CNH:</b> ${c.cnh_validade}`;
+        document.getElementById('campo_busca_cliente').dataset.id_cliente = c.id_cliente;
+      };
+      lista.appendChild(div);
+    });
+    lista.classList.remove('hidden');
+  }, 300);
+}
+
+async function buscarVeiculos() {
+  const cid = document.getElementById('categoria_select').value;
+  const sel = document.getElementById('veiculo_select');
+  sel.innerHTML = '<option value="">--</option>';
+  if (!cid) return;
+  const res = await fetch(`${api}/veiculos?categoria_id=${cid}`);
+  const dados = await res.json();
+  veiculos = dados;
+  dados.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id_veiculo;
+    opt.textContent = `${v.placa} - ${v.nome_modelo}`;
+    opt.dataset.km = v.quilometragem;
+    opt.dataset.valor_fracao = v.valor_fracao;
+    opt.dataset.valor_diaria = v.valor_diaria;
+    sel.appendChild(opt);
+  });
+}
+
+function selecionarVeiculo() {
+  const sel = document.getElementById('veiculo_select');
+  const val = sel.value;
+  if (!val) {
+    document.getElementById('quilometragem_retirada').value = '';
+    return;
+  }
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('quilometragem_retirada').value = opt.dataset.km || '';
+  // guardar diária para cálculo
+  document.getElementById('veiculo_select').dataset.valor_diaria = opt.dataset.valor_diaria || '0';
+}
+
+function onStatusChange(){
+  const st = document.getElementById('status').value;
+  const box = document.getElementById('chegada_fields');
+  if (st === 'Chegada') box.classList.remove('hidden'); else box.classList.add('hidden');
+  calcularPrevisto();
+}
+
+function calcularPrevisto(){
+  const data1 = document.getElementById('data_retirada').value;
+  const data2 = document.getElementById('data_devolucao_prevista').value;
+  const diaria = parseFloat(document.getElementById('veiculo_select').dataset.valor_diaria||0);
+  if(!data1 || !data2 || isNaN(diaria)) { document.getElementById('valor_total_previsto').value = ''; return; }
+  const d1 = new Date(data1), d2 = new Date(data2);
+  const diff = Math.ceil(Math.abs((d2 - d1)/(24*3600*1000)));
+  const valor = (diff <=0 ? 1 : diff) * diaria;
+  document.getElementById('valor_total_previsto').value = valor.toFixed(2);
+}
+
+async function cadastrar(){
+  // montar payload
+  const id_cliente = document.getElementById('campo_busca_cliente').dataset.id_cliente;
+  if(!id_cliente) { alert('Selecione um cliente válido'); return; }
+  const payload = {
+    id_cliente: id_cliente,
+    id_veiculo: document.getElementById('veiculo_select').value,
+    status: document.getElementById('status').value,
+    data_retirada: document.getElementById('data_retirada').value,
+    data_devolucao_prevista: document.getElementById('data_devolucao_prevista').value,
+    local_retirada: document.getElementById('local_retirada').value,
+    local_devolucao: document.getElementById('local_devolucao').value,
+    quilometragem_retirada: document.getElementById('quilometragem_retirada').value,
+    tanque_saida: document.getElementById('tanque_saida').value,
+    caucao: document.getElementById('caucao').value,
+    devolucao: 'na devolução',
+    valor_diaria: document.getElementById('veiculo_select').dataset.valor_diaria || 0
+  };
+
+  // Se o status for Chegada (não faz sentido no cadastro), alerta
+  if (payload.status === 'Chegada') {
+    alert('Para finalizar uma locação use a página de histórico (chegada).');
+    return;
+  }
+
+  const res = await fetch('/api/cadastrar', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const r = await res.json();
+  if (res.ok) {
+    alert('Cadastrado com sucesso. ID: ' + r.id_locacao);
+    window.location.href = '/historico';
+  } else {
+    alert('Erro: ' + (r.erro || JSON.stringify(r)));
+  }
+}
+
+window.addEventListener('load', ()=> {
+  carregarCategorias();
+  // preenche data atual
+  const now = new Date();
+  const iso = new Date(now - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('data_retirada').value = iso;
+  document.getElementById('data_devolucao_prevista').value = iso;
+  document.getElementById('status').value = 'Reserva';
+});
+</script>
+</body>
+</html>

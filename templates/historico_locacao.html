@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Histórico de Locações</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Histórico de Locações</h1>
+    <a href="/contrato_locacao" class="text-blue-600 mb-4 inline-block">Voltar ao cadastro</a>
+
+    <table id="tabela" class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="text-left bg-gray-50 border-b">
+          <th class="p-2">ID</th>
+          <th class="p-2">Cliente</th>
+          <th class="p-2">Veículo</th>
+          <th class="p-2">Status</th>
+          <th class="p-2">Data Retirada</th>
+          <th class="p-2">Previsto</th>
+          <th class="p-2">Valor Final</th>
+          <th class="p-2">Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- MODAL COMPLETO DE EDIÇÃO -->
+    <div id="editar_modal" class="hidden mt-6 p-4 border rounded bg-gray-50">
+      <h2 class="font-semibold text-lg">Editar Locação <span id="edit_id"></span></h2>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+
+        <div>
+          <label>Status</label>
+          <select id="edit_status" class="border p-2 w-full" onchange="onEditStatusChange()">
+            <option value="Reserva">Reserva</option>
+            <option value="Locado">Locado</option>
+            <option value="Chegada">Chegada</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Local Retirada</label>
+          <input id="edit_local_retirada" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Local Devolução</label>
+          <input id="edit_local_devolucao" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Data Retirada</label>
+          <input id="edit_data_retirada" type="datetime-local" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Data Devolução Prevista</label>
+          <input id="edit_data_prevista" type="datetime-local" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>KM Retirada</label>
+          <input id="edit_km_retirada" type="number" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Tanque Saída (1-8)</label>
+          <input id="edit_tanque_saida" type="number" min="1" max="8" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Caução (R$)</label>
+          <input id="edit_caucao" type="number" step="0.01" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Valor Total Previsto</label>
+          <input id="edit_valor_previsto" type="number" step="0.01" class="border p-2 w-full">
+        </div>
+
+        <div>
+          <label>Valor Final</label>
+          <input id="edit_valor_final" type="number" step="0.01" class="border p-2 w-full">
+        </div>
+
+        <!-- Campos somente na chegada -->
+        <div>
+          <label>KM Chegada</label>
+          <input id="edit_km_chegada" type="number" class="border p-2 w-full" disabled>
+        </div>
+
+        <div>
+          <label>Tanque Chegada</label>
+          <select id="edit_tanque_chegada" class="border p-2 w-full" disabled>
+            <option value="">--</option>
+            <option value="8">8</option><option value="7">7</option><option value="6">6</option>
+            <option value="5">5</option><option value="4">4</option><option value="3">3</option>
+            <option value="2">2</option><option value="1">1</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="text-right mt-4">
+        <button onclick="fecharEdicao()" class="mr-2 px-4 py-2 border rounded">Cancelar</button>
+        <button onclick="salvarEdicao()" class="px-4 py-2 bg-green-600 text-white rounded">Salvar</button>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+
+async function carregar(){
+  const res = await fetch('/api/locacoes');
+  const dados = await res.json();
+  const tbody = document.querySelector('#tabela tbody');
+  tbody.innerHTML = '';
+
+  dados.forEach(l => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="p-2 border-b">${l.id_locacao}</td>
+      <td class="p-2 border-b">${l.cliente_nome} (${l.cliente_cpf})</td>
+      <td class="p-2 border-b">${l.placa} - ${l.nome_modelo}</td>
+      <td class="p-2 border-b">${l.status}</td>
+      <td class="p-2 border-b">${l.data_retirada ? new Date(l.data_retirada).toLocaleString() : ''}</td>
+      <td class="p-2 border-b">R$ ${parseFloat(l.valor_total_previsto||0).toFixed(2)}</td>
+      <td class="p-2 border-b">${l.valor_final ? "R$ "+parseFloat(l.valor_final).toFixed(2) : "-"}</td>
+      <td class="p-2 border-b"><button class="px-2 py-1 bg-blue-600 text-white rounded" onclick="abrirEdicao(${l.id_locacao})">Editar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+let idEdit = null;
+
+async function abrirEdicao(id){
+  idEdit = id;
+
+  const res = await fetch('/api/locacoes');
+  const arr = await res.json();
+  const l = arr.find(x => x.id_locacao === id);
+  if(!l) return alert("Locação não encontrada!");
+
+  document.getElementById('edit_id').textContent = id;
+
+  document.getElementById('edit_status').value = l.status;
+  document.getElementById('edit_local_retirada').value = l.local_retirada || '';
+  document.getElementById('edit_local_devolucao').value = l.local_devolucao || '';
+  document.getElementById('edit_data_retirada').value = l.data_retirada ? l.data_retirada.substring(0,16) : '';
+  document.getElementById('edit_data_prevista').value = l.data_devolucao_prevista ? l.data_devolucao_prevista.substring(0,16) : '';
+  document.getElementById('edit_km_retirada').value = l.quilometragem_retirada || '';
+  document.getElementById('edit_tanque_saida').value = l.tanque_saida || '';
+  document.getElementById('edit_caucao').value = l.caucao || '';
+  document.getElementById('edit_valor_previsto').value = l.valor_total_previsto || '';
+  document.getElementById('edit_valor_final').value = l.valor_final || '';
+
+  document.getElementById('edit_km_chegada').value = l.quilometragem_devolucao || '';
+  document.getElementById('edit_tanque_chegada').value = l.tanque_chegada || '';
+
+  document.getElementById('editar_modal').classList.remove('hidden');
+
+  onEditStatusChange();
+}
+
+function fecharEdicao(){ 
+  document.getElementById('editar_modal').classList.add('hidden'); 
+  idEdit = null;
+}
+
+function onEditStatusChange(){
+  const status = document.getElementById('edit_status').value;
+  const kmC = document.getElementById('edit_km_chegada');
+  const tanC = document.getElementById('edit_tanque_chegada');
+
+  if(status === 'Chegada'){
+    kmC.disabled = false;
+    tanC.disabled = false;
+  } else {
+    kmC.disabled = true;
+    tanC.disabled = true;
+  }
+}
+
+async function salvarEdicao(){
+  if(!idEdit) return;
+
+  const payload = {
+    status: document.getElementById('edit_status').value,
+    local_retirada: document.getElementById('edit_local_retirada').value,
+    local_devolucao: document.getElementById('edit_local_devolucao').value,
+    data_retirada: document.getElementById('edit_data_retirada').value,
+    data_devolucao_prevista: document.getElementById('edit_data_prevista').value,
+    quilometragem_retirada: parseInt(document.getElementById('edit_km_retirada').value),
+    tanque_saida: parseInt(document.getElementById('edit_tanque_saida').value),
+    caucao: parseFloat(document.getElementById('edit_caucao').value),
+    valor_total_previsto: parseFloat(document.getElementById('edit_valor_previsto').value),
+    valor_final: parseFloat(document.getElementById('edit_valor_final').value)
+  };
+
+  if(payload.status === 'Chegada'){
+    payload.quilometragem_devolucao = parseInt(document.getElementById('edit_km_chegada').value);
+    payload.tanque_chegada = parseInt(document.getElementById('edit_tanque_chegada').value);
+  }
+
+  const res = await fetch('/api/locacao/' + idEdit, {
+    method: 'PUT',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+
+  const r = await res.json();
+
+  if(res.ok){
+    alert(r.mensagem || 'Atualizado com sucesso!');
+    fecharEdicao();
+    carregar();
+  } else {
+    alert('Erro: ' + (r.erro || JSON.stringify(r)));
+  }
+}
+
+window.addEventListener('load', carregar);
+</script>
+
+</body>
+</html>

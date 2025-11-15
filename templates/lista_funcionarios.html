@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de Funcionários{% endblock %}
+
+{% block conteudo %}
+<h2>Funcionários Cadastrados</h2>
+
+<form method="GET" action="{{ url_for('lista_funcionarios') }}">
+    <input type="text" name="busca" placeholder="Buscar (mínimo 3 letras)" value="{{ busca }}">
+    <button type="submit">Buscar</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>CPF</th>
+      <th>Email</th>
+      <th>Cargo</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for f in funcionarios %}
+    <tr>
+      <td>{{ f[1] }}</td>
+      <td>{{ f[2] }}</td>
+      <td>{{ f[3] }}</td>
+      <td>{{ f[4] }}</td>
+      <td>
+        <a href="{{ url_for('editar_funcionario', id_usuario=f[0]) }}">&#9998;</a>
+        &nbsp;
+        <a href="{{ url_for('deletar_funcionario', id_usuario=f[0]) }}" onclick="return confirm('Deseja realmente deletar?');">&#10060;</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="5">Nenhum funcionário encontrado.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

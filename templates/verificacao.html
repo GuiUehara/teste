@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificação de E-mail</title>
+</head>
+<body>
+    <h1>Verifique seu e-mail</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <p>Enviamos um código para o e-mail <strong>{{ session.get('email_verificacao') }}</strong>.</p>
+    <p>Digite-o abaixo para confirmar seu cadastro:</p>
+
+    <!-- Formulário para enviar o código -->
+    <form method="POST" action="{{ url_for('verificacao') }}">
+        <input type="text" name="codigo" maxlength="6" placeholder="Digite o código" required>
+        <button type="submit">Validar Código</button>
+    </form>
+</body>
+</html>

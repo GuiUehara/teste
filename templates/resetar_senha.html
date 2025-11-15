@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nova Senha{% endblock %}
+
+{% block conteudo %}
+<h1>Definir Nova Senha</h1>
+<form method="POST">
+  <input type="password" name="nova_senha" placeholder="Nova senha" required>
+  <input type="password" name="confirmar_senha" placeholder="Confirme a senha" required>
+  <button type="submit">Redefinir senha</button>
+</form>
+{% endblock %}

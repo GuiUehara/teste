@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block titulo %}Pagamento{% endblock %}
+
+{% block conteudo %}
+<h1>Pagamento</h1>
+<form method="POST" action="/processar_pagamento" id="pagamentoForm">
+  <input type="text" name="numero_cartao" placeholder="Número do cartão" maxlength="16" required />
+  <input type="text" name="validade" placeholder="Validade (MM/AA)" maxlength="5" required />
+  <input type="text" name="cvv" placeholder="Código de segurança (CVV)" maxlength="4" required />
+  <input type="text" name="cpf" placeholder="CPF do titular" required />
+  <button type="submit">Pagar</button>
+</form>
+<p>Já tem uma conta? <a href="/login">Faça login</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pagamento.js') }}"></script>
+{% endblock %}

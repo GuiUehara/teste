@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico de Multas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 95%;
+            margin: auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        th, td {
+            border: 1px solid #777;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #1c1c1c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Histórico de Multas por Atraso</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID Locação</th>
+                <th>ID Cliente</th>
+                <th>ID Veículo</th>
+                <th>Valor Previsto (R$)</th>
+                <th>Valor Final (R$)</th>
+                <th>Dias de Atraso</th>
+                <th>Devolução Prevista</th>
+                <th>Devolução Real</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for m in multas %}
+            <tr>
+                <td>{{ m.id_locacao }}</td>
+                <td>{{ m.id_cliente }}</td>
+                <td>{{ m.id_veiculo }}</td>
+                <td>{{ m.valor_total_previsto }}</td>
+                <td>{{ m.valor_final }}</td>
+                <td>{{ m.dias_atraso }}</td>
+                <td>{{ m.data_devolucao_prevista }}</td>
+                <td>{{ m.data_devolucao_real }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
