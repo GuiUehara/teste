@@ -7,224 +7,333 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 p-6">
-  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Histórico de Locações</h1>
-    <a href="/contrato_locacao" class="text-blue-600 mb-4 inline-block">Voltar ao cadastro</a>
+<body class="bg-gray-50 p-6">
 
-    <table id="tabela" class="w-full border-collapse text-sm">
+  <!-- CONTAINER -->
+  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
+
+    <h1 class="text-2xl font-bold mb-4">Histórico de Locações</h1>
+    <a href="/contrato_locacao" class="text-blue-600">Voltar ao cadastro</a>
+
+    <table class="w-full mt-4 border-collapse">
       <thead>
-        <tr class="text-left bg-gray-50 border-b">
+        <tr class="bg-gray-100">
           <th class="p-2">ID</th>
-          <th class="p-2">Cliente</th>
-          <th class="p-2">Veículo</th>
-          <th class="p-2">Status</th>
-          <th class="p-2">Data Retirada</th>
-          <th class="p-2">Previsto</th>
-          <th class="p-2">Valor Final</th>
-          <th class="p-2">Ações</th>
+          <th>Cliente</th>
+          <th>Veículo</th>
+          <th>Status</th>
+          <th>Retirada</th>
+          <th>Previsto</th>
+          <th>Final</th>
+          <th>Ações</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="tbody"></tbody>
     </table>
 
-    <!-- MODAL COMPLETO DE EDIÇÃO -->
-    <div id="editar_modal" class="hidden mt-6 p-4 border rounded bg-gray-50">
-      <h2 class="font-semibold text-lg">Editar Locação <span id="edit_id"></span></h2>
+    <!-- ============================
+         MODAL DE EDIÇÃO
+    ============================= -->
+    <div id="modal" class="hidden mt-6 p-4 border rounded bg-gray-50">
 
-      <div class="grid grid-cols-2 gap-3 mt-4">
+      <h2 class="font-semibold">
+        Editar Locação <span id="editId"></span>
+      </h2>
 
-        <div>
-          <label>Status</label>
-          <select id="edit_status" class="border p-2 w-full" onchange="onEditStatusChange()">
+      <!-- CAMPOS DE EDIÇÃO -->
+      <div class="grid grid-cols-2 gap-3 mt-2">
+        <div><label>Cliente (CPF)</label><input id="edit_cliente" class="border p-2 w-full"></div>
+        <div><label>Status</label>
+          <select id="edit_status" class="border p-2 w-full">
             <option value="Reserva">Reserva</option>
             <option value="Locado">Locado</option>
             <option value="Chegada">Chegada</option>
           </select>
         </div>
+        <div><label>Veículo</label><input id="edit_veiculo" class="border p-2 w-full"></div>
 
-        <div>
-          <label>Local Retirada</label>
-          <input id="edit_local_retirada" class="border p-2 w-full">
+        <div><label>Data Retirada</label>
+          <input type="datetime-local" id="edit_data_retirada" class="border p-2 w-full">
         </div>
 
-        <div>
-          <label>Local Devolução</label>
-          <input id="edit_local_devolucao" class="border p-2 w-full">
+        <div><label>Data Devolução Prevista</label>
+          <input type="datetime-local" id="edit_data_prevista" class="border p-2 w-full">
         </div>
 
-        <div>
-          <label>Data Retirada</label>
-          <input id="edit_data_retirada" type="datetime-local" class="border p-2 w-full">
+        <div><label>Data Devolução Real</label>
+          <input type="datetime-local" id="edit_data_real" class="border p-2 w-full">
         </div>
 
-        <div>
-          <label>Data Devolução Prevista</label>
-          <input id="edit_data_prevista" type="datetime-local" class="border p-2 w-full">
-        </div>
+        <div><label>KM Retirada</label><input type="number" id="edit_km_retirada" class="border p-2 w-full"></div>
+        <div><label>KM Devolução</label><input type="number" id="edit_km_devolucao" class="border p-2 w-full"></div>
 
-        <div>
-          <label>KM Retirada</label>
-          <input id="edit_km_retirada" type="number" class="border p-2 w-full">
-        </div>
-
-        <div>
-          <label>Tanque Saída (1-8)</label>
-          <input id="edit_tanque_saida" type="number" min="1" max="8" class="border p-2 w-full">
-        </div>
-
-        <div>
-          <label>Caução (R$)</label>
-          <input id="edit_caucao" type="number" step="0.01" class="border p-2 w-full">
-        </div>
-
-        <div>
-          <label>Valor Total Previsto</label>
-          <input id="edit_valor_previsto" type="number" step="0.01" class="border p-2 w-full">
-        </div>
-
-        <div>
-          <label>Valor Final</label>
-          <input id="edit_valor_final" type="number" step="0.01" class="border p-2 w-full">
-        </div>
-
-        <!-- Campos somente na chegada -->
-        <div>
-          <label>KM Chegada</label>
-          <input id="edit_km_chegada" type="number" class="border p-2 w-full" disabled>
-        </div>
-
-        <div>
-          <label>Tanque Chegada</label>
-          <select id="edit_tanque_chegada" class="border p-2 w-full" disabled>
+        <div><label>Tanque Saída</label>
+          <select id="edit_tanque_saida" class="border p-2 w-full">
             <option value="">--</option>
-            <option value="8">8</option><option value="7">7</option><option value="6">6</option>
-            <option value="5">5</option><option value="4">4</option><option value="3">3</option>
-            <option value="2">2</option><option value="1">1</option>
+            <option>8</option><option>7</option><option>6</option><option>5</option>
+            <option>4</option><option>3</option><option>2</option><option>1</option>
           </select>
         </div>
+
+        <div><label>Tanque Chegada</label>
+          <select id="edit_tanque_chegada" class="border p-2 w-full">
+            <option value="">--</option>
+            <option>8</option><option>7</option><option>6</option><option>5</option>
+            <option>4</option><option>3</option><option>2</option><option>1</option>
+          </select>
+        </div>
+
+        <div><label>Caução</label><input type="number" step="0.01" id="edit_caucao" class="border p-2 w-full"></div>
+        <div><label>Valor Total Previsto</label><input type="number" step="0.01" id="edit_valor_total_previsto" class="border p-2 w-full"></div>
+        <div><label>Valor Final</label><input type="number" step="0.01" id="edit_valor_final" class="border p-2 w-full"></div>
+
+        <div><label>Devolução</label><input id="edit_devolucao" class="border p-2 w-full"></div>
       </div>
 
-      <div class="text-right mt-4">
-        <button onclick="fecharEdicao()" class="mr-2 px-4 py-2 border rounded">Cancelar</button>
-        <button onclick="salvarEdicao()" class="px-4 py-2 bg-green-600 text-white rounded">Salvar</button>
+      <!-- =====================================
+           ABA DE OPCIONAIS
+      ====================================== -->
+      <div class="mt-4 border-t pt-4">
+        <h3 class="font-semibold mb-2">Opcionais</h3>
+
+        <table class="table-auto w-full border mb-3">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border p-2">Descrição</th>
+              <th class="border p-2">Valor Diário</th>
+              <th class="border p-2">Quantidade</th>
+              <th class="border p-2">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaOpcionais"></tbody>
+        </table>
+
+        <!-- Selecionar opcional -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <select id="selectOpcional" class="border p-2 w-full">
+            <option value="">Carregando...</option>
+          </select>
+
+          <input type="number" id="quantOpcional" placeholder="Quantidade" class="border p-2 w-full">
+
+          <button onclick="adicionarOpcional()" class="bg-green-500 text-white p-2 rounded">
+            Adicionar
+          </button>
+        </div>
       </div>
+
+      <button onclick="salvarEdicao()" class="bg-blue-600 text-white px-4 py-2 mt-4 rounded">
+        Salvar Alterações
+      </button>
+
+      <button onclick="fecharModal()" class="bg-gray-600 text-white px-4 py-2 mt-4 rounded">
+        Fechar
+      </button>
+
     </div>
-
   </div>
 
+<!-- ============================================
+     JAVASCRIPT LIMPO
+=============================================== -->
 <script>
+let locacoes = [];
+let idAtual = null;
 
+/* ==============================
+   CARREGAR LOCAÇÕES
+============================== */
 async function carregar(){
   const res = await fetch('/api/locacoes');
-  const dados = await res.json();
-  const tbody = document.querySelector('#tabela tbody');
-  tbody.innerHTML = '';
+  locacoes = await res.json();
 
-  dados.forEach(l => {
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+
+  locacoes.forEach(l=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="p-2 border-b">${l.id_locacao}</td>
-      <td class="p-2 border-b">${l.cliente_nome} (${l.cliente_cpf})</td>
-      <td class="p-2 border-b">${l.placa} - ${l.nome_modelo}</td>
-      <td class="p-2 border-b">${l.status}</td>
-      <td class="p-2 border-b">${l.data_retirada ? new Date(l.data_retirada).toLocaleString() : ''}</td>
-      <td class="p-2 border-b">R$ ${parseFloat(l.valor_total_previsto||0).toFixed(2)}</td>
-      <td class="p-2 border-b">${l.valor_final ? "R$ "+parseFloat(l.valor_final).toFixed(2) : "-"}</td>
-      <td class="p-2 border-b"><button class="px-2 py-1 bg-blue-600 text-white rounded" onclick="abrirEdicao(${l.id_locacao})">Editar</button></td>`;
-    tbody.appendChild(tr);
+  <td class="p-2 border-b">${l.id_locacao}</td>
+  <td class="p-2 border-b">${l.cliente_nome} (${l.cliente_cpf})</td>
+  <td class="p-2 border-b">${l.placa} - ${l.nome_modelo}</td>
+  <td class="p-2 border-b">${l.status}</td>
+  <td class="p-2 border-b">${l.data_retirada ? new Date(l.data_retirada).toLocaleString() : '-'}</td>
+  <td class="p-2 border-b">${l.data_devolucao_prevista ? new Date(l.data_devolucao_prevista).toLocaleString() : '-'}</td>
+  <td class="p-2 border-b">${l.valor_final != null ? 'R$ ' + l.valor_final.toFixed(2) : '-'}</td>
+  <td class="p-2 border-b">
+    <button class="px-2 py-1 bg-blue-600 text-white rounded"
+            onclick="abrir(${l.id_locacao})">
+      Editar
+    </button>
+  </td>
+`;
+
+
+    tb.appendChild(tr);
   });
 }
 
-let idEdit = null;
+/* ==============================
+   ABRIR MODAL
+============================== */
+function abrir(id){
+  idAtual = id;
 
-async function abrirEdicao(id){
-  idEdit = id;
+  const loc = locacoes.find(x => x.id_locacao === id);
+  if(!loc) return alert('Locação não encontrada');
 
-  const res = await fetch('/api/locacoes');
-  const arr = await res.json();
-  const l = arr.find(x => x.id_locacao === id);
-  if(!l) return alert("Locação não encontrada!");
+  document.getElementById('editId').textContent = id;
 
-  document.getElementById('edit_id').textContent = id;
+  document.getElementById('edit_cliente').value = loc.cliente_nome;
+  document.getElementById('edit_status').value = loc.status;
+  document.getElementById('edit_veiculo').value = loc.nome_modelo;
 
-  document.getElementById('edit_status').value = l.status;
-  document.getElementById('edit_local_retirada').value = l.local_retirada || '';
-  document.getElementById('edit_local_devolucao').value = l.local_devolucao || '';
-  document.getElementById('edit_data_retirada').value = l.data_retirada ? l.data_retirada.substring(0,16) : '';
-  document.getElementById('edit_data_prevista').value = l.data_devolucao_prevista ? l.data_devolucao_prevista.substring(0,16) : '';
-  document.getElementById('edit_km_retirada').value = l.quilometragem_retirada || '';
-  document.getElementById('edit_tanque_saida').value = l.tanque_saida || '';
-  document.getElementById('edit_caucao').value = l.caucao || '';
-  document.getElementById('edit_valor_previsto').value = l.valor_total_previsto || '';
-  document.getElementById('edit_valor_final').value = l.valor_final || '';
+  const fmt = d => (d ? new Date(d).toISOString().slice(0,16) : '');
 
-  document.getElementById('edit_km_chegada').value = l.quilometragem_devolucao || '';
-  document.getElementById('edit_tanque_chegada').value = l.tanque_chegada || '';
 
-  document.getElementById('editar_modal').classList.remove('hidden');
+  document.getElementById('edit_data_retirada').value = fmt(loc.data_retirada);
+  document.getElementById('edit_data_prevista').value = fmt(loc.data_devolucao_prevista);
+  document.getElementById('edit_data_real').value = fmt(loc.data_devolucao_real);
 
-  onEditStatusChange();
+  document.getElementById('edit_km_retirada').value = loc.quilometragem_retirada || '';
+  document.getElementById('edit_km_devolucao').value = loc.quilometragem_devolucao || '';
+
+  document.getElementById('edit_tanque_saida').value = loc.tanque_saida || '';
+  document.getElementById('edit_tanque_chegada').value = loc.tanque_chegada || '';
+
+  document.getElementById('edit_caucao').value = loc.caucao || 0;
+  document.getElementById('edit_valor_total_previsto').value = loc.valor_total_previsto || 0;
+  document.getElementById('edit_valor_final').value = loc.valor_final || 0;
+
+  document.getElementById('edit_devolucao').value = loc.devolucao || '';
+
+  document.getElementById('modal').classList.remove('hidden');
+
+  listarOpcionais();
 }
 
-function fecharEdicao(){ 
-  document.getElementById('editar_modal').classList.add('hidden'); 
-  idEdit = null;
-}
-
-function onEditStatusChange(){
-  const status = document.getElementById('edit_status').value;
-  const kmC = document.getElementById('edit_km_chegada');
-  const tanC = document.getElementById('edit_tanque_chegada');
-
-  if(status === 'Chegada'){
-    kmC.disabled = false;
-    tanC.disabled = false;
-  } else {
-    kmC.disabled = true;
-    tanC.disabled = true;
-  }
-}
-
+/* ==============================
+   SALVAR EDIÇÃO
+============================== */
 async function salvarEdicao(){
-  if(!idEdit) return;
+  if(!idAtual) return;
+
+  const iso = d => d ? new Date(d).toISOString() : null;
 
   const payload = {
     status: document.getElementById('edit_status').value,
-    local_retirada: document.getElementById('edit_local_retirada').value,
-    local_devolucao: document.getElementById('edit_local_devolucao').value,
-    data_retirada: document.getElementById('edit_data_retirada').value,
-    data_devolucao_prevista: document.getElementById('edit_data_prevista').value,
-    quilometragem_retirada: parseInt(document.getElementById('edit_km_retirada').value),
-    tanque_saida: parseInt(document.getElementById('edit_tanque_saida').value),
-    caucao: parseFloat(document.getElementById('edit_caucao').value),
-    valor_total_previsto: parseFloat(document.getElementById('edit_valor_previsto').value),
-    valor_final: parseFloat(document.getElementById('edit_valor_final').value)
+    quilometragem_devolucao: parseInt(document.getElementById('edit_km_devolucao').value) || null,
+    tanque_chegada: parseInt(document.getElementById('edit_tanque_chegada').value) || null,
+    valor_final: parseFloat(document.getElementById('edit_valor_final').value) || null,
+    devolucao: document.getElementById('edit_devolucao').value,
+    data_retirada: iso(document.getElementById('edit_data_retirada').value),
+    data_devolucao_prevista: iso(document.getElementById('edit_data_prevista').value),
+    data_devolucao_real: iso(document.getElementById('edit_data_real').value)
   };
 
-  if(payload.status === 'Chegada'){
-    payload.quilometragem_devolucao = parseInt(document.getElementById('edit_km_chegada').value);
-    payload.tanque_chegada = parseInt(document.getElementById('edit_tanque_chegada').value);
-  }
-
-  const res = await fetch('/api/locacao/' + idEdit, {
-    method: 'PUT',
+  const res = await fetch('/api/locacao/' + idAtual, {
+    method:'PUT',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify(payload)
   });
 
-  const r = await res.json();
+  const j = await res.json();
 
   if(res.ok){
-    alert(r.mensagem || 'Atualizado com sucesso!');
-    fecharEdicao();
+    alert('Atualizado!');
+    fecharModal();
     carregar();
   } else {
-    alert('Erro: ' + (r.erro || JSON.stringify(r)));
+    alert('Erro: ' + j.erro);
   }
 }
 
-window.addEventListener('load', carregar);
+/* ==============================
+   OPCIONAIS
+============================== */
+async function carregarCatalogoOpcionais(){
+  const res = await fetch('/api/opcionais_catalogo');
+  const lista = await res.json();
+
+  const sel = document.getElementById("selectOpcional");
+  sel.innerHTML = `<option value="">Selecione um opcional</option>`;
+
+  lista.forEach(o=>{
+    sel.innerHTML += `
+      <option value="${o.id_opcional}|${o.valor_diaria}">
+        ${o.descricao} — R$ ${o.valor_diaria.toFixed(2)}
+      </option>`;
+  });
+}
+
+async function listarOpcionais(){
+  const res = await fetch(`/api/opcionais/${idAtual}`);
+  const data = await res.json();
+
+  const tbody = document.getElementById('tabelaOpcionais');
+  tbody.innerHTML = '';
+
+  data.forEach(o=>{
+    tbody.innerHTML += `
+      <tr>
+        <td class="border p-2">${o.descricao}</td>
+        <td class="border p-2">${o.valor_diaria.toFixed(2)}</td>
+        <td class="border p-2">${o.quantidade}</td>
+        <td class="border p-2">
+          <button onclick="removerOpcional(${o.id_opcional})"
+                  class="bg-red-500 text-white p-1 rounded">
+            Remover
+          </button>
+        </td>
+      </tr>`;
+  });
+}
+
+async function adicionarOpcional(){
+  if(!idAtual) return;
+
+  const sel = document.getElementById("selectOpcional").value;
+  const quant = parseInt(document.getElementById("quantOpcional").value);
+
+  if(!sel || !quant){
+    alert("Selecione um opcional e a quantidade.");
+    return;
+  }
+
+  const [id_opcional_catalogo] = sel.split("|");
+
+  await fetch('/api/opcional', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      id_opcional_catalogo: parseInt(id_opcional_catalogo),
+      quantidade: quant,
+      id_locacao: idAtual
+    })
+  });
+
+  listarOpcionais();
+}
+
+async function removerOpcional(id){
+  await fetch(`/api/opcional/${id}`, {method:"DELETE"});
+  listarOpcionais();
+}
+
+/* ==============================
+   FECHAR MODAL
+============================== */
+function fecharModal(){
+  document.getElementById('modal').classList.add('hidden');
+}
+
+/* ==============================
+   START
+============================== */
+window.addEventListener('load', () => {
+  carregar();
+  carregarCatalogoOpcionais();
+});
 </script>
 
 </body>

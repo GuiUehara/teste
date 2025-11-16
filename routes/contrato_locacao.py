@@ -1,12 +1,22 @@
-# app.py
 from flask import Flask, request, jsonify, render_template
 from db import conectar
 from datetime import datetime
 import math
 
-VALOR_MULTA_COMBUSTIVEL_PADRAO = 50.00  # fallback caso não exista valor_fracao
+# Valor padrão de multa por fração de combustível, caso não exista no veículo
+VALOR_MULTA_COMBUSTIVEL_PADRAO = 50.00 
 
 def init_locacao(app):
+
+    def parse_datetime(valor):
+        if not valor or valor == "":
+            return None
+        try:
+            return datetime.strptime(valor, "%Y-%m-%dT%H:%M")
+        except:
+            raise ValueError(f"Formato inválido: {valor}")
+
+
 
     # --- Páginas HTML ---
     @app.route('/contrato_locacao')
@@ -17,13 +27,12 @@ def init_locacao(app):
     def historico_locacao():
         return render_template('historico_locacao.html')
 
-    # --- APIs de suporte (clientes, categorias, veiculos) ---
+    # --- APIs de suporte ---
     @app.route('/api/clientes')
     def api_clientes():
         termo = request.args.get('termo','').strip()
         conn = conectar()
-        if not conn:
-            return jsonify({'erro':'Erro de conexão'}), 500
+        if not conn: return jsonify({'erro':'Erro de conexão'}), 500
         try:
             cur = conn.cursor(dictionary=True)
             q = """
@@ -94,78 +103,87 @@ def init_locacao(app):
                     JOIN categoria_veiculo c ON m.id_categoria_veiculo = c.id_categoria_veiculo
                     WHERE v.id_status_veiculo=1
                 """)
-            veiculos = cur.fetchall()
-            return jsonify(veiculos)
+            return jsonify(cur.fetchall())
         finally:
             cur.close(); conn.close()
 
-    # --- Cadastro de locacao (POST) ---
+    # --- Cadastro de locacao ---
+    # --- Cadastro de locacao com opcionais ---
     @app.route('/api/cadastrar', methods=['POST'])
     def api_cadastrar():
         dados = request.get_json()
         obrig = ['id_cliente','id_veiculo','data_retirada','data_devolucao_prevista','quilometragem_retirada','tanque_saida','caucao','status']
         for campo in obrig:
-            if campo not in dados or dados[campo] in [None, '']:
+            if campo not in dados or dados[campo] in [None,'']:
                 return jsonify({'erro': f'Campo obrigatório ausente: {campo}'}), 400
 
         try:
-            data_retirada = datetime.fromisoformat(dados['data_retirada'])
-            data_devol_prevista = datetime.fromisoformat(dados['data_devolucao_prevista'])
+            data_retirada = parse_datetime(dados['data_retirada'])
+            data_devol_prevista = parse_datetime(dados['data_devolucao_prevista'])
+            if data_retirada is None or data_devol_prevista is None:
+                return jsonify({'erro':'Formato de data inválido. Use YYYY-MM-DDTHH:MM'}), 400
         except:
-            return jsonify({'erro': 'Formato de data inválido. Use YYYY-MM-DDTHH:MM'}), 400
+            return jsonify({'erro':'Formato de data inválido. Use YYYY-MM-DDTHH:MM'}),400
 
         conn = conectar()
-        if not conn: return jsonify({'erro':'Erro conexão BD'}), 500
+        if not conn: return jsonify({'erro':'Erro conexão BD'}),500
         try:
             cur = conn.cursor()
-
-            # id_funcionario fixo
             cur.execute("SELECT id_usuario FROM funcionario LIMIT 1")
             r = cur.fetchone()
             id_func = r[0] if r else 1
 
-            valor_diaria = float(dados.get('valor_diaria', 0) or 0)
-            segundos = (data_devol_prevista - data_retirada).total_seconds()
-            dias = max(1, math.ceil(segundos / (24*3600)))
+            valor_diaria = float(dados.get('valor_diaria') or 0)
+            dias = max(1, math.ceil((data_devol_prevista - data_retirada).total_seconds() / 86400))
             valor_total_previsto = round(valor_diaria * dias, 2)
 
+            # Inserir locação
             sql = """
                 INSERT INTO locacao (
                     data_retirada, data_devolucao_prevista, valor_total_previsto,
                     quilometragem_retirada, id_cliente, id_veiculo, id_funcionario,
-                    status, local_retirada, local_devolucao, tanque_saida, caucao, devolucao
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    status, tanque_saida, caucao, devolucao
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             """
             vals = (
                 data_retirada, data_devol_prevista, valor_total_previsto,
                 int(dados['quilometragem_retirada']), int(dados['id_cliente']), int(dados['id_veiculo']), id_func,
-                dados['status'], dados.get('local_retirada',''), dados.get('local_devolucao',''),
-                int(dados['tanque_saida']), float(dados['caucao']), dados.get('devolucao','na devolução')
+                dados['status'], int(dados['tanque_saida']), float(dados['caucao']), dados.get('devolucao','na devolução')
             )
             cur.execute(sql, vals)
             conn.commit()
             id_loc = cur.lastrowid
 
-            if dados['status'] == 'Locado':
-                cur.execute("UPDATE veiculo SET id_status_veiculo=2 WHERE id_veiculo=%s", (int(dados['id_veiculo']),))
+            # Atualiza status do veículo se locado
+            if dados['status']=='Locado':
+                cur.execute("UPDATE veiculo SET id_status_veiculo=2 WHERE id_veiculo=%s",(int(dados['id_veiculo']),))
                 conn.commit()
 
-            return jsonify({'mensagem':'Locação cadastrada com sucesso','id_locacao': id_loc}), 200
+            # --- Inserir opcionais enviados junto com a locação ---
+            for o in dados.get('opcionais', []):
+                cur.execute("""
+                    INSERT INTO opcional (descricao, valor_diaria, quantidade, id_locacao)
+                    VALUES (%s,%s,%s,%s)
+                """, (o['descricao'], float(o['valor_diaria']), int(o['quantidade']), id_loc))
+            conn.commit()
+
+            return jsonify({'mensagem':'Locação cadastrada com sucesso','id_locacao':id_loc}),200
         except Exception as e:
             conn.rollback()
-            return jsonify({'erro': str(e)}), 500
+            return jsonify({'erro': str(e)}),500
         finally:
             cur.close(); conn.close()
 
-    # --- Listar locacoes (historico) ---
+
+    # --- Listar locacoes ---
     @app.route('/api/locacoes')
     def api_locacoes():
         conn = conectar()
-        if not conn: return jsonify({'erro':'Erro conexão'}), 500
+        if not conn: return jsonify({'erro':'Erro conexão'}),500
         try:
             cur = conn.cursor(dictionary=True)
             cur.execute("""
-                SELECT l.id_locacao, l.status, l.local_retirada, l.local_devolucao,
+                SELECT l.id_locacao, l.status,
                     l.data_retirada, l.data_devolucao_prevista, l.data_devolucao_real,
                     l.valor_total_previsto, l.valor_final,
                     l.quilometragem_retirada, l.quilometragem_devolucao,
@@ -173,58 +191,42 @@ def init_locacao(app):
                     c.nome_completo AS cliente_nome, c.cpf AS cliente_cpf,
                     v.placa, m.nome_modelo, ma.nome_marca
                 FROM locacao l
-                JOIN cliente c ON l.id_cliente = c.id_cliente
-                JOIN veiculo v ON l.id_veiculo = v.id_veiculo
-                JOIN modelo m ON v.id_modelo = m.id_modelo
-                JOIN marca ma ON m.id_marca = ma.id_marca
+                JOIN cliente c ON l.id_cliente=c.id_cliente
+                JOIN veiculo v ON l.id_veiculo=v.id_veiculo
+                JOIN modelo m ON v.id_modelo=m.id_modelo
+                JOIN marca ma ON m.id_marca=ma.id_marca
                 ORDER BY l.id_locacao DESC
                 LIMIT 200
             """)
             rows = cur.fetchall()
+            # Formatar datas
             for r in rows:
                 for k in ['data_retirada','data_devolucao_prevista','data_devolucao_real']:
-                    if r.get(k):
+                    # Usa isoformat para datetimes, o valor pode ser None se for NULL no BD
+                    if r.get(k) is not None: 
                         r[k] = r[k].isoformat()
             return jsonify(rows)
         finally:
             cur.close(); conn.close()
 
-    # --- Atualizar locacao (edição COMPLETA) ---
+
+    # --- Atualizar locacao ---
+    # --- Atualização de locação (com datas funcionando corretamente) ---
     @app.route('/api/locacao/<int:id_locacao>', methods=['PUT'])
     def api_atualizar_locacao(id_locacao):
         dados = request.get_json()
         conn = conectar()
-        if not conn:
+        if not conn: 
             return jsonify({'erro':'Erro conexão'}), 500
-
         try:
             cur = conn.cursor(dictionary=True)
-
-            # Verifica se existe
             cur.execute("SELECT * FROM locacao WHERE id_locacao=%s", (id_locacao,))
             loc = cur.fetchone()
             if not loc:
-                return jsonify({'erro': 'Locação não encontrada'}), 404
+                return jsonify({'erro':'Locação não encontrada'}), 404
 
-            # EDIÇÃO NORMAL (SEM CHEGADA)
-            campos_editar = [
-                'id_cliente','id_veiculo','id_funcionario','status','local_retirada','local_devolucao',
-                'data_retirada','data_devolucao_prevista','quilometragem_retirada',
-                'valor_total_previsto','valor_final','tanque_saida','caucao','devolucao'
-            ]
-
-            sets = []
-            valores = []
-
-            for c in campos_editar:
-                if c in dados:
-                    if 'data_' in c:
-                        valores.append(datetime.fromisoformat(dados[c]))
-                    else:
-                        valores.append(dados[c])
-                    sets.append(f"{c}=%s")
-
-            # SE STATUS = CHEGADA então processa normalmente
+            # --- Chegada ---
+            # --- Chegada ---
             if dados.get('status') == 'Chegada':
                 km_chegada = dados.get('quilometragem_devolucao')
                 tanque_chegada = dados.get('tanque_chegada')
@@ -232,54 +234,173 @@ def init_locacao(app):
                 if km_chegada is None or tanque_chegada is None:
                     return jsonify({'erro':'KM e tanque_chegada obrigatórios para chegada'}), 400
 
+                # Buscar dados da locacao e diária
                 cur.execute("""
-                    SELECT v.valor_fracao, c.valor_diaria
-                    FROM veiculo v
+                    SELECT l.*, c.valor_diaria, v.valor_fracao
+                    FROM locacao l
+                    JOIN veiculo v ON l.id_veiculo = v.id_veiculo
                     JOIN modelo m ON v.id_modelo = m.id_modelo
                     JOIN categoria_veiculo c ON m.id_categoria_veiculo = c.id_categoria_veiculo
-                    WHERE v.id_veiculo=%s
-                """, (loc['id_veiculo'],))
+                    WHERE l.id_locacao=%s
+                """, (id_locacao,))
                 info = cur.fetchone()
 
-                valor_fracao = float(info['valor_fracao'] or VALOR_MULTA_COMBUSTIVEL_PADRAO)
-                valor_diaria = float(info['valor_diaria'] or 0)
+                valor_diaria = float(info["valor_diaria"])
+                valor_fracao = float(info["valor_fracao"] or VALOR_MULTA_COMBUSTIVEL_PADRAO)
 
-                # atraso
-                data_prevista = loc['data_devolucao_prevista']
                 data_real = datetime.now()
 
-                multa_atraso = 0
-                if data_real > data_prevista:
-                    dias = math.ceil((data_real - data_prevista).total_seconds() / 86400)
-                    multa_atraso = round(dias * valor_diaria * 2, 2)
+                # ---- Calcular dias usados ----
+                diff = data_real - info["data_retirada"]
+                dias_usados = max(1, math.ceil(diff.total_seconds() / 86400))
 
-                # combustível
-                dif_tanque = int(loc['tanque_saida']) - int(tanque_chegada)
-                multa_comb = round(max(0, dif_tanque) * valor_fracao, 2)
+                # ---- Multa de combustível ----
+                dif_tanque = int(info['tanque_saida']) - int(tanque_chegada)
+                multa_comb = max(0, dif_tanque) * valor_fracao
 
-                valor_final = round(loc['valor_total_previsto'] + multa_atraso + multa_comb, 2)
+                # ---- Valor final ----
+                valor_final = round(dias_usados * valor_diaria + multa_comb, 2)
 
-                # Atualiza chegada
                 cur.execute("""
-                    UPDATE locacao SET status='Chegada',
-                        data_devolucao_real=%s, quilometragem_devolucao=%s,
-                        tanque_chegada=%s, valor_final=%s
+                    UPDATE locacao SET
+                        status='Chegada',
+                        data_devolucao_real=%s,
+                        quilometragem_devolucao=%s,
+                        tanque_chegada=%s,
+                        valor_final=%s
                     WHERE id_locacao=%s
                 """, (data_real, km_chegada, tanque_chegada, valor_final, id_locacao))
 
-                conn.commit()
-                return jsonify({'mensagem':'Chegada registrada com sucesso!','valor_final': valor_final})
+                # Disponibiliza veículo
+                cur.execute("""
+                    UPDATE veiculo 
+                    SET quilometragem=%s,
+                        id_status_veiculo=(SELECT id_status_veiculo FROM status_veiculo WHERE descricao_status='Disponível' LIMIT 1)
+                    WHERE id_veiculo=%s
+                """, (km_chegada, info['id_veiculo']))
 
-            # Atualização normal
+                conn.commit()
+
+                return jsonify({
+                    'mensagem': 'Chegada registrada com sucesso!',
+                    'dias_usados': dias_usados,
+                    'valor_final': valor_final,
+                    'multa_combustivel': multa_comb
+                })
+
+
+
+            # --- Atualização normal ---
+            campos_editar = [
+                'id_cliente','id_veiculo','id_funcionario','status',
+                'data_retirada','data_devolucao_prevista','data_devolucao_real',
+                'quilometragem_retirada','quilometragem_devolucao',
+                'valor_total_previsto','valor_final','tanque_saida','tanque_chegada',
+                'caucao','devolucao'
+            ]
+            sets, valores = [], []
+            for c in campos_editar:
+                if c in dados:
+                    v = dados[c]
+                    if 'data_' in c:
+                        v_original_str = v
+                        v = parse_datetime(v)
+                        if v is None and v_original_str == '':
+                            continue  # ignora datas vazias
+                        if v is None and v_original_str != '':
+                            return jsonify({'erro': f'Formato de data inválido para {c}. Use YYYY-MM-DDTHH:MM'}), 400
+                    valores.append(v)
+                    sets.append(f"{c}=%s")
+
             if sets:
-                sql = "UPDATE locacao SET " + ", ".join(sets) + " WHERE id_locacao=%s"
                 valores.append(id_locacao)
-                cur.execute(sql, tuple(valores))
+                cur.execute("UPDATE locacao SET " + ",".join(sets) + " WHERE id_locacao=%s", tuple(valores))
                 conn.commit()
+                return jsonify({'mensagem':'Locação atualizada com sucesso!'})
 
-            return jsonify({'mensagem':'Locação atualizada com sucesso!'})
+            return jsonify({'mensagem': 'Nenhum campo para atualizar'}), 200
+
         except Exception as e:
             conn.rollback()
             return jsonify({'erro': str(e)}), 500
+        finally:
+            cur.close()
+            conn.close()
+
+        # --- Listar opcionais de uma locação ---
+    @app.route('/api/opcionais/<int:id_locacao>')
+    def api_listar_opcionais(id_locacao):
+        conn = conectar()
+        if not conn:
+            return jsonify({'erro':'Erro conexão'}), 500
+        try:
+            cur = conn.cursor(dictionary=True)
+            cur.execute("""
+                SELECT id_opcional, descricao, valor_diaria, quantidade
+                FROM opcional
+                WHERE id_locacao = %s
+            """, (id_locacao,))
+            rows = cur.fetchall()
+            return jsonify(rows)
+        finally:
+            cur.close(); conn.close()
+
+    # --- Adicionar um opcional ---
+    @app.route('/api/opcional', methods=['POST'])
+    def api_adicionar_opcional():
+        dados = request.get_json()
+        obrig = ['descricao','valor_diaria','quantidade','id_locacao']
+        for campo in obrig:
+            if campo not in dados:
+                return jsonify({'erro': f'Campo obrigatório ausente: {campo}'}), 400
+        conn = conectar()
+        if not conn:
+            return jsonify({'erro':'Erro conexão'}), 500
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO opcional (descricao, valor_diaria, quantidade, id_locacao)
+                VALUES (%s,%s,%s,%s)
+            """, (dados['descricao'], float(dados['valor_diaria']), int(dados['quantidade']), int(dados['id_locacao'])))
+            conn.commit()
+            return jsonify({'mensagem':'Opcional adicionado com sucesso','id_opcional': cur.lastrowid})
+        finally:
+            cur.close(); conn.close()
+
+    # --- Atualizar um opcional ---
+    @app.route('/api/opcional/<int:id_opcional>', methods=['PUT'])
+    def api_atualizar_opcional(id_opcional):
+        dados = request.get_json()
+        campos_editar = ['descricao','valor_diaria','quantidade']
+        sets, valores = [], []
+        for c in campos_editar:
+            if c in dados:
+                valores.append(dados[c])
+                sets.append(f"{c}=%s")
+        if not sets:
+            return jsonify({'mensagem':'Nenhum campo para atualizar'}), 200
+        valores.append(id_opcional)
+        conn = conectar()
+        if not conn:
+            return jsonify({'erro':'Erro conexão'}), 500
+        try:
+            cur = conn.cursor()
+            cur.execute("UPDATE opcional SET "+",".join(sets)+" WHERE id_opcional=%s", tuple(valores))
+            conn.commit()
+            return jsonify({'mensagem':'Opcional atualizado com sucesso'})
+        finally:
+            cur.close(); conn.close()
+
+    # --- Remover um opcional ---
+    @app.route('/api/opcional/<int:id_opcional>', methods=['DELETE'])
+    def api_remover_opcional(id_opcional):
+        conn = conectar()
+        if not conn:
+            return jsonify({'erro':'Erro conexão'}), 500
+        try:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM opcional WHERE id_opcional=%s", (id_opcional,))
+            conn.commit()
+            return jsonify({'mensagem':'Opcional removido com sucesso'})
         finally:
             cur.close(); conn.close()

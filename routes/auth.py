@@ -13,7 +13,7 @@ def init_auth(app):
         for i in range(6):
             codigo += str(randint(0, 9))
 
-        # Armazena código na sessão
+        # Armazena código e dados temporários na sessão
         session['codigo_verificacao'] = codigo
         session['email_verificacao'] = email
         session['perfil_temp'] = perfil
@@ -58,25 +58,34 @@ def init_auth(app):
             cursor.close()
             conexao.close()
 
-            if row and row['senha'] == senha:
+            if row is None:
+                flash("Usuário não cadastrado.", "error")
+                return redirect(url_for("login"))
+
+            # Verifica senha diretamente
+            if row['senha'] == senha:
                 usuario = row
                 perfil = usuario['perfil']
 
-            if usuario:
-                if perfil == "gerente":  # teste
-                    session["usuario_logado"] = email
-                    session["perfil"] = perfil
-                    flash("Bem-vindo, gerente!", "success")
-                    return redirect(url_for("listagem_veiculos"))
-                else:
-                    if enviar_codigo_verificacao(email, perfil):
-                        return redirect(url_for("verificacao"))
+                # Marca o processo como 'login' antes de enviar o código
+                session["processo"] = "login"
+
+                # Envia o código de verificação para o e-mail
+                if enviar_codigo_verificacao(email, perfil):
+                    # Armazena os dados temporários na sessão
+                    session["email_temp"] = email
+                    session["perfil_temp"] = perfil
+
+                    # Redireciona para a página de verificação
+                    flash("Código de verificação enviado para seu e-mail.", "success")
+                    return redirect(url_for("verificacao"))
 
             else:
-                flash("Email ou senha inválidos", "error")
+                flash("Email ou senha inválidos.", "error")
                 return redirect(url_for("login"))
 
         return render_template("login.html")
+
 
     # -------------------- LOGOUT --------------------
     @app.route('/logout')
@@ -97,10 +106,10 @@ def init_auth(app):
                 flash("Preencha todos os campos obrigatórios", "error")
                 return redirect(url_for("cadastro"))
 
-            # Verifica existência no banco
             conexao = conectar()
             cursor = conexao.cursor()
 
+            # Verifica se já existe o email
             cursor.execute("SELECT email FROM usuario WHERE email = %s", (email,))
             if cursor.fetchone() is not None:
                 cursor.close()
@@ -108,50 +117,80 @@ def init_auth(app):
                 flash("Email já cadastrado", "error")
                 return redirect(url_for("cadastro"))
 
-            # Insere usuário
-            cursor.execute(
-                "INSERT INTO usuario (email, senha, perfil) VALUES (%s, %s, %s)",
-                (email, senha, "cliente")
-            )
-            conexao.commit()
-            cursor.close()
-            conexao.close()
-
             perfil = "cliente"
 
-            # gera código de verificação e envia e-mail
+            # Marca o processo como 'cadastro' antes de enviar o código
+            session["processo"] = "cadastro"
+
+            # Gera o código e envia o e-mail
             if enviar_codigo_verificacao(email, perfil):
-                flash("Cadastro salvo. Código de verificação enviado.")
-                return redirect("verificacao")
+                session['email_temp'] = email
+                session['senha_temp'] = senha
+                session['perfil_temp'] = perfil
+                flash("Cadastro iniciado. Código de verificação enviado para o e-mail.")
+                return redirect(url_for("verificacao"))
 
         return render_template("cadastro.html")
+
 
     # -------------------- VERIFICAÇÃO --------------------
     @app.route('/verificacao', methods=["GET", "POST"])
     def verificacao():
-        email = session.get("email_verificacao")
+        # Recupera dados temporários da sessão
+        email = session.get("email_temp")
+        senha = session.get("senha_temp")
         perfil_temp = session.get("perfil_temp")
 
         if not email:
-            flash("Acesso inválido.")
-            return redirect(url_for("login"))
+            flash("Acesso inválido. Complete o cadastro novamente.", "error")
+            return redirect(url_for("cadastro"))
 
         if request.method == "POST":
             codigo_recebido = request.form.get("codigo")
             codigo_armazenado = session.get("codigo_verificacao")
 
             if codigo_recebido == codigo_armazenado:
-                # Login completo: salva dados na sessão
-                session["usuario_logado"] = email
-                session["perfil"] = perfil_temp
+                # Verifica se o processo é de login ou cadastro
+                if session.get("processo") == "login":
+                    session["usuario_logado"] = email
+                    session["perfil"] = perfil_temp
+                    flash("Login realizado com sucesso!", "success")
+                    return redirect(url_for("listagem_veiculos"))
 
-                # Limpa dados temporários
-                session.pop("codigo_verificacao", None)
-                session.pop("perfil_temp", None)
-                session.pop("email_verificacao", None)
+                elif session.get("processo") == "cadastro":
+                    # Verifica se o email já está registrado
+                    conexao = conectar()
+                    cursor = conexao.cursor()
 
-                flash("Email verificado. Bem-vindo!", "success")
-                return redirect(url_for("listagem_veiculos"))
+                    cursor.execute("SELECT email FROM usuario WHERE email = %s", (email,))
+                    if cursor.fetchone():
+                        cursor.close()
+                        conexao.close()
+                        flash("Este email já está registrado.", "error")
+                        return redirect(url_for("login"))
+
+                    # Insere o novo usuário no banco após a verificação do código
+                    cursor.execute(
+                        "INSERT INTO usuario (email, senha, perfil) VALUES (%s, %s, %s)",
+                        (email, senha, perfil_temp)
+                    )
+                    conexao.commit()
+                    cursor.close()
+                    conexao.close()
+
+                    # Limpa dados temporários da sessão
+                    session.pop("email_temp", None)
+                    session.pop("senha_temp", None)
+                    session.pop("perfil_temp", None)
+                    session.pop("codigo_verificacao", None)
+                    session.pop("processo", None)
+
+                    # Salva o login no usuário da sessão
+                    session["usuario_logado"] = email
+                    session["perfil"] = perfil_temp
+
+                    flash("Cadastro completo. Bem-vindo!", "success")
+                    return redirect(url_for("listagem_veiculos"))
             else:
                 flash("Código incorreto. Tente novamente.", "error")
                 return redirect(url_for("verificacao"))
