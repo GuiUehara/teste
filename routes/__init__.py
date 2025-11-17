@@ -10,7 +10,7 @@ from .contrato_locacao import init_locacao
 from .api_cep import cep_api
 from .teste import init_teste
 from .api_veiculos import veiculos_api
-
+from .api_locacao import locacao_api
 
 
 def init_routes(app):
@@ -26,3 +26,4 @@ def init_routes(app):
     init_teste(app)
     app.register_blueprint(cep_api)
     app.register_blueprint(veiculos_api)
+    app.register_blueprint(locacao_api)

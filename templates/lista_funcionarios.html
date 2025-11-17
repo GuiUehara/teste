@@ -23,13 +23,13 @@
   <tbody>
     {% for f in funcionarios %}
     <tr>
-      <td>{{ f[1] }}</td>
-      <td>{{ f[2] }}</td>
-      <td>{{ f[4] }}</td>
+      <td>{{ f.nome }}</td>
+      <td>{{ f.cpf }}</td>
+      <td>{{ f.cargo }}</td>
       <td>
-        <a href="{{ url_for('editar_funcionario', id_usuario=f[0]) }}">&#9998;</a>
+        <a href="{{ url_for('editar_funcionario', id_usuario=f.id_usuario) }}">&#9998;</a>
         &nbsp;
-        <a href="{{ url_for('deletar_funcionario', id_usuario=f[0]) }}" onclick="return confirm('Deseja realmente deletar?');">&#10060;</a>
+        <a href="{{ url_for('deletar_funcionario', id_usuario=f.id_usuario) }}" onclick="return confirm('Deseja realmente deletar?');">&#10060;</a>
       </td>
     </tr>
     {% else %}

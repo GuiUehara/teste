@@ -14,16 +14,20 @@ def api_marcas():
     conexao.close()
     return jsonify(marcas)
 
-# Retorna todas as categorias
-@veiculos_api.route("/api/categorias")
-def api_categorias():
+# --- Função auxiliar que só retorna as categorias (utilizado no api_locacao.py) ---
+def get_categorias():
     conexao = conectar()
     cursor = conexao.cursor()
-    cursor.execute("SELECT id_categoria_veiculo, nome_categoria FROM categoria_veiculo")
-    categorias = [{"id": row[0], "nome": row[1]} for row in cursor.fetchall()]
+    cursor.execute("SELECT id_categoria_veiculo, nome_categoria, valor_diaria FROM categoria_veiculo")
+    categorias = [{"id": row[0], "nome": row[1], "valor_diaria": float(row[2])} for row in cursor.fetchall()]
     cursor.close()
     conexao.close()
-    return jsonify(categorias)
+    return categorias  # apenas retorna a lista, sem jsonify
+
+# --- usa a função auxiliar ---
+@veiculos_api.route("/api/categorias")
+def api_categorias():
+    return jsonify(get_categorias())
 
 
 @veiculos_api.route("/api/modelos/<int:id_marca>")
