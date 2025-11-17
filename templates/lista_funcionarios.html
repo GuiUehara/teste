@@ -15,17 +15,16 @@
     <tr>
       <th>Nome</th>
       <th>CPF</th>
-      <th>Email</th>
       <th>Cargo</th>
       <th>Ações</th>
     </tr>
   </thead>
+
   <tbody>
     {% for f in funcionarios %}
     <tr>
       <td>{{ f[1] }}</td>
       <td>{{ f[2] }}</td>
-      <td>{{ f[3] }}</td>
       <td>{{ f[4] }}</td>
       <td>
         <a href="{{ url_for('editar_funcionario', id_usuario=f[0]) }}">&#9998;</a>
@@ -35,9 +34,10 @@
     </tr>
     {% else %}
     <tr>
-      <td colspan="5">Nenhum funcionário encontrado.</td>
+      <td colspan="4">Nenhum funcionário encontrado.</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
 {% endblock %}

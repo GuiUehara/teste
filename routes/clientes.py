@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from db import conectar
+from datetime import datetime
 
 def init_clientes(app):
 
@@ -14,6 +15,33 @@ def init_clientes(app):
 
         if request.method == "POST":
 
+            # ======== VALIDAÇÕES ANTES DO BANCO ========
+
+            #Validar idade mínima de 21 anos
+            data_nasc_str = request.form.get("dataNascCliente")
+            data_nasc = datetime.strptime(data_nasc_str, "%Y-%m-%d")
+            idade = (datetime.today() - data_nasc).days // 365
+
+            if idade < 21:
+                flash("ERRO: O cliente deve ter no mínimo 21 anos para ser cadastrado!", "error")
+                return redirect(url_for("cadastro_cliente"))
+
+            # Validar vencimento da CNH
+            validade_cnh_str = request.form.get("validadeCNHCliente")
+            validade_cnh = datetime.strptime(validade_cnh_str, "%Y-%m-%d")
+
+            if validade_cnh < datetime.today():
+                flash("ERRO: A CNH está vencida. Cadastro bloqueado!", "error")
+                return redirect(url_for("cadastro_cliente"))
+            
+            # Verificar tempo de habilitação
+            validade_tempo_habilitacao = int(request.form.get("tempoHabilitacaoCliente"))
+            if validade_tempo_habilitacao < 2:
+                flash("ERRO: Mínimo 2 anos de habilitação. Cadastro bloqueado!", "error")
+                return redirect(url_for("cadastro_cliente"))
+
+            # ============================================
+
             dados_endereco = (
                 request.form.get("logradouroCliente"),
                 int(request.form.get("numeroCliente")),
@@ -27,21 +55,20 @@ def init_clientes(app):
             dados_cnh = (
                 int(request.form.get("cnhCliente")),
                 request.form.get("categoriaCNHCliente").upper(),
-                request.form.get("validadeCNHCliente")
+                validade_cnh_str
             )
 
             dados_cliente = (
                 request.form.get("nomeCliente"),
                 request.form.get("cpfCliente"),
-                request.form.get("dataNascCliente"),
+                data_nasc_str,
                 request.form.get("telefoneCliente"),
                 request.form.get("emailCliente"),
-                int(request.form.get("tempoHabilitacaoCliente"))
+                validade_tempo_habilitacao
             )
 
             conexao = conectar()
             cursor = conexao.cursor()
-
             # INSERIR ENDEREÇO
             sql_endereco = """
                 INSERT INTO endereco (logradouro, numero, complemento, bairro, cidade, estado, cep)
@@ -68,13 +95,15 @@ def init_clientes(app):
             cursor.execute(sql_cliente, values_cliente)
 
             conexao.commit()
+            flash("Cliente cadastrado com sucesso!", "success")
+
             cursor.close()
             conexao.close()
 
-            flash("Cliente cadastrado com sucesso!", "success")
             return redirect(url_for("cadastro_cliente"))
 
         return render_template("cadastro_cliente.html")
+
 
 
     @app.route("/lista_clientes")

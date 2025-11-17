@@ -7,6 +7,11 @@ from .pagamento import init_pagamento
 from .manutencao import init_manutencao
 from .multas import init_multa
 from .contrato_locacao import init_locacao
+from .api_cep import cep_api
+from .teste import init_teste
+from .api_veiculos import veiculos_api
+
+
 
 def init_routes(app):
     init_auth(app)
@@ -18,3 +23,6 @@ def init_routes(app):
     init_manutencao(app)
     init_multa(app)
     init_locacao(app)
+    init_teste(app)
+    app.register_blueprint(cep_api)
+    app.register_blueprint(veiculos_api)

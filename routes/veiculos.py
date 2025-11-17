@@ -12,25 +12,45 @@ def init_veiculos(app):
         conexao = conectar()
         cursor = conexao.cursor()
 
-        #busca os dados
+        # Combustível e status
         cursor.execute("SELECT id_combustivel, tipo_combustivel FROM combustivel")
         combustiveis = cursor.fetchall()
-
-        cursor.execute("SELECT id_marca, nome_marca FROM marca")
-        marcas = cursor.fetchall()
-
-        cursor.execute("SELECT id_modelo, nome_modelo FROM modelo")
-        modelos = cursor.fetchall()
-
-        cursor.execute("SELECT id_categoria_veiculo, nome_categoria FROM categoria_veiculo")
-        categorias = cursor.fetchall()
-
 
         cursor.execute("SELECT id_status_veiculo, descricao_status FROM status_veiculo")
         status = cursor.fetchall()
 
+        # Carregar as seguradoras
+        cursor.execute("SELECT id_seguro, companhia FROM seguro")
+        seguros = cursor.fetchall()
+
+        # Marcas e categorias
+        marcas_fixas = [(1, "Renault"), (2, "Volkswagen"), (3, "BYD"), (4, "FIAT"), (5, "BMW")]
+        categorias_fixas = [(1, "Compacto"), (2, "Sedan Médio"), (3, "SUV"), (4, "Picape"), (5, "Elétrico")]
+
+        # ----------------------------------------------------------------------
+        # PROCESSAMENTO DO POST
+        # ----------------------------------------------------------------------
         if request.method == "POST":
 
+            # Agora sim pode pegar o seguro
+            id_seguro = request.form.get("companhiaSeguro")
+
+            if not id_seguro or id_seguro == "":
+                flash("Selecione uma companhia de seguro.", "error")
+                return redirect(url_for("cadastro_veiculo"))
+
+            id_seguro = int(id_seguro)
+
+            cursor.execute("SELECT companhia FROM seguro WHERE id_seguro = %s", (id_seguro,))
+            resultado_seguro = cursor.fetchone()
+
+            if not resultado_seguro:
+                flash("Seguro inválido.", "error")
+                return redirect(url_for("cadastro_veiculo"))
+
+            companhia = resultado_seguro[0]
+
+            # Dados do veículo
             placa = request.form.get("placaVeiculo")
             chassi = request.form.get("chassiVeiculo")
             ano = int(request.form.get("anoVeiculo"))
@@ -40,89 +60,40 @@ def init_veiculos(app):
             valor_compra = float(request.form.get("valorCompra"))
             odometro = int(request.form.get("odometro"))
             data_vencimento = request.form.get("vencimentoLicenciamento")
-
             tanque = int(request.form.get("tanque"))
             tanque_fracao = float(request.form.get("tanqueFracao"))
+            valor_fracao = (tanque * 6) / 8 + 5
 
-            valor_fracao = (tanque * 6) / 8 + 5 # '6' referente a um valor fixo para combustível; '8' indica fração; '5' uma taxa fixa para o funcionário ir abastecer
+            id_status = int(request.form.get("status"))
+            id_combustivel = int(request.form.get("combustivel"))
+            id_modelo = int(request.form.get("modeloVeiculo"))
 
-            modelo_nome = request.form.get("modeloVeiculo").strip()
-            marca_nome = request.form.get("marca").strip()
-            categoria_nome = request.form.get("categoria").strip()
-            id_status = request.form.get("status")
-            id_combustivel = request.form.get("combustivel")
-
-            # Verifica se a placa já existe
+            # Verifica duplicidade
             cursor.execute("SELECT 1 FROM veiculo WHERE placa = %s", (placa,))
             if cursor.fetchone():
-                flash("Já existe um veículo cadastrado com essa placa.", "error")
+                flash("Já existe um veículo com esta placa.", "error")
                 cursor.close()
                 conexao.close()
                 return redirect(url_for("cadastro_veiculo"))
 
-            # Verifica se o chassi já existe
             cursor.execute("SELECT 1 FROM veiculo WHERE chassi = %s", (chassi,))
             if cursor.fetchone():
-                flash("Já existe um veículo cadastrado com esse chassi.", "error")
+                flash("Já existe um veículo com este chassi.", "error")
                 cursor.close()
                 conexao.close()
                 return redirect(url_for("cadastro_veiculo"))
 
-
-           # Marca
-            cursor.execute("SELECT id_marca FROM marca WHERE nome_marca = %s", (marca_nome,))
-            resultado_marca = cursor.fetchone()
-
-            if resultado_marca: #se marca estiver registrada
-                id_marca = resultado_marca[0] #pega ID da marca
-            else:
-                cursor.execute("INSERT INTO marca (nome_marca) VALUES (%s)", (marca_nome,))
-                conexao.commit()
-                id_marca = cursor.lastrowid #gera ID caso não esteja registrada
-
-            # Categoria
-            cursor.execute("SELECT id_categoria_veiculo FROM categoria_veiculo WHERE nome_categoria = %s", (categoria_nome,))
-            resultado_categoria = cursor.fetchone()
-
-            if resultado_categoria:
-                id_categoria = resultado_categoria[0]
-            else:
-                cursor.execute("INSERT INTO categoria_veiculo (nome_categoria, valor_diaria) VALUES (%s, %s)",
-                            (categoria_nome, 100))  # valor padrão
-                conexao.commit()
-                id_categoria = cursor.lastrowid
-
-            # Modelo digitado
+            # Inserir veículo
             cursor.execute("""
-                SELECT id_modelo FROM modelo
-                WHERE nome_modelo = %s AND id_marca = %s AND id_categoria_veiculo = %s
-            """, (modelo_nome, id_marca, id_categoria))
-
-            resultado_modelo = cursor.fetchone()
-
-            if resultado_modelo:
-                id_modelo = resultado_modelo[0]
-            else:
-                cursor.execute("""
-                    INSERT INTO modelo (nome_modelo, id_marca, id_categoria_veiculo)
-                    VALUES (%s, %s, %s)
-                """, (modelo_nome, id_marca, id_categoria))
-                conexao.commit()
-                id_modelo = cursor.lastrowid
-
-
-            sql = """
                 INSERT INTO veiculo
                 (placa, ano, cor, chassi, quilometragem, transmissao, data_compra,
                 valor_compra, data_vencimento, tanque, tanque_fracao, valor_fracao,
-                id_modelo, id_status_veiculo, id_combustivel)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-
-            cursor.execute(sql, (
+                id_modelo, id_status_veiculo, id_combustivel, id_seguro)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
                 placa, ano, cor, chassi, odometro, transmissao, data_compra,
                 valor_compra, data_vencimento, tanque, tanque_fracao, valor_fracao,
-                id_modelo, id_status, id_combustivel
+                id_modelo, id_status, id_combustivel, id_seguro
             ))
 
             conexao.commit()
@@ -132,13 +103,14 @@ def init_veiculos(app):
             flash("Veículo cadastrado com sucesso!", "success")
             return redirect(url_for("cadastro_veiculo"))
 
+        # ----------------------------------------------------------------------
+
         return render_template("cadastro_veiculo.html",
                                combustiveis=combustiveis,
-                               marcas=marcas,
-                               categorias=categorias,
-                               modelos=modelos,
-                               status=status)
-
+                               status=status,
+                               marcas=marcas_fixas,
+                               categorias=categorias_fixas,
+                               seguros=seguros)
 
 
     @app.route("/veiculos")
@@ -148,7 +120,7 @@ def init_veiculos(app):
             flash("Faça login para acessar", "error")
             return redirect(url_for("login"))
         return render_template("veiculos.html", veiculos=veiculos)
-    
+
     @app.route("/locar/<int:id>", methods=["POST"])
     def locar_veiculo(id):
         from app import veiculos

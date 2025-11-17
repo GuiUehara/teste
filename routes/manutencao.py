@@ -22,7 +22,6 @@ def init_manutencao(app):
             descricao = request.form.get("descricaoServico")
             custo = request.form.get("custo")
             id_veiculo = request.form.get("idVeiculo")
-            seguro = request.form.get("seguro") or None   # novo campo
 
             if not all([data_entrada, descricao, custo, id_veiculo]):
                 flash("Preencha todos os campos obrigatórios!", "error")
@@ -30,9 +29,9 @@ def init_manutencao(app):
 
             cursor.execute("""
                 INSERT INTO manutencao
-                (data_entrada, data_saida, seguro, descricao_servico, custo, id_veiculo)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (data_entrada, data_saida, seguro, descricao, custo, id_veiculo))
+                (data_entrada, data_saida, descricao_servico, custo, id_veiculo)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (data_entrada, data_saida, descricao, custo, id_veiculo))
 
             # Atualiza status do veículo para 3 = "Em Manutenção"
             cursor.execute("""
@@ -66,7 +65,7 @@ def init_manutencao(app):
         cursor = conexao.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT m.id_manutencao, m.data_entrada, m.data_saida, m.seguro, m.descricao_servico,
+            SELECT m.id_manutencao, m.data_entrada, m.data_saida, m.descricao_servico,
                    m.custo, m.status, v.placa, mo.nome_modelo
             FROM manutencao m
             JOIN veiculo v ON m.id_veiculo = v.id_veiculo

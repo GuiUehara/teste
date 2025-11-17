@@ -6,11 +6,14 @@
 <h2>Editar Funcionário</h2>
 
 <form method="POST" action="{{ url_for('editar_funcionario', id_usuario=id_usuario) }}">
+
   <h3>Dados Pessoais</h3>
+
   <input type="text" name="nomeFuncionario" value="{{ funcionario[0] }}" required>
   <input type="text" name="cpfFuncionario" value="{{ funcionario[1] }}" required>
   <input type="text" name="rgFuncionario" value="{{ funcionario[2] }}" required>
   <input type="date" name="dataNascFuncionario" value="{{ funcionario[3] }}" required>
+
   <input type="email" name="emailFuncionario" value="{{ funcionario[4] }}" required>
 
   <label>Cargo:</label>
@@ -20,17 +23,41 @@
     <option value="Mecânico" {% if funcionario[5]=='Mecânico' %}selected{% endif %}>Mecânico</option>
   </select>
 
-  <input type="password" name="senhaFuncionario" placeholder="Nova senha (deixe em branco para manter)">
-  
+  <input type="password" name="senhaFuncionario" placeholder="Nova senha (opcional)">
+
   <h3>Endereço</h3>
-  <input type="text" name="logradouro" value="{{ funcionario[6] }}" required>
-  <input type="text" name="numero" value="{{ funcionario[7] }}" required>
-  <input type="text" name="complemento" value="{{ funcionario[8] }}">
-  <input type="text" name="bairro" value="{{ funcionario[9] }}" required>
-  <input type="text" name="cidade" value="{{ funcionario[10] }}" required>
-  <input type="text" name="estado" value="{{ funcionario[11] }}" maxlength="2" required>
-  <input type="text" name="cep" value="{{ funcionario[12] }}" required>
+
+  <div style="display:flex; gap:10px; align-items:center;">
+    <input type="text" name="cep" id="cep" value="{{ funcionario[12] }}" required style="flex-grow:1;">
+    <button type="button" onclick="consultaCep()">Buscar</button>
+  </div>
+
+  <input type="text" name="logradouro" id="logradouro" value="{{ funcionario[6] }}" required>
+  <input type="text" name="numero" id="numero" value="{{ funcionario[7] }}" required>
+  <input type="text" name="complemento" id="complemento" value="{{ funcionario[8] }}">
+  <input type="text" name="bairro" id="bairro" value="{{ funcionario[9] }}" required>
+  <input type="text" name="cidade" id="cidade" value="{{ funcionario[10] }}" required>
+  <input type="text" name="estado" id="estado" value="{{ funcionario[11] }}" maxlength="2" required>
 
   <button type="submit">Atualizar Funcionário</button>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function consultaCep() {
+    const cep = document.getElementById("cep").value.replace(/\D/g, '');
+    if (cep.length !== 8) return alert("CEP inválido.");
+
+    fetch(`/api/cep/${cep}`)
+        .then(r => r.json())
+        .then(d => {
+            if (d.erro) return alert("CEP não encontrado.");
+            document.getElementById("logradouro").value = d.logradouro || '';
+            document.getElementById("bairro").value = d.bairro || '';
+            document.getElementById("cidade").value = d.localidade || '';
+            document.getElementById("estado").value = d.uf || '';
+        });
+}
+</script>
 {% endblock %}

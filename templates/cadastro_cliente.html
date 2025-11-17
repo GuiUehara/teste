@@ -7,51 +7,81 @@
 
 <form method="POST" action="{{ url_for('cadastro_cliente') }}" id="formCliente">
 
-  <input type="text" name="nomeCliente" placeholder="Nome completo" required />
+    <input type="text" name="nomeCliente" placeholder="Nome completo" required />
+    <input type="text" name="cpfCliente" placeholder="CPF (somente números)" pattern="\d{11}" required />
+    <label>Data de nascimento:</label>
+    <input type="date" name="dataNascCliente" required />
+    <input type="tel" name="telefoneCliente" placeholder="Telefone" required />
+    <input type="email" name="emailCliente" placeholder="Email" required />
 
-  <input type="text" name="cpfCliente" placeholder="CPF (somente números)" pattern="\d{11}" required />
+    <hr>
+    <h3>Endereço</h3>
+    
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" name="cepCliente" id="cepCliente" placeholder="CEP (somente números)" pattern="\d{8}" required style="flex-grow: 1;" />
+        <button type="button" onclick="consultaCep()">Buscar</button> 
+    </div>
 
-  <label>Data de nascimento:</label>
-  <input type="date" name="dataNascCliente" required />
+    <input type="text" name="logradouroCliente" id="logradouroCliente" placeholder="Logradouro (Rua, Avenida...)" required />
+    <input type="text" name="numeroCliente" placeholder="Número" required />
+    <input type="text" name="complementoCliente" placeholder="Complemento (Opcional)" />
+    <input type="text" name="bairroCliente" id="bairroCliente" placeholder="Bairro" required />
+    <input type="text" name="cidadeCliente" id="cidadeCliente" placeholder="Cidade" required />
+    <input type="text" name="estadoCliente" id="estadoCliente" placeholder="Estado (UF)" maxlength="2" required />
 
-  <input type="tel" name="telefoneCliente" placeholder="Telefone" required />
+    <hr>
+    <h3>CNH</h3>
+    <input type="text" name="cnhCliente" placeholder="Número da CNH" required />
+    <input type="text" name="categoriaCNHCliente" placeholder="Categoria CNH (Ex: B)" maxlength="2" required />
+    <label>Validade da CNH:</label>
+    <input type="date" name="validadeCNHCliente" required />
+    <input type="number" name="tempoHabilitacaoCliente" placeholder="Tempo de habilitação (anos)" min="0" required />
 
-  <input type="email" name="emailCliente" placeholder="Email" required />
-
-  <hr>
-  <h3>Endereço</h3>
-
-  <input type="text" name="logradouroCliente" placeholder="Logradouro (Rua, Avenida...)" required />
-
-  <input type="text" name="numeroCliente" placeholder="Número" required />
-
-  <input type="text" name="complementoCliente" placeholder="Complemento (Opcional)" />
-
-  <input type="text" name="bairroCliente" placeholder="Bairro" required />
-
-  <input type="text" name="cidadeCliente" placeholder="Cidade" required />
-
-  <input type="text" name="estadoCliente" placeholder="Estado (UF)" maxlength="2" required />
-
-  <input type="text" name="cepCliente" placeholder="CEP (somente números)" pattern="\d{8}" required />
-
-  <hr>
-  <h3>CNH</h3>
-
-  <input type="text" name="cnhCliente" placeholder="Número da CNH" required />
-
-  <input type="text" name="categoriaCNHCliente" placeholder="Categoria CNH (Ex: B)" maxlength="2" required />
-
-  <label>Validade da CNH:</label>
-  <input type="date" name="validadeCNHCliente" required />
-
-  <input type="number" name="tempoHabilitacaoCliente" placeholder="Tempo de habilitação (anos)" min="0" required />
-
-  <button type="submit">Registrar Cliente</button>
+    <button type="submit">Registrar Cliente</button>
 
 </form>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/cadastro_cliente.js') }}"></script>
+<script>
+
+
+    // chama a API de CEP
+    function consultaCep() {
+        const cepInput = document.getElementById("cepCliente");
+        const cep = cepInput.value.replace(/\D/g, ''); // remove tudo que não for número
+
+        if (cep.length !== 8) {
+            alert("Por favor, digite um CEP válido com 8 números.");
+            clearFields();
+            return;
+        }
+
+        fetch(`/api/cep/${cep}`)
+            .then(resp => {
+                if (!resp.ok) {
+                    return resp.json().then(errorData => Promise.reject(errorData));
+                }
+                return resp.json();
+            })
+            .then(dados => {
+                if (dados.erro) {
+                    alert(dados.erro);
+                    clearFields();
+                    return;
+                }
+
+                document.getElementById("logradouroCliente").value = dados.logradouro || '';
+                document.getElementById("bairroCliente").value = dados.bairro || '';
+                document.getElementById("cidadeCliente").value = dados.localidade || '';
+                document.getElementById("estadoCliente").value = dados.uf || '';
+            })
+            .catch(error => {
+                const errorMessage = error.erro || "Erro ao consultar o CEP.";
+                alert(errorMessage);
+                clearFields();
+                console.error(error);
+            });
+    }
+</script>
 {% endblock %}

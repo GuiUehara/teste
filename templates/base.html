@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <title>{% block titulo %}Locadora{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+  <meta charset="UTF-8" />
+  <title>{% block titulo %}Locadora{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
 </head>
 <body>
-  <p>Perfil atual: {{ session.perfil }}</p>
+  <p>Perfil atual: {{ session.perfil }}</p>
 
-  <nav>
-    <nav>
+  <nav>
     <a href="{{ url_for('listagem_veiculos') }}">Veículos</a> |
     <a href="{{ url_for('cadastro_cliente') }}">Cadastrar Cliente</a> |
     <a href="{{ url_for('cadastro_veiculo') }}">Cadastrar Veículo</a> |
@@ -23,31 +22,35 @@
       <a href="{{ url_for('login') }}">Login</a> |
       <a href="{{ url_for('cadastro') }}">Cadastro</a> |
     {% endif %}
-      <a href="{{ url_for('pagamento') }}">Pagamento</a>
-      <a href="{{ url_for('lista_clientes') }}">Lista clientes</a> |
-      <a href="{{ url_for('lista_funcionarios') }}">Lista funcionario</a> |
-      <a href="{{ url_for('cadastro_manutencao') }}">Manutencao</a> |
-      <a href="{{ url_for('historico_manutencao') }}">Historico Manutencao</a> |
-      <a href="{{ url_for('historico_multas') }}">Histórico Multa</a> |
-      <a href="{{ url_for('contrato_locacao') }}">Contrato locacao</a> |
-      <a href="{{ url_for('historico_locacao') }}">Histórico locacao</a> |
-
-</nav>
-
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="mensagens">
-      {% for categoria, mensagem in messages %}
-        <li class="{{ categoria }}">{{ mensagem }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+      <a href="{{ url_for('pagamento') }}">Pagamento</a> |
+      <a href="{{ url_for('lista_clientes') }}">Lista clientes</a> |
+      <a href="{{ url_for('lista_funcionarios') }}">Lista funcionario</a> |
+      <a href="{{ url_for('cadastro_manutencao') }}">Manutencao</a> |
+      <a href="{{ url_for('historico_manutencao') }}">Historico Manutencao</a> |
+      <a href="{{ url_for('historico_multas') }}">Histórico Multa</a> |
+      <a href="{{ url_for('contrato_locacao') }}">Contrato locacao</a> |
+      <a href="{{ url_for('historico_locacao') }}">Histórico locacao</a> |
+      <a href="{{ url_for('teste') }}">teste</a> 
+  </nav>
 
 
-  <main>
-    {% block conteudo %}{% endblock %}
-  </main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="mensagens">
+      {% for categoria, mensagem in messages %}
+        <li class="{{ categoria }}">{{ mensagem }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+
+  <main>
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  {# 💡 ADIÇÃO CRÍTICA: O bloco de scripts é adicionado aqui #}
+  {% block scripts %}{% endblock %} 
+
 </body>
 </html>

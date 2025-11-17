@@ -8,13 +8,32 @@ VALOR_MULTA_COMBUSTIVEL_PADRAO = 50.00
 
 def init_locacao(app):
 
+    # CONVERTER DATA PARA O FORMATO CORRETO
     def parse_datetime(valor):
         if not valor or valor == "":
             return None
+
         try:
-            return datetime.strptime(valor, "%Y-%m-%dT%H:%M")
+            # Remove o Z do final (ISO 8601)
+            valor = valor.replace("Z", "")
+
+            # Se vier com milissegundos: 2025-11-02T02:57:00.000
+            if "." in valor:
+                valor = valor.split(".")[0]
+
+            # Troca T por espaço (caso exista)
+            valor = valor.replace("T", " ")
+
+            # Formato final esperado pelo MySQL
+            return datetime.strptime(valor, "%Y-%m-%d %H:%M:%S")
+
         except:
-            raise ValueError(f"Formato inválido: {valor}")
+            # Caso venha sem segundos: 2025-11-02 02:57
+            try:
+                return datetime.strptime(valor, "%Y-%m-%d %H:%M")
+            except:
+                raise ValueError(f"Formato inválido: {valor}")
+
 
 
 
@@ -135,7 +154,15 @@ def init_locacao(app):
 
             valor_diaria = float(dados.get('valor_diaria') or 0)
             dias = max(1, math.ceil((data_devol_prevista - data_retirada).total_seconds() / 86400))
-            valor_total_previsto = round(valor_diaria * dias, 2)
+            
+            # valor base da diária x dias
+            valor_total_previsto = valor_diaria * dias
+
+            # SOMAR opcionais no valor total previsto
+            for o in dados.get('opcionais', []):
+                valor_total_previsto += float(o['valor_diaria']) * int(o['quantidade']) * dias
+            
+            valor_total_previsto = round(valor_total_previsto,2)
 
             # Inserir locação
             sql = """
@@ -159,13 +186,21 @@ def init_locacao(app):
                 cur.execute("UPDATE veiculo SET id_status_veiculo=2 WHERE id_veiculo=%s",(int(dados['id_veiculo']),))
                 conn.commit()
 
-            # --- Inserir opcionais enviados junto com a locação ---
+            # --- Inserir opcionais
             for o in dados.get('opcionais', []):
                 cur.execute("""
-                    INSERT INTO opcional (descricao, valor_diaria, quantidade, id_locacao)
-                    VALUES (%s,%s,%s,%s)
-                """, (o['descricao'], float(o['valor_diaria']), int(o['quantidade']), id_loc))
+                    INSERT INTO opcional (descricao, valor_diaria)
+                    VALUES (%s,%s)
+                """, (o['descricao'], float(o['valor_diaria'])))
+                id_op = cur.lastrowid
             conn.commit()
+
+            # --- Inserir dados na tabela "locacao_opcional"
+            cur.execute("""
+            INSERT INTO locacao_opcional (id_locacao, id_opcional, quantidade)
+            VALUES (%s, %s, %s)
+            """, (id_loc, id_op, int(o['quantidade'])))
+
 
             return jsonify({'mensagem':'Locação cadastrada com sucesso','id_locacao':id_loc}),200
         except Exception as e:
@@ -259,7 +294,22 @@ def init_locacao(app):
                 multa_comb = max(0, dif_tanque) * valor_fracao
 
                 # ---- Valor final ----
-                valor_final = round(dias_usados * valor_diaria + multa_comb, 2)
+                # --- SOMAR valor dos opcionais usados ---
+                cur.execute("""
+                    SELECT o.valor_diaria, lo.quantidade
+                    FROM locacao_opcional lo
+                    JOIN opcional o ON o.id_opcional = lo.id_opcional
+                    WHERE lo.id_locacao = %s
+                """, (id_locacao,))
+                opcs = cur.fetchall()
+
+                valor_opcionais = 0
+                for op in opcs:
+                    valor_opcionais += float(op['valor_diaria']) * int(op['quantidade']) * dias_usados
+
+                # valor final incluindo opcionais + combustível
+                valor_final = round(dias_usados * valor_diaria + multa_comb + valor_opcionais, 2)
+
 
                 cur.execute("""
                     UPDATE locacao SET
@@ -327,80 +377,149 @@ def init_locacao(app):
             cur.close()
             conn.close()
 
-        # --- Listar opcionais de uma locação ---
-    @app.route('/api/opcionais/<int:id_locacao>')
-    def api_listar_opcionais(id_locacao):
+    # --- Listar todos os opcionais (CATÁLOGO) ---
+    @app.route('/api/opcionais', methods=['GET'])
+    def api_listar_opcionais():
         conn = conectar()
         if not conn:
-            return jsonify({'erro':'Erro conexão'}), 500
+            return jsonify({'erro': 'Erro de conexão'}), 500
+
+        try:
+            cur = conn.cursor(dictionary=True)
+            cur.execute("SELECT id_opcional, descricao, valor_diaria FROM opcional")
+            dados = cur.fetchall()
+            return jsonify(dados)
+
+        finally:
+            cur.close()
+            conn.close()
+
+    # --- Listar opcionais de uma locação específica ---
+    @app.route('/api/opcionais/<int:id_locacao>', methods=['GET'])
+    def api_opcionais_da_locacao(id_locacao):
+        conn = conectar()
+        if not conn:
+            return jsonify({'erro': 'Erro de conexão'}), 500
+
         try:
             cur = conn.cursor(dictionary=True)
             cur.execute("""
-                SELECT id_opcional, descricao, valor_diaria, quantidade
-                FROM opcional
-                WHERE id_locacao = %s
+                SELECT
+                    lo.id_locacao_opcional,
+                    o.id_opcional,
+                    o.descricao,
+                    o.valor_diaria,
+                    lo.quantidade
+                FROM locacao_opcional lo
+                JOIN opcional o ON o.id_opcional = lo.id_opcional
+                WHERE lo.id_locacao = %s
             """, (id_locacao,))
-            rows = cur.fetchall()
-            return jsonify(rows)
+
+            return jsonify(cur.fetchall())
+
         finally:
-            cur.close(); conn.close()
+            cur.close()
+            conn.close()
+
 
     # --- Adicionar um opcional ---
     @app.route('/api/opcional', methods=['POST'])
     def api_adicionar_opcional():
         dados = request.get_json()
-        obrig = ['descricao','valor_diaria','quantidade','id_locacao']
+        obrig = ['descricao', 'valor_diaria', 'quantidade', 'id_locacao']
         for campo in obrig:
             if campo not in dados:
                 return jsonify({'erro': f'Campo obrigatório ausente: {campo}'}), 400
+
         conn = conectar()
         if not conn:
-            return jsonify({'erro':'Erro conexão'}), 500
+            return jsonify({'erro': 'Erro de conexão'}), 500
+
         try:
             cur = conn.cursor()
+
+            # cria opcional
             cur.execute("""
-                INSERT INTO opcional (descricao, valor_diaria, quantidade, id_locacao)
-                VALUES (%s,%s,%s,%s)
-            """, (dados['descricao'], float(dados['valor_diaria']), int(dados['quantidade']), int(dados['id_locacao'])))
+                INSERT INTO opcional (descricao, valor_diaria)
+                VALUES (%s, %s)
+            """, (dados['descricao'], float(dados['valor_diaria'])))
+            
+            id_op = cur.lastrowid
+
+            # cria vínculo N:N
+            cur.execute("""
+                INSERT INTO locacao_opcional (id_locacao, id_opcional, quantidade)
+                VALUES (%s, %s, %s)
+            """, (dados['id_locacao'], id_op, dados['quantidade']))
+
             conn.commit()
-            return jsonify({'mensagem':'Opcional adicionado com sucesso','id_opcional': cur.lastrowid})
+            return jsonify({
+                'mensagem': 'Opcional adicionado com sucesso',
+                'id_opcional': id_op
+            })
+
         finally:
-            cur.close(); conn.close()
+            cur.close()
+            conn.close()
+
 
     # --- Atualizar um opcional ---
     @app.route('/api/opcional/<int:id_opcional>', methods=['PUT'])
     def api_atualizar_opcional(id_opcional):
         dados = request.get_json()
-        campos_editar = ['descricao','valor_diaria','quantidade']
-        sets, valores = [], []
+        campos_editar = ['descricao', 'valor_diaria']
+        
+        sets = []
+        valores = []
+
         for c in campos_editar:
             if c in dados:
-                valores.append(dados[c])
                 sets.append(f"{c}=%s")
+                valores.append(dados[c])
+
         if not sets:
-            return jsonify({'mensagem':'Nenhum campo para atualizar'}), 200
+            return jsonify({'mensagem': 'Nenhum campo para atualizar'}), 400
+
         valores.append(id_opcional)
+
         conn = conectar()
         if not conn:
-            return jsonify({'erro':'Erro conexão'}), 500
+            return jsonify({'erro': 'Erro de conexão'}), 500
+
         try:
             cur = conn.cursor()
-            cur.execute("UPDATE opcional SET "+",".join(sets)+" WHERE id_opcional=%s", tuple(valores))
+            cur.execute(
+                "UPDATE opcional SET " + ",".join(sets) + " WHERE id_opcional=%s",
+                tuple(valores)
+            )
             conn.commit()
-            return jsonify({'mensagem':'Opcional atualizado com sucesso'})
+            return jsonify({'mensagem': 'Opcional atualizado com sucesso'})
+
         finally:
-            cur.close(); conn.close()
+            cur.close()
+            conn.close()
+
 
     # --- Remover um opcional ---
     @app.route('/api/opcional/<int:id_opcional>', methods=['DELETE'])
     def api_remover_opcional(id_opcional):
         conn = conectar()
         if not conn:
-            return jsonify({'erro':'Erro conexão'}), 500
+            return jsonify({'erro': 'Erro de conexão'}), 500
+
         try:
             cur = conn.cursor()
+
+            # remove vínculos primeiro
+            cur.execute("DELETE FROM locacao_opcional WHERE id_opcional=%s", (id_opcional,))
+
+            # remove o opcional
             cur.execute("DELETE FROM opcional WHERE id_opcional=%s", (id_opcional,))
+
             conn.commit()
-            return jsonify({'mensagem':'Opcional removido com sucesso'})
+            return jsonify({'mensagem': 'Opcional removido com sucesso'})
+
         finally:
-            cur.close(); conn.close()
+            cur.close()
+            conn.close()
+

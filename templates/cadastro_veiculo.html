@@ -7,6 +7,7 @@
 
 <form method="POST" action="{{ url_for('cadastro_veiculo') }}" id="formVeiculo">
 
+  <!-- Campos do veículo -->
   <label for="placaVeiculo">Placa</label>
   <input type="text" name="placaVeiculo" id="placaVeiculo" required />
 
@@ -68,28 +69,75 @@
     {% endfor %}
   </select>
 
-<label for="categoria">Categoria</label>
-<input type="text" name="categoria" id="categoria" required />
-
- <label for="modeloVeiculo">Modelo</label>
+  <label for="modeloVeiculo">Modelo</label>
   <select name="modeloVeiculo" id="modeloVeiculo" required>
-    <option value="">Selecione</option>
-    {% for mod in modelos %}
-      <option value="{{ mod[0] }}">{{ mod[1] }}</option>
-    {% endfor %}
+    <option value="">Selecione uma marca</option>
   </select>
 
+<label for="categoria">Categoria</label>
+<input type="text" name="categoria" id="categoria" readonly placeholder="Seleciona um modelo para ver a categoria" />
+
+
   <label for="status">Status</label>
-   <select name="status" id="status" required>
+  <select name="status" id="status" required>
     <option value="">Selecione</option>
     {% for s in status %}
       <option value="{{ s[0] }}">{{ s[1] }}</option>
     {% endfor %}
   </select>
 
+  <label for="companhiaSeguro">Companhia Seguro</label>
+  <select name="companhiaSeguro" id="companhiaSeguro">
+    <option value="">Selecione</option>
+    {% for c in seguros %}
+      <option value="{{ c[0] }}">{{ c[1] }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="vencimentoSeguro">Vencimento Seguro</label>
+  <input type="date" name="vencimentoSeguro" id="vencimentoSeguro"/>
+
 
   <button type="submit">Registrar Veículo</button>
-
 </form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const selectMarca = document.getElementById("marca");
+    const selectModelo = document.getElementById("modeloVeiculo");
+    const inputCategoria = document.getElementById("categoria");
+
+    // Ao mudar a marca, carrega os modelos correspondentes
+    selectMarca.addEventListener("change", e => {
+        const marcaId = e.target.value;
+        selectModelo.innerHTML = '<option value="">Selecione um modelo</option>';
+        inputCategoria.value = ""; // Limpa categoria
+
+        if (!marcaId) return;
+
+        fetch(`/api/modelos/${marcaId}`)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(m => {
+                    const option = document.createElement("option");
+                    option.value = m.id;
+                    option.textContent = m.nome;
+                    option.setAttribute("data-categoria", m.id_categoria_nome); // vamos enviar o nome da categoria na API
+                    selectModelo.appendChild(option);
+                });
+            });
+    });
+
+    // Ao mudar o modelo, preenche automaticamente a categoria
+    selectModelo.addEventListener("change", e => {
+        const selected = e.target.selectedOptions[0];
+        const categoriaNome = selected?.getAttribute("data-categoria");
+        inputCategoria.value = categoriaNome || "";
+    });
+});
+</script>
 
 {% endblock %}

@@ -3,6 +3,9 @@ from db import conectar
 
 def init_funcionarios(app):
 
+    # ==========================
+    #   CADASTRAR FUNCIONÁRIO
+    # ==========================
     @app.route("/cadastro_funcionario", methods=["GET", "POST"])
     def cadastro_funcionario():
 
@@ -55,6 +58,13 @@ def init_funcionarios(app):
 
             id_cargo = cargo_tupla[0]
 
+            # INSERE LOGIN DO USUÁRIO
+            cursor.execute("""
+                INSERT INTO usuario (email, senha, perfil)
+                VALUES (%s, %s, %s)
+            """, (email, senha, cargo))
+            id_usuario = cursor.lastrowid
+
             # INSERE ENDEREÇO
             cursor.execute("""
                 INSERT INTO endereco (logradouro, numero, complemento, bairro, cidade, estado, cep)
@@ -62,17 +72,11 @@ def init_funcionarios(app):
             """, (logradouro, numero, complemento, bairro, cidade, estado, cep))
             id_endereco = cursor.lastrowid
 
-            # INSERE FUNCIONÁRIO
+            # INSERE FUNCIONÁRIO (SEM EMAIL E SENHA)
             cursor.execute("""
-                INSERT INTO funcionario (nome, cpf, rg, data_nascimento, email, senha, id_cargo, id_endereco)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (nome, cpf, rg, data_nasc, email, senha, id_cargo, id_endereco))
-
-            # INSERE USUÁRIO PARA LOGIN
-            cursor.execute("""
-                INSERT INTO usuario (email, senha, perfil)
-                VALUES (%s, %s, %s)
-            """, (email, senha, cargo))
+                INSERT INTO funcionario (id_usuario, nome, cpf, rg, data_nascimento, id_cargo, id_endereco)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (id_usuario, nome, cpf, rg, data_nasc, id_cargo, id_endereco))
 
             conexao.commit()
             cursor.close()
@@ -82,7 +86,10 @@ def init_funcionarios(app):
             return redirect(url_for("cadastro_funcionario"))
 
         return render_template("cadastro_funcionario.html")
-    
+
+    # ==========================
+    #   LISTA DE FUNCIONÁRIOS
+    # ==========================
     @app.route("/lista_funcionarios")
     def lista_funcionarios():
         if "usuario_logado" not in session:
@@ -99,17 +106,19 @@ def init_funcionarios(app):
 
         if len(termo) >= 3:
             sql = """
-                SELECT f.id_usuario, f.nome, f.cpf, f.email, c.nome_cargo
+                SELECT f.id_usuario, f.nome, f.cpf, u.email, c.nome_cargo
                 FROM funcionario f
+                JOIN usuario u ON f.id_usuario = u.id_usuario
                 JOIN cargo c ON f.id_cargo = c.id_cargo
-                WHERE f.nome LIKE %s OR f.cpf LIKE %s OR f.email LIKE %s
+                WHERE f.nome LIKE %s OR f.cpf LIKE %s OR u.email LIKE %s
             """
             like = f"%{termo}%"
             cursor.execute(sql, (like, like, like))
         else:
             sql = """
-                SELECT f.id_usuario, f.nome, f.cpf, f.email, c.nome_cargo
+                SELECT f.id_usuario, f.nome, f.cpf, u.email, c.nome_cargo
                 FROM funcionario f
+                JOIN usuario u ON f.id_usuario = u.id_usuario
                 JOIN cargo c ON f.id_cargo = c.id_cargo
             """
             cursor.execute(sql)
@@ -120,7 +129,9 @@ def init_funcionarios(app):
 
         return render_template("lista_funcionarios.html", funcionarios=funcionarios, busca=termo)
 
-    # --- EDITAR FUNCIONÁRIO ---
+    # ==========================
+    #   EDITAR FUNCIONÁRIO
+    # ==========================
     @app.route("/editar_funcionario/<int:id_usuario>", methods=["GET", "POST"])
     def editar_funcionario(id_usuario):
         if "usuario_logado" not in session:
@@ -133,77 +144,101 @@ def init_funcionarios(app):
         conexao = conectar()
         cursor = conexao.cursor()
 
-        if request.method == "POST":
-            # Dados pessoais
-            nome = request.form.get("nomeFuncionario")
-            cpf = request.form.get("cpfFuncionario")
-            rg = request.form.get("rgFuncionario")
-            cargo = request.form.get("cargoFuncionario")
-            data_nasc = request.form.get("dataNascFuncionario")
-            email = request.form.get("emailFuncionario")
-            senha = request.form.get("senhaFuncionario")
-
-            # Endereço
-            logradouro = request.form.get("logradouro")
-            numero = request.form.get("numero")
-            complemento = request.form.get("complemento")
-            bairro = request.form.get("bairro")
-            cidade = request.form.get("cidade")
-            estado = request.form.get("estado")
-            cep = request.form.get("cep")
-
-            # Busca id_cargo
-            cursor.execute("SELECT id_cargo FROM cargo WHERE nome_cargo = %s", (cargo,))
-            cargo_tupla = cursor.fetchone()
-            if cargo_tupla is None:
-                flash("Cargo inválido!", "error")
-                return redirect(url_for("editar_funcionario", id_usuario=id_usuario))
-            id_cargo = cargo_tupla[0]
-
-            # Busca id_endereco do funcionário
-            cursor.execute("SELECT id_endereco FROM funcionario WHERE id_usuario=%s", (id_usuario,))
-            id_endereco = cursor.fetchone()[0]
-
-            # Atualiza endereço
+        # ========== GET ==========
+        if request.method == "GET":
             cursor.execute("""
-                UPDATE endereco SET logradouro=%s, numero=%s, complemento=%s,
-                                    bairro=%s, cidade=%s, estado=%s, cep=%s
-                WHERE id_endereco=%s
-            """, (logradouro, numero, complemento, bairro, cidade, estado, cep, id_endereco))
+                SELECT f.nome, f.cpf, f.rg, f.data_nascimento,
+                    u.email,               -- <-- email correto aqui!
+                    c.nome_cargo,
+                    e.logradouro, e.numero, e.complemento,
+                    e.bairro, e.cidade, e.estado, e.cep
+                FROM funcionario f
+                JOIN cargo c ON f.id_cargo = c.id_cargo
+                JOIN endereco e ON f.id_endereco = e.id_endereco
+                JOIN usuario u ON u.id_usuario = f.id_usuario   -- <-- ligação correta
+                WHERE f.id_usuario=%s
+            """, (id_usuario,))
 
-            # Atualiza funcionário
-            cursor.execute("""
-                UPDATE funcionario SET nome=%s, cpf=%s, rg=%s, data_nascimento=%s,
-                                      email=%s, senha=%s, id_cargo=%s
-                WHERE id_usuario=%s
-            """, (nome, cpf, rg, data_nasc, email, senha, id_cargo, id_usuario))
+            funcionario = cursor.fetchone()
 
-            conexao.commit()
             cursor.close()
             conexao.close()
 
-            flash("Funcionário atualizado com sucesso!", "success")
-            return redirect(url_for("lista_funcionarios"))
+            if not funcionario:
+                abort(404)
 
-        # GET - preenche formulário
+            return render_template("editar_funcionario.html", funcionario=funcionario, id_usuario=id_usuario)
+
+        # ========== POST ==========
+        nome = request.form.get("nomeFuncionario")
+        cpf = request.form.get("cpfFuncionario")
+        rg = request.form.get("rgFuncionario")
+        cargo = request.form.get("cargoFuncionario")
+        data_nasc = request.form.get("dataNascFuncionario")
+        email_novo = request.form.get("emailFuncionario")
+        nova_senha = request.form.get("senhaFuncionario")
+
+        logradouro = request.form.get("logradouro")
+        numero = request.form.get("numero")
+        complemento = request.form.get("complemento")
+        bairro = request.form.get("bairro")
+        cidade = request.form.get("cidade")
+        estado = request.form.get("estado")
+        cep = request.form.get("cep")
+
+        # ID cargo
+        cursor.execute("SELECT id_cargo FROM cargo WHERE nome_cargo=%s", (cargo,))
+        cargo_res = cursor.fetchone()
+        id_cargo = cargo_res[0]
+
+        # Pega id_endereco
+        cursor.execute("SELECT id_endereco FROM funcionario WHERE id_usuario=%s", (id_usuario,))
+        id_endereco = cursor.fetchone()[0]
+
+        # Email atual
+        cursor.execute("SELECT email FROM usuario WHERE id_usuario=%s", (id_usuario,))
+        email_atual = cursor.fetchone()[0]
+
+        # Email duplicado?
+        if email_novo != email_atual:
+            cursor.execute("""
+                SELECT id_usuario FROM usuario
+                WHERE email=%s AND id_usuario!=%s
+            """, (email_novo, id_usuario))
+            if cursor.fetchone():
+                flash("Este e-mail já está sendo usado por outro usuário!", "error")
+                return redirect(url_for("editar_funcionario", id_usuario=id_usuario))
+
+            cursor.execute("UPDATE usuario SET email=%s WHERE id_usuario=%s", (email_novo, id_usuario))
+
+        # Atualizar senha
+        if nova_senha and nova_senha.strip():
+            cursor.execute("UPDATE usuario SET senha=%s WHERE id_usuario=%s", (nova_senha, id_usuario))
+
+        # Atualiza endereço
         cursor.execute("""
-            SELECT f.nome, f.cpf, f.rg, f.data_nascimento, f.email, c.nome_cargo,
-                   e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep
-            FROM funcionario f
-            JOIN cargo c ON f.id_cargo = c.id_cargo
-            JOIN endereco e ON f.id_endereco = e.id_endereco
-            WHERE f.id_usuario=%s
-        """, (id_usuario,))
-        funcionario = cursor.fetchone()
+            UPDATE endereco SET logradouro=%s, numero=%s, complemento=%s,
+                                bairro=%s, cidade=%s, estado=%s, cep=%s
+            WHERE id_endereco=%s
+        """, (logradouro, numero, complemento, bairro, cidade, estado, cep, id_endereco))
+
+        # Atualiza funcionário
+        cursor.execute("""
+            UPDATE funcionario SET nome=%s, cpf=%s, rg=%s, data_nascimento=%s,
+                                  id_cargo=%s
+            WHERE id_usuario=%s
+        """, (nome, cpf, rg, data_nasc, id_cargo, id_usuario))
+
+        conexao.commit()
         cursor.close()
         conexao.close()
 
-        if not funcionario:
-            abort(404)
+        flash("Funcionário atualizado com sucesso!", "success")
+        return redirect(url_for("lista_funcionarios"))
 
-        return render_template("editar_funcionario.html", funcionario=funcionario, id_usuario=id_usuario)
-
-    # --- DELETAR FUNCIONÁRIO ---
+    # ==========================
+    #   DELETAR FUNCIONÁRIO
+    # ==========================
     @app.route("/deletar_funcionario/<int:id_usuario>", methods=["POST", "GET"])
     def deletar_funcionario(id_usuario):
         if "usuario_logado" not in session:
@@ -216,15 +251,20 @@ def init_funcionarios(app):
         conexao = conectar()
         cursor = conexao.cursor()
 
-        # Pega id_endereco
+        # Pegando id_endereco
         cursor.execute("SELECT id_endereco FROM funcionario WHERE id_usuario=%s", (id_usuario,))
-        result = cursor.fetchone()
-        if not result:
+        row = cursor.fetchone()
+        if not row:
             abort(404)
-        id_endereco = result[0]
+        id_endereco = row[0]
 
-        # Deleta funcionário e endereço
+        # Deleta funcionário
         cursor.execute("DELETE FROM funcionario WHERE id_usuario=%s", (id_usuario,))
+
+        # Deleta usuário (login)
+        cursor.execute("DELETE FROM usuario WHERE id_usuario=%s", (id_usuario,))
+
+        # Deleta endereço
         cursor.execute("DELETE FROM endereco WHERE id_endereco=%s", (id_endereco,))
 
         conexao.commit()
@@ -233,4 +273,3 @@ def init_funcionarios(app):
 
         flash("Funcionário removido com sucesso!", "success")
         return redirect(url_for("lista_funcionarios"))
-
