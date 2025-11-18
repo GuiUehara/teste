@@ -110,15 +110,28 @@ def init_funcionarios(app):
         if len(busca) >= 3:
             like = f"%{busca}%"
             cursor.execute("""
-                SELECT f.id_usuario, f.nome, f.cpf, c.nome_cargo AS cargo
+                SELECT 
+                    f.id_funcionario,
+                    f.id_usuario,
+                    f.nome,
+                    f.cpf,
+                    c.nome_cargo AS cargo
                 FROM funcionario f
                 JOIN cargo c ON f.id_cargo = c.id_cargo
                 JOIN usuario u ON f.id_usuario = u.id_usuario
-                WHERE f.nome LIKE %s OR f.cpf LIKE %s OR u.email LIKE %s
+                WHERE f.nome LIKE %s 
+                    OR f.cpf LIKE %s 
+                    OR u.email LIKE %s
             """, (like, like, like))
+
         else:
             cursor.execute("""
-                SELECT f.id_usuario, f.nome, f.cpf, c.nome_cargo AS cargo
+                SELECT 
+                    f.id_funcionario,
+                    f.id_usuario,
+                    f.nome,
+                    f.cpf,
+                    c.nome_cargo AS cargo
                 FROM funcionario f
                 JOIN cargo c ON f.id_cargo = c.id_cargo
             """)
@@ -129,6 +142,7 @@ def init_funcionarios(app):
         conexao.close()
 
         return render_template("lista_funcionarios.html", funcionarios=funcionarios, busca=busca)
+
 
     # ==========================
     #   EDITAR FUNCIONÁRIO
@@ -147,6 +161,8 @@ def init_funcionarios(app):
             
             cursor.execute("""
                 SELECT 
+                    f.id_funcionario,
+                    f.id_endereco,
                     f.nome, f.cpf, f.rg, f.data_nascimento,
                     u.email AS email_usuario,
                     c.nome_cargo AS cargo,
@@ -194,7 +210,7 @@ def init_funcionarios(app):
         cursor.execute("SELECT id_cargo FROM cargo WHERE nome_cargo=%s", (cargo,))
         id_cargo = cursor.fetchone()["id_cargo"]
 
-        # ID ENDEREÇO
+        # Buscar FK endereço
         cursor.execute("SELECT id_endereco FROM funcionario WHERE id_usuario=%s", (id_usuario,))
         id_endereco = cursor.fetchone()["id_endereco"]
 
@@ -230,18 +246,12 @@ def init_funcionarios(app):
             WHERE id_usuario=%s
         """, (nome, cpf, rg, data_nasc, id_cargo, id_usuario))
 
-        # Buscar nome do cargo
-        cursor.execute("SELECT nome_cargo FROM cargo WHERE id_cargo=%s", (id_cargo,))
-        cargo_nome = cursor.fetchone()["nome_cargo"]
-
-        # Atualizar perfil na tabela usuario
+        # Atualizar perfil de usuário
         cursor.execute("""
             UPDATE usuario
             SET perfil=%s
             WHERE id_usuario=%s
-        """, (cargo_nome, id_usuario))
-
-
+        """, (cargo, id_usuario))
 
         conexao.commit()
         cursor.close()
@@ -262,7 +272,7 @@ def init_funcionarios(app):
         conexao = conectar()
         cursor = conexao.cursor(dictionary=True)
 
-        cursor.execute("SELECT id_endereco FROM funcionario WHERE id_usuario=%s", (id_usuario,))
+        cursor.execute("SELECT id_endereco, id_funcionario FROM funcionario WHERE id_usuario=%s", (id_usuario,))
         row = cursor.fetchone()
         if not row:
             abort(404)
@@ -279,3 +289,4 @@ def init_funcionarios(app):
 
         flash("Funcionário removido com sucesso!", "success")
         return redirect(url_for("lista_funcionarios"))
+

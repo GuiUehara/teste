@@ -9,37 +9,132 @@
 
   <h3>Dados Pessoais</h3>
 
-  <input type="text" name="nomeFuncionario" value="{{ funcionario.nome }}" required>
-  <input type="text" name="cpfFuncionario" value="{{ funcionario.cpf }}" required>
-  <input type="text" name="rgFuncionario" value="{{ funcionario.rg }}" required>
-  <input type="date" name="dataNascFuncionario" value="{{ funcionario.data_nascimento }}" required>
+  <input
+    type="text"
+    name="nomeFuncionario"
+    value="{{ funcionario.nome }}"
+    placeholder="Nome completo"
+    required
+  >
 
-  <!-- Email agora vem da tabela usuario -->
-  <input type="email" name="emailUsuario" value="{{ funcionario.email_usuario }}" required>
+  <input
+    type="text"
+    name="cpfFuncionario"
+    value="{{ funcionario.cpf }}"
+    placeholder="CPF"
+    pattern="\d{11}"
+    title="Digite 11 números"
+    required
+  >
+
+  <input
+    type="text"
+    name="rgFuncionario"
+    value="{{ funcionario.rg }}"
+    placeholder="RG"
+    required
+  >
+
+  <input
+    type="date"
+    name="dataNascFuncionario"
+    value="{{ funcionario.data_nascimento }}"
+    required
+  >
+
+  <!-- Email vem da tabela usuário -->
+  <input
+    type="email"
+    name="emailUsuario"
+    value="{{ funcionario.email_usuario }}"
+    placeholder="Email"
+    required
+  >
 
   <label>Cargo:</label>
   <select name="cargoFuncionario" required>
-    <option value="Atendente" {% if funcionario.cargo=='Atendente' %}selected{% endif %}>Atendente</option>
-    <option value="Gerente" {% if funcionario.cargo=='Gerente' %}selected{% endif %}>Gerente</option>
-    <option value="Mecânico" {% if funcionario.cargo=='Mecânico' %}selected{% endif %}>Mecânico</option>
+    <option value="Atendente" {% if funcionario.cargo == 'Atendente' %}selected{% endif %}>Atendente</option>
+    <option value="Gerente" {% if funcionario.cargo == 'Gerente' %}selected{% endif %}>Gerente</option>
+    <option value="Mecânico" {% if funcionario.cargo == 'Mecânico' %}selected{% endif %}>Mecânico</option>
   </select>
 
-  <!-- SENHA pertence ao usuário -->
-  <input type="password" name="senhaUsuario" placeholder="Nova senha (opcional)">
+  <!-- SENHA é opcional -->
+  <input
+    type="password"
+    name="senhaUsuario"
+    placeholder="Nova senha (opcional)"
+  >
 
   <h3>Endereço</h3>
 
   <div style="display:flex; gap:10px; align-items:center;">
-    <input type="text" name="cep" id="cep" value="{{ funcionario.cep }}" required style="flex-grow:1;">
+    <input
+      type="text"
+      name="cep"
+      id="cep"
+      value="{{ funcionario.cep }}"
+      placeholder="CEP"
+      pattern="\d{8}"
+      maxlength="8"
+      required
+      style="flex-grow:1;"
+    >
     <button type="button" onclick="consultaCep()">Buscar</button>
   </div>
 
-  <input type="text" name="logradouro" id="logradouro" value="{{ funcionario.logradouro }}" required>
-  <input type="text" name="numero" id="numero" value="{{ funcionario.numero }}" required>
-  <input type="text" name="complemento" id="complemento" value="{{ funcionario.complemento }}">
-  <input type="text" name="bairro" id="bairro" value="{{ funcionario.bairro }}" required>
-  <input type="text" name="cidade" id="cidade" value="{{ funcionario.cidade }}" required>
-  <input type="text" name="estado" id="estado" value="{{ funcionario.estado }}" maxlength="2" required>
+  <input
+    type="text"
+    name="logradouro"
+    id="logradouro"
+    value="{{ funcionario.logradouro }}"
+    placeholder="Logradouro"
+    required
+  >
+
+  <input
+    type="text"
+    name="numero"
+    id="numero"
+    value="{{ funcionario.numero }}"
+    placeholder="Número"
+    required
+  >
+
+  <input
+    type="text"
+    name="complemento"
+    id="complemento"
+    value="{{ funcionario.complemento }}"
+    placeholder="Complemento"
+  >
+
+  <input
+    type="text"
+    name="bairro"
+    id="bairro"
+    value="{{ funcionario.bairro }}"
+    placeholder="Bairro"
+    required
+  >
+
+  <input
+    type="text"
+    name="cidade"
+    id="cidade"
+    value="{{ funcionario.cidade }}"
+    placeholder="Cidade"
+    required
+  >
+
+  <input
+    type="text"
+    name="estado"
+    id="estado"
+    value="{{ funcionario.estado }}"
+    placeholder="UF"
+    maxlength="2"
+    required
+  >
 
   <button type="submit">Atualizar Funcionário</button>
 </form>
@@ -49,17 +144,26 @@
 <script>
 function consultaCep() {
     const cep = document.getElementById("cep").value.replace(/\D/g, '');
-    if (cep.length !== 8) return alert("CEP inválido.");
+
+    if (cep.length !== 8) {
+        alert("CEP inválido. Digite 8 números.");
+        return;
+    }
 
     fetch(`/api/cep/${cep}`)
-        .then(r => r.json())
-        .then(d => {
-            if (d.erro) return alert("CEP não encontrado.");
-            document.getElementById("logradouro").value = d.logradouro || '';
-            document.getElementById("bairro").value = d.bairro || '';
-            document.getElementById("cidade").value = d.localidade || '';
-            document.getElementById("estado").value = d.uf || '';
-        });
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro) {
+                alert("CEP não encontrado.");
+                return;
+            }
+
+            document.getElementById("logradouro").value = data.logradouro || '';
+            document.getElementById("bairro").value = data.bairro || '';
+            document.getElementById("cidade").value = data.localidade || '';
+            document.getElementById("estado").value = data.uf || '';
+        })
+        .catch(() => alert("Erro ao consultar o CEP."));
 }
 </script>
 {% endblock %}

@@ -9,29 +9,38 @@
 
   <h3>Dados pessoais</h3>
   <input type="text" name="nomeFuncionario" placeholder="Nome completo" required>
-  <input type="text" name="cpfFuncionario" placeholder="CPF" required>
+  <input type="text" name="cpfFuncionario" placeholder="CPF" pattern="\d{11}" title="Digite 11 números" required>
   <input type="text" name="rgFuncionario" placeholder="RG" required>
 
-  <label>Cargo:</label>
-  <select name="cargoFuncionario" required>
+  <label for="cargoFuncionario">Cargo:</label>
+  <select name="cargoFuncionario" id="cargoFuncionario" required>
     <option value="">Selecione</option>
     <option value="Atendente">Atendente</option>
     <option value="Gerente">Gerente</option>
     <option value="Mecânico">Mecânico</option>
   </select>
 
-  <label>Data de nascimento:</label>
-  <input type="date" name="dataNascFuncionario" required>
+  <label for="dataNascFuncionario">Data de nascimento:</label>
+  <input type="date" name="dataNascFuncionario" id="dataNascFuncionario" required>
 
-  <!-- Email e senha ficam na tabela de USUÁRIO -->
+  <!-- Email e senha são da tabela usuário -->
   <input type="email" name="emailUsuario" placeholder="Email" required>
-  <input type="password" name="senhaUsuario" placeholder="Senha" required>
+  <input type="password" name="senhaUsuario" placeholder="Senha" minlength="4" required>
 
   <h3>Endereço</h3>
 
   <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" name="cep" id="cep" placeholder="CEP (somente números)" pattern="\d{8}" required style="flex-grow: 1;" />
-        <button type="button" onclick="consultaCep()">Buscar</button> 
+    <input
+      type="text"
+      name="cep"
+      id="cep"
+      placeholder="CEP (somente números)"
+      pattern="\d{8}"
+      maxlength="8"
+      required
+      style="flex-grow: 1;"
+    />
+    <button type="button" onclick="consultaCep()">Buscar</button>
   </div>
 
   <input type="text" name="logradouro" id="logradouro" placeholder="Logradouro" required>
@@ -49,17 +58,26 @@
 <script>
 function consultaCep() {
     const cep = document.getElementById("cep").value.replace(/\D/g, '');
-    if (cep.length !== 8) return alert("CEP inválido.");
+
+    if (cep.length !== 8) {
+        alert("CEP inválido. Digite 8 números.");
+        return;
+    }
 
     fetch(`/api/cep/${cep}`)
-        .then(r => r.json())
-        .then(d => {
-            if (d.erro) return alert("CEP não encontrado.");
-            document.getElementById("logradouro").value = d.logradouro || '';
-            document.getElementById("bairro").value = d.bairro || '';
-            document.getElementById("cidade").value = d.localidade || '';
-            document.getElementById("estado").value = d.uf || '';
-        });
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro) {
+                alert("CEP não encontrado.");
+                return;
+            }
+
+            document.getElementById("logradouro").value = data.logradouro || '';
+            document.getElementById("bairro").value = data.bairro || '';
+            document.getElementById("cidade").value = data.localidade || '';
+            document.getElementById("estado").value = data.uf || '';
+        })
+        .catch(() => alert("Erro ao buscar CEP."));
 }
 </script>
 {% endblock %}

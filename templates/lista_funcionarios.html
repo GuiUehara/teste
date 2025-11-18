@@ -6,38 +6,54 @@
 <h2>Funcionários Cadastrados</h2>
 
 <form method="GET" action="{{ url_for('lista_funcionarios') }}">
-    <input type="text" name="busca" placeholder="Buscar (mínimo 3 letras)" value="{{ busca }}">
+    <input
+        type="text"
+        name="busca"
+        placeholder="Buscar (mínimo 3 letras)"
+        value="{{ busca }}"
+    >
     <button type="submit">Buscar</button>
 </form>
 
 <table>
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>CPF</th>
-      <th>Cargo</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Cargo</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
 
-  <tbody>
-    {% for f in funcionarios %}
-    <tr>
-      <td>{{ f.nome }}</td>
-      <td>{{ f.cpf }}</td>
-      <td>{{ f.cargo }}</td>
-      <td>
-        <a href="{{ url_for('editar_funcionario', id_usuario=f.id_usuario) }}">&#9998;</a>
-        &nbsp;
-        <a href="{{ url_for('deletar_funcionario', id_usuario=f.id_usuario) }}" onclick="return confirm('Deseja realmente deletar?');">&#10060;</a>
-      </td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="4">Nenhum funcionário encontrado.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
+    <tbody>
+        {% for f in funcionarios %}
+        <tr>
+            <td>{{ f.nome }}</td>
+            <td>{{ f.cpf }}</td>
+            <td>{{ f.cargo }}</td>
+            <td>
+                <td>
+                <a href="{{ url_for('editar_funcionario', id_usuario=f.id_usuario) }}">✎ Editar</a>
+            </td>
+
+                &nbsp;
+
+                <!-- Ícone de deletar -->
+                <a title="Excluir"
+                   href="{{ url_for('deletar_funcionario', id_usuario=f.id_usuario) }}"
+                   onclick="return confirm('Deseja realmente deletar este funcionário?');">
+                    &#10060;
+                </a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 10px;">
+                Nenhum funcionário encontrado.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 {% endblock %}
