@@ -1,422 +1,127 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8">
-  <title>Histórico de Locações</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Locações</title>
+    <!-- Inclui Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuração de Fonte Padrão */
+        html { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 p-6">
+<body class="bg-gray-100 min-h-screen p-4 sm:p-8">
 
-  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Histórico de Locações</h1>
-    <a href="/contrato_locacao" class="text-blue-600">Voltar ao cadastro</a>
+    <div class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
+        
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 pb-2">
+            Histórico de Locações
+        </h1>
 
-    <!-- TABELA -->
-    <table class="w-full mt-4 border-collapse">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="p-2">ID</th>
-          <th>Cliente</th>
-          <th>Veículo</th>
-          <th>Status</th>
-          <th>Retirada</th>
-          <th>Previsto</th>
-          <th>Final</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
-    <!-- MODAL EDITAR -->
-    <div id="modal" class="hidden fixed inset-0 flex items-start justify-center p-6">
-      <div class="bg-white rounded shadow max-w-4xl w-full p-6 overflow-auto" style="max-height:90vh;">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">Editar Locação <span id="editId"></span></h2>
-          <button onclick="fecharModal()" class="text-gray-600">Fechar ✕</button>
+        <!-- Tabela Responsiva para Histórico -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Veículo (Placa - Modelo)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saída</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prevista</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chegada Real</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="locacao-body" class="bg-white divide-y divide-gray-200">
+                    <!-- Linhas de locação serão inseridas aqui via JavaScript -->
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-gray-500">
+                            Carregando histórico...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm">Cliente</label>
-            <input id="edit_cliente" class="border p-2 w-full" disabled>
-          </div>
+        <!-- Área de Mensagens -->
+        <div id="message-area" class="mt-6"></div>
 
-          <div>
-            <label class="block text-sm">Status</label>
-            <select id="edit_status" class="border p-2 w-full">
-              <option>Reserva</option>
-              <option>Locado</option>
-              <option>Chegada</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm">Veículo</label>
-            <input id="edit_veiculo" class="border p-2 w-full" disabled>
-          </div>
-
-          <div>
-            <label class="block text-sm">Caução (R$)</label>
-            <input id="edit_caucao" class="border p-2 w-full" type="number" step="0.01">
-          </div>
-
-          <div>
-            <label class="block text-sm">Data Retirada</label>
-            <input id="edit_data_retirada" type="datetime-local" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">Data Prevista</label>
-            <input id="edit_data_prevista" type="datetime-local" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">Data Devolução Real</label>
-            <input id="edit_data_real" type="datetime-local" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">Valor Final (R$)</label>
-            <input id="edit_valor_final" type="number" step="0.01" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">KM Retirada</label>
-            <input id="edit_km_retirada" type="number" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">KM Devolução</label>
-            <input id="edit_km_devolucao" type="number" class="border p-2 w-full">
-          </div>
-
-          <div>
-            <label class="block text-sm">Tanque Saída</label>
-            <select id="edit_tanque_saida" class="border p-2 w-full">
-              <option value="">--</option><option>8</option><option>7</option><option>6</option><option>5</option>
-              <option>4</option><option>3</option><option>2</option><option>1</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm">Tanque Chegada</label>
-            <select id="edit_tanque_chegada" class="border p-2 w-full">
-              <option value="">--</option><option>8</option><option>7</option><option>6</option><option>5</option>
-              <option>4</option><option>3</option><option>2</option><option>1</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Opcionais -->
-        <div class="mt-6 border-t pt-4">
-          <h3 class="font-semibold mb-2">Opcionais vinculados</h3>
-
-          <table class="w-full table-auto mb-3">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-2 border">Descrição</th>
-                <th class="p-2 border">Valor/Dia</th>
-                <th class="p-2 border">Qtd</th>
-                <th class="p-2 border">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaOpcionais"></tbody>
-          </table>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-            <div>
-              <label class="block text-sm">Selecionar opcional</label>
-              <select id="selectCatalogo" class="border p-2 w-full">
-                <option value="">Carregando...</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm">Quantidade</label>
-              <input id="selectQuantidade" type="number" min="1" step="1" class="border p-2 w-full" value="1">
-            </div>
-
-            <div>
-              <button id="btnAddOpcional" class="bg-green-600 text-white p-2 rounded w-full">Adicionar opcional</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 flex gap-3">
-          <button id="btnSalvarEdicao" class="bg-blue-600 text-white px-4 py-2 rounded">Salvar alterações</button>
-          <button onclick="fecharModal()" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-<script>
-/*
-  Histórico simplificado:
-  - lista locações via GET /api/locacoes
-  - abre modal com dados da locação (pega do array já carregado)
-  - lista opcionais vinculados via GET /api/opcionais/<id_locacao>  <-- você confirmou essa rota
-  - carrega catálogo de opcionais via /api/opcionais_catalogo (se existir) OU /api/opcionais (fallback)
-  - adicionar opcional -> POST /api/opcional {descricao, valor_diaria, quantidade, id_locacao}
-  - remover opcional -> DELETE /api/opcional/<id_opcional>
-*/
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHistorico();
+        });
 
-let locacoes = [];
-let idAtual = null;
+        // Função para determinar a classe de cor com base no status
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Reserva':
+                    return 'bg-blue-100 text-blue-800';
+                case 'Locado':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'Chegada':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
 
-// carregar tabela de locações
-async function carregar(){
-  const res = await fetch('/api/locacoes');
-  locacoes = await res.json();
+        async function fetchHistorico() {
+            const body = document.getElementById('locacao-body');
+            const messageArea = document.getElementById('message-area');
+            body.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-indigo-600 font-semibold">Buscando dados...</td></tr>';
+            
+            try {
+                // Chama a nova API de histórico de locações
+                const response = await fetch('/api/historico-locacao');
+                const data = await response.json();
 
-  const tb = document.getElementById('tbody');
-  tb.innerHTML = '';
+                if (!response.ok) {
+                    throw new Error(data.erro || 'Erro ao carregar o histórico de locações.');
+                }
 
-  locacoes.forEach(l=>{
-    tb.innerHTML += `
-      <tr>
-        <td class="p-2 border-b">${l.id_locacao}</td>
-        <td class="border-b p-2">${escapeHtml(l.cliente_nome)} (${escapeHtml(l.cliente_cpf||'')})</td>
-        <td class="border-b p-2">${escapeHtml(l.placa||'')} - ${escapeHtml(l.nome_modelo||'')}</td>
-        <td class="border-b p-2">${escapeHtml(l.status||'')}</td>
-        <td class="border-b p-2">${l.data_retirada ? new Date(l.data_retirada).toLocaleString() : '-'}</td>
-        <td class="border-b p-2">${l.data_devolucao_prevista ? new Date(l.data_devolucao_prevista).toLocaleString() : '-'}</td>
-        <td class="border-b p-2">${l.valor_final != null ? ('R$ ' + Number(l.valor_final).toFixed(2)) : '-'}</td>
-        <td class="border-b p-2">
-          <button class="bg-blue-600 text-white px-2 py-1 rounded" onclick="abrir(${l.id_locacao})">Editar</button>
-        </td>
-      </tr>
-    `;
-  });
-}
+                body.innerHTML = ''; // Limpa a mensagem de carregamento
 
-// abrir modal e preencher campos (usamos os dados já carregados em locacoes)
-async function abrir(id){
-  idAtual = id;
-  const l = locacoes.find(x => x.id_locacao === id);
-  if(!l) return alert('Locação não encontrada');
+                if (data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Nenhuma locação encontrada.</td></tr>';
+                    return;
+                }
 
-  document.getElementById('editId').textContent = id;
-  document.getElementById('edit_cliente').value = l.cliente_nome || '';
-  document.getElementById('edit_veiculo').value = (l.placa ? l.placa + ' - ' : '') + (l.nome_modelo || '');
-  document.getElementById('edit_status').value = l.status || 'Reserva';
-  document.getElementById('edit_caucao').value = l.caucao || '';
-  document.getElementById('edit_km_retirada').value = l.quilometragem_retirada || '';
-  document.getElementById('edit_km_devolucao').value = l.quilometragem_devolucao || '';
-  document.getElementById('edit_tanque_saida').value = l.tanque_saida || '';
-  document.getElementById('edit_tanque_chegada').value = l.tanque_chegada || '';
-  document.getElementById('edit_valor_final').value = l.valor_final || '';
+                // Preenche a tabela com os dados
+                data.forEach(locacao => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${locacao.id_locacao}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-800">${locacao.nome_completo}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${locacao.veiculo}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${locacao.data_retirada}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${locacao.data_devolucao_prevista}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${locacao.data_devolucao_real}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(locacao.status)}">
+                                ${locacao.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 whitespace-nowrap text-center text-sm font-medium">
+                            <a href="editar_locacao.html?id=${locacao.id_locacao}" 
+                               class="text-indigo-600 hover:text-indigo-900 font-medium transition duration-150 ease-in-out py-1 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50">
+                                Editar
+                            </a>
+                        </td>
+                    `;
+                    body.appendChild(row);
+                });
 
-  const fmt = d => d ? new Date(d).toISOString().slice(0,16) : '';
-  document.getElementById('edit_data_retirada').value = fmt(l.data_retirada);
-  document.getElementById('edit_data_prevista').value = fmt(l.data_devolucao_prevista);
-  document.getElementById('edit_data_real').value = fmt(l.data_devolucao_real);
-
-  // mostrar modal
-  document.getElementById('modal').classList.remove('hidden');
-
-  // carregar catalogo (select) e opcionais vinculados
-  await carregarCatalogoOpcional();
-  await listarOpcionaisVinculados();
-}
-
-// salvar alterações simples da locação (não mexe nos opcionais vinculados)
-async function salvarEdicao(){
-  if(!idAtual) return alert('Nenhuma locação aberta');
-
-  const iso = d => d ? new Date(d).toISOString() : null;
-
-  const payload = {
-    status: document.getElementById('edit_status').value,
-    quilometragem_devolucao: parseInt(document.getElementById('edit_km_devolucao').value) || null,
-    tanque_chegada: document.getElementById('edit_tanque_chegada').value || null,
-    valor_final: parseFloat(document.getElementById('edit_valor_final').value) || null,
-    data_retirada: iso(document.getElementById('edit_data_retirada').value),
-    data_devolucao_prevista: iso(document.getElementById('edit_data_prevista').value),
-    data_devolucao_real: iso(document.getElementById('edit_data_real').value)
-  };
-
-  const res = await fetch(`/api/locacao/${idAtual}`, {
-    method: 'PUT',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
-
-  if(res.ok){
-    alert('Locação atualizada');
-    fecharModal();
-    carregar();
-  } else {
-    const j = await res.json().catch(()=>({erro:'erro'}));
-    alert('Erro ao atualizar: ' + (j.erro || JSON.stringify(j)));
-  }
-}
-
-/* ========== CATALOGO DE OPCIONAIS ========== */
-/*
-  Tenta primeiro /api/opcionais_catalogo (caso você tenha),
-  senão tenta /api/opcionais (fallback).
-  Espera-se que cada item do catálogo contenha:
-    { id_opcional, descricao, valor_diaria }
-*/
-async function carregarCatalogoOpcional(){
-  const select = document.getElementById('selectCatalogo');
-  select.innerHTML = '<option value="">Carregando...</option>';
-
-  const candidates = ['/api/opcionais_catalogo', '/api/opcionais'];
-  let lista = null;
-
-  for(const url of candidates){
-    try{
-      const r = await fetch(url);
-      if(!r.ok) continue;
-      const data = await r.json();
-      // Se for array e não vazio, assume catálogo
-      if(Array.isArray(data)){
-        lista = data;
-        break;
-      }
-    }catch(e){
-      // ignore and try next
-    }
-  }
-
-  if(!lista) {
-    select.innerHTML = '<option value="">Catálogo indisponível</option>';
-    return;
-  }
-
-  // popular select
-  select.innerHTML = '<option value="">-- selecione --</option>';
-  lista.forEach(item=>{
-    // guardamos id|descricao|valor no value para facilitar
-    // formato: id_opcional||descricao||valor
-    const v = `${item.id_opcional}||${encodeURIComponent(item.descricao)}||${Number(item.valor_diaria)}`;
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = `${item.descricao} — R$ ${Number(item.valor_diaria).toFixed(2)}`;
-    select.appendChild(opt);
-  });
-}
-
-/* ========== OPCIONAIS VINCULADOS (da locação) ========== */
-/* Usa a rota confirmada: GET /api/opcionais/<id_locacao> */
-async function listarOpcionaisVinculados(){
-  const tb = document.getElementById('tabelaOpcionais');
-  tb.innerHTML = '<tr><td colspan="4" class="p-2">Carregando...</td></tr>';
-  try{
-    const r = await fetch(`/api/opcionais/${idAtual}`);
-    if(!r.ok){ tb.innerHTML = '<tr><td colspan="4" class="p-2">Erro ao carregar</td></tr>'; return; }
-    const lista = await r.json();
-
-    if(!Array.isArray(lista) || lista.length===0){
-      tb.innerHTML = '<tr><td colspan="4" class="p-2">Nenhum opcional vinculado</td></tr>';
-      return;
-    }
-
-    tb.innerHTML = '';
-    lista.forEach(o=>{
-      // o deve conter: id_opcional, descricao, valor_diaria, quantidade
-      tb.innerHTML += `
-        <tr>
-          <td class="p-2 border">${escapeHtml(o.descricao)}</td>
-          <td class="p-2 border">R$ ${Number(o.valor_diaria).toFixed(2)}</td>
-          <td class="p-2 border">${Number(o.quantidade)}</td>
-          <td class="p-2 border">
-            <button class="bg-red-600 text-white px-2 py-1 rounded"
-                    onclick="removerOpcional(${o.id_opcional})">Remover</button>
-          </td>
-        </tr>
-      `;
-    });
-
-  }catch(err){
-    tb.innerHTML = '<tr><td colspan="4" class="p-2">Erro ao carregar</td></tr>';
-  }
-}
-
-/* ========== ADICIONAR OPCIONAL SELECIONADO ========== */
-/*
-  Como seu backend POST /api/opcional espera:
-    { descricao, valor_diaria, quantidade, id_locacao }
-  aqui usamos os valores vindos do catálogo (não precisa digitar).
-*/
-document.getElementById('btnAddOpcional').addEventListener('click', async ()=>{
-  if(!idAtual) return alert('Abra uma locação primeiro');
-
-  const sel = document.getElementById('selectCatalogo').value;
-  const quant = parseInt(document.getElementById('selectQuantidade').value, 10) || 0;
-  if(!sel) return alert('Selecione um opcional do catálogo');
-  if(!quant || quant <= 0) return alert('Informe quantidade válida');
-
-  const [id, descricaoEnc, valorStr] = sel.split('||');
-  const descricao = decodeURIComponent(descricaoEnc);
-  const valor = Number(valorStr);
-
-  // Envia para o backend (ele cria o opcional e cria vínculo locacao_opcional)
-  const payload = {
-    descricao: descricao,
-    valor_diaria: valor,
-    quantidade: quant,
-    id_locacao: idAtual
-  };
-
-  const r = await fetch('/api/opcional', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
-
-  if(r.ok){
-    await listarOpcionaisVinculados();
-    // opcional: reset select/quant
-    document.getElementById('selectCatalogo').selectedIndex = 0;
-    document.getElementById('selectQuantidade').value = 1;
-  } else {
-    const j = await r.json().catch(()=>({erro:'erro'}));
-    alert('Erro ao adicionar opcional: ' + (j.erro || JSON.stringify(j)));
-  }
-});
-
-/* ========== REMOVER OPCIONAL ========== */
-/*
-  Chama DELETE /api/opcional/<id_opcional>
-  Observação: com a implementação backend que você ajustou, DELETE vai
-  remover vínculo e também remover o registro opcional.
-*/
-async function removerOpcional(id_opcional){
-  if(!confirm('Remover este opcional?')) return;
-  const r = await fetch(`/api/opcional/${id_opcional}`, { method: 'DELETE' });
-  if(r.ok){
-    await listarOpcionaisVinculados();
-  } else {
-    const j = await r.json().catch(()=>({erro:'erro'}));
-    alert('Erro ao remover: ' + (j.erro || JSON.stringify(j)));
-  }
-}
-
-/* ========== UTILIDADES ========== */
-function fecharModal(){
-  document.getElementById('modal').classList.add('hidden');
-  idAtual = null;
-}
-
-function escapeHtml(str){
-  if(!str && str !== 0) return '';
-  return String(str)
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'",'&#39;');
-}
-
-/* iniciar */
-window.addEventListener('load', carregar);
-document.getElementById('btnSalvarEdicao').addEventListener('click', salvarEdicao);
-</script>
-
+            } catch (error) {
+                console.error('Erro ao buscar locações:', error);
+                body.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-red-600 font-semibold">Falha ao carregar os dados. Tente novamente.</td></tr>';
+                messageArea.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Erro!</strong><span class="block sm:inline"> ${error.message}</span></div>`;
+            }
+        }
+    </script>
 </body>
 </html>

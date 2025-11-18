@@ -3,13 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <title>Contrato – Primeira Parte</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h2, h4 {
+        color: #333;
+        margin-top: 25px;
+    }
+
+    label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    input, select, button {
+        padding: 8px;
+        margin: 5px 0 15px 0;
+        width: 250px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        outline: none;
+        font-size: 14px;
+    }
+
+    input:focus, select:focus {
+        border-color: #3a7afe;
+        box-shadow: 0 0 4px #3a7afe77;
+    }
+
+    button {
+        width: auto;
+        cursor: pointer;
+        background: #3a7afe;
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #1f5be0;
+    }
+
+    #lista_clientes {
+        border: 1px solid #ccc;
+        max-width: 250px;
+        background: white;
+        list-style: none;
+        padding: 0;
+        margin-top: -10px;
+        position: absolute;
+        z-index: 10;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px #0003;
+    }
+
+    #lista_clientes li {
+        padding: 8px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    #lista_clientes li:hover {
+        background: #e9e9e9;
+    }
+
+    /* Lista de opcionais */
+    #lista-opcionais {
+        background: white;
+        list-style: none;
+        padding: 10px;
+        max-width: 350px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 4px #0003;
+    }
+
+    #lista-opcionais li {
+        padding: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fafafa;
+        margin-bottom: 6px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    #lista-opcionais li button {
+        padding: 6px 10px;
+        background: #d9534f;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    #lista-opcionais li button:hover {
+        background: #b8413e;
+    }
+
+    .field-group {
+        margin-bottom: 20px;
+    }
+</style>
+
 </head>
 <body>
 
 <h2>Contrato de Locação</h2>
 
-<div>
-    <label>Status:</label>
+<div class="field-group">
+    <label>Status:</label><br>
     <select id="status" onchange="verificarStatus()">
         <option value="Reserva">Reserva</option>
         <option value="Locado">Locado</option>
@@ -17,55 +128,64 @@
     </select>
 </div>
 
-<div>
-    <label>Data de saída:</label>
+<div class="field-group">
+    <label>Data de saída:</label><br>
     <input type="datetime-local" id="data_retirada">
 </div>
 
-<div>
-    <label>Data de chegada prevista:</label>
+<div class="field-group">
+    <label>Data de chegada prevista:</label><br>
     <input type="datetime-local" id="data_devolucao_prevista">
 </div>
 
-<div>
-    <label>Data de chegada real:</label>
+<div class="field-group">
+    <label>Valor total previsto:</label><br>
+    <input type="number" id="valor_total_previsto" name="valor_total_previsto" readonly>
+</div>
+
+
+<div class="field-group">
+    <label>Data de chegada real:</label><br>
     <input type="datetime-local" id="data_devolucao_real">
 </div>
 
 <h2>Cliente</h2>
 
-<div>
-    <label>Cliente (Nome ou CPF):</label>
+<div class="field-group" style="position: relative;">
+    <label>Cliente (Nome ou CPF):</label><br>
     <input type="text" id="busca_cliente" oninput="autocompleteCliente()" autocomplete="off">
-    <ul id="lista_clientes" style="border:1px solid #ccc; max-width:300px; display:none; position:absolute; list-style:none; padding:0; margin:0;"></ul>
+    <ul id="lista_clientes" style="display:none;"></ul>
 </div>
 
-<div>
-    <label>CPF:</label>
+<div class="field-group">
+    <label>CPF:</label><br>
     <input type="text" id="cpf" readonly>
+    <input type="hidden" id="id_cliente" name="id_cliente">
+
+
 </div>
 
-<div>
-    <label>CNH:</label>
+<div class="field-group">
+    <label>CNH:</label><br>
     <input type="text" id="cnh" readonly>
 </div>
 
-<div>
-    <label>Data de validade da CNH:</label>
+<div class="field-group">
+    <label>Data de validade da CNH:</label><br>
     <input type="text" id="data_validade" readonly>
 </div>
 
 <h2>Categoria e Veículo</h2>
 
-<div>
-    <label>Categoria:</label>
+<div class="field-group">
+    <label>Categoria:</label><br>
     <select id="categoria" onchange="carregarVeiculos()">
         <option value="">Selecione a categoria</option>
     </select>
 </div>
 
-<div>
-    <label>Veículo:</label>
+<div class="field-group">
+    <label>Veículo:</label><br>
     <select id="veiculo">
         <option value="">Selecione o veículo</option>
     </select>
@@ -73,20 +193,20 @@
 
 <h2>Quilometragem</h2>
 
-<div>
-    <label>Quilometragem de saída:</label>
+<div class="field-group">
+    <label>Quilometragem de saída:</label><br>
     <input type="number" id="km_saida" disabled>
 </div>
 
-<div>
-    <label>Quilometragem de chegada:</label>
+<div class="field-group">
+    <label>Quilometragem de chegada:</label><br>
     <input type="number" id="km_chegada">
 </div>
 
 <h2>Tanque</h2>
 
-<div>
-    <label>Tanque de saída:</label>
+<div class="field-group">
+    <label>Tanque de saída:</label><br>
     <select id="tanque_saida" disabled>
         <option value="8">Cheio</option>
         <option value="7">7/8</option>
@@ -100,8 +220,8 @@
     </select>
 </div>
 
-<div>
-    <label>Tanque de chegada:</label>
+<div class="field-group">
+    <label>Tanque de chegada:</label><br>
     <select id="tanque_chegada">
         <option value="8">Cheio</option>
         <option value="7">7/8</option>
@@ -115,27 +235,24 @@
     </select>
 </div>
 
-<div id="opcionais-section">
-    <h3>Opcionais da Locação</h3>
-    
-    <!-- Lista de opcionais -->
-    <ul id="lista-opcionais"></ul>
-
-    <!-- Adicionar opcionais -->
-    <h4>Adicionar Opcional</h4>
+<h4>Adicionar Opcional</h4>
+<div class="field-group">
     <select id="select-opcional"></select>
     <input type="number" id="quantidade-opcional" value="1" min="1" />
     <button id="btn-adicionar-opcional">Adicionar</button>
 </div>
 
+<h4>Opcionais selecionados:</h4>
+<ul id="lista-opcionais"></ul>
+
 <h2>Caução</h2>
-<div>
-    <label>Valor da caução:</label>
+<div class="field-group">
+    <label>Valor da caução:</label><br>
     <input type="number" id="caucao" step="0.01">
 </div>
 
-<div>
-    <label>Devolução:</label>
+<div class="field-group">
+    <label>Devolução:</label><br>
     <select id="devolucao">
         <option value="na devolução">Na devolução</option>
         <option value="5 dias">5 dias</option>
@@ -147,10 +264,9 @@
 <button onclick="salvarLocacaoFront()">Salvar</button>
 
 <script>
-let idLocacao = null; // se locação já existir
-let opcionaisTemp = []; // opcionais temporários
 
-// ------------ Funções ------------
+let idLocacao = null; 
+let opcionaisTemp = [];
 
 // Carregar categorias
 function carregarCategorias() {
@@ -158,6 +274,7 @@ function carregarCategorias() {
         .then(res => res.json())
         .then(categorias => {
             const select = document.getElementById("categoria");
+            select.innerHTML = '<option value="">Selecione a categoria</option>';
             categorias.forEach(cat => {
                 const option = document.createElement("option");
                 option.value = cat.id;
@@ -171,8 +288,10 @@ function carregarCategorias() {
 function carregarVeiculos() {
     const id_categoria = document.getElementById("categoria").value;
     const selectVeiculo = document.getElementById("veiculo");
+
     selectVeiculo.innerHTML = '<option value="">Selecione o veículo</option>';
     if (!id_categoria) return;
+
     fetch(`/api/veiculos?id_categoria=${id_categoria}`)
         .then(res => res.json())
         .then(veiculos => {
@@ -180,17 +299,34 @@ function carregarVeiculos() {
                 const option = document.createElement("option");
                 option.value = v.id;
                 option.textContent = v.descricao;
+                option.dataset.km = v.quilometragem;
                 selectVeiculo.appendChild(option);
             });
         });
 }
 
-// Habilitar/desabilitar campos
+// Habilitar/desabilitar campos e mostrar valor_final se status for "Chegada"
 function verificarStatus() {
     const status = document.getElementById("status").value;
     document.getElementById("data_devolucao_real").disabled = status !== "Chegada";
     document.getElementById("km_chegada").disabled = status !== "Chegada";
     document.getElementById("tanque_chegada").disabled = status !== "Chegada";
+
+    // Exibir ou esconder campo valor_final
+    let valorFinalInput = document.getElementById("valor_final");
+    if (status === "Chegada") {
+        if (!valorFinalInput) {
+            const div = document.createElement("div");
+            div.className = "field-group";
+            div.id = "div_valor_final";
+            div.innerHTML = '<label>Valor final:</label><br><input type="number" id="valor_final" readonly>';
+            document.getElementById("caucao").parentNode.after(div);
+        }
+    } else {
+        if (valorFinalInput) {
+            document.getElementById("div_valor_final").remove();
+        }
+    }
 }
 
 // Autocomplete clientes
@@ -212,6 +348,7 @@ function autocompleteCliente() {
                     document.getElementById("cpf").value = c.cpf;
                     document.getElementById("cnh").value = c.cnh;
                     document.getElementById("data_validade").value = c.data_validade;
+                    document.getElementById("id_cliente").value = c.id_cliente;
                     lista.style.display = "none";
                 };
                 lista.appendChild(li);
@@ -224,53 +361,61 @@ document.addEventListener('click', function(e) {
     if (!document.getElementById("busca_cliente").contains(e.target)) lista.style.display = "none";
 });
 
-// -------- Opcionais --------
+// Carregar opcionais disponíveis
 function carregarOpcionais() {
     fetch('/api/opcionais')
         .then(res => res.json())
         .then(opcionais => {
             const select = document.getElementById("select-opcional");
-            select.innerHTML = "";
+            select.innerHTML = '<option value="">Selecione</option>';
             opcionais.forEach(o => {
                 const option = document.createElement("option");
                 option.value = o.id_opcional;
-                option.textContent = `${o.descricao} - R$${o.valor_diaria.toFixed(2)}`;
+                option.textContent = `${o.descricao} - R$ ${parseFloat(o.valor_diaria).toFixed(2)}`;
+                option.dataset.valor = parseFloat(o.valor_diaria);
                 select.appendChild(option);
             });
         });
 }
 
-// Adicionar opcional temporário
+// Adiciona item ao carrinho
 function adicionarOpcionalTemp() {
     const select = document.getElementById("select-opcional");
     const quantidade = parseInt(document.getElementById("quantidade-opcional").value);
     const id_opcional = parseInt(select.value);
-    const descricao = select.options[select.selectedIndex].text;
     if (!id_opcional || quantidade < 1) return;
+
+    const descricao = select.options[select.selectedIndex].text.split(" - R$")[0];
+    const valor_diaria = parseFloat(select.options[select.selectedIndex].dataset.valor);
 
     const existente = opcionaisTemp.find(o => o.id_opcional === id_opcional);
     if (existente) existente.quantidade += quantidade;
-    else opcionaisTemp.push({ id_opcional, descricao, quantidade });
+    else opcionaisTemp.push({ id_opcional, descricao, quantidade, valor_diaria });
 
     listarOpcionaisTemp();
 }
 
-// Listar opcionais temporários
+// Atualiza a lista visual do carrinho
 function listarOpcionaisTemp() {
     const lista = document.getElementById("lista-opcionais");
     lista.innerHTML = "";
     opcionaisTemp.forEach((op, idx) => {
         const li = document.createElement("li");
-        li.textContent = `${op.descricao} - Qtd: ${op.quantidade} `;
+        li.textContent = `${op.descricao} - R$ ${op.valor_diaria.toFixed(2)} x ${op.quantidade}`;
         const btn = document.createElement("button");
         btn.textContent = "Remover";
-        btn.onclick = () => { opcionaisTemp.splice(idx,1); listarOpcionaisTemp(); };
+        btn.onclick = () => {
+            opcionaisTemp.splice(idx, 1);
+            listarOpcionaisTemp();
+        };
         li.appendChild(btn);
         lista.appendChild(li);
     });
+
+    atualizarValorPrevisto()
 }
 
-// Salvar locação + opcionais
+// Salvar locação
 async function salvarLocacaoFront() {
     const dadosLocacao = {
         status: document.getElementById("status").value,
@@ -280,41 +425,127 @@ async function salvarLocacaoFront() {
         quilometragem_devolucao: document.getElementById("km_chegada").value,
         tanque_chegada: document.getElementById("tanque_chegada").value,
         caucao: parseFloat(document.getElementById("caucao").value),
-        devolucao: document.getElementById("devolucao").value
+        devolucao: document.getElementById("devolucao").value,
+        id_cliente: parseInt(document.getElementById("id_cliente").value),
+        id_veiculo: document.getElementById("veiculo").value,
+        quilometragem_saida: document.getElementById("km_saida").value,
+        tanque_saida: document.getElementById("tanque_saida").value,
+        valor_total_previsto: parseFloat(document.getElementById("valor_total_previsto").value),
+        opcionais: opcionaisTemp.map(op => ({
+            id_opcional: op.id_opcional,
+            quantidade: op.quantidade
+        }))
     };
 
-    // Criar locação
     const res = await fetch("/api/locacao", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(dadosLocacao)
     });
-    if (!res.ok) { const e = await res.json(); alert("Erro: "+e.erro); return; }
-    const loc = await res.json();
-    idLocacao = loc.id_locacao;
 
-    // Enviar opcionais
-    if (opcionaisTemp.length > 0) {
-        const resOpc = await fetch(`/api/locacao/${idLocacao}/opcionais`, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(opcionaisTemp.map(op => ({id_opcional: op.id_opcional, quantidade: op.quantidade})))
-        });
-        if (!resOpc.ok) { const e = await resOpc.json(); alert("Erro opcionais: "+e.erro); return; }
+    if (!res.ok) {
+        const texto = await res.text();
+        console.error("ERRO DO SERVIDOR:", texto);
+        alert("Erro ao salvar. Verifique o console (F12).");
+        return;
     }
 
-    alert("Locação e opcionais cadastrados com sucesso!");
+    alert("Locação cadastrada com sucesso!");
     opcionaisTemp = [];
     listarOpcionaisTemp();
 }
 
-// -------- Inicialização --------
+// Atualizar locação
+async function atualizarLocacaoFront(idLocacao, dadosAtualizados) {
+    const res = await fetch(`/api/locacao/${idLocacao}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(dadosAtualizados)
+    });
+
+    if (!res.ok) {
+        const texto = await res.text();
+        console.error("ERRO AO ATUALIZAR:", texto);
+        alert("Erro ao atualizar. Verifique o console (F12).");
+        return;
+    }
+
+    res.json()
+        .then(dados => {
+            console.log("ATUALIZAÇÃO:", dados);
+
+            if (dados.valor_total_previsto !== undefined) {
+                document.getElementById("valor_total_previsto").value = dados.valor_total_previsto;
+            }
+
+            if (dados.valor_final !== undefined && document.getElementById("status").value === "Chegada") {
+                let valorFinalInput = document.getElementById("valor_final");
+                if (!valorFinalInput) {
+                    const div = document.createElement("div");
+                    div.className = "field-group";
+                    div.id = "div_valor_final";
+                    div.innerHTML = '<label>Valor final:</label><br><input type="number" id="valor_final" readonly>';
+                    document.getElementById("caucao").parentNode.after(div);
+                }
+                document.getElementById("valor_final").value = dados.valor_final;
+            }
+
+            alert(dados.mensagem);
+        });
+}
+
+// Atualiza valor_total_previsto em tempo real
+async function atualizarValorPrevisto() {
+    const idVeiculo = document.getElementById("veiculo").value;
+    const dataRetirada = document.getElementById("data_retirada").value;
+    const dataPrevista = document.getElementById("data_devolucao_prevista").value;
+
+    if (!idVeiculo || !dataRetirada || !dataPrevista) return;
+
+    const dados = {
+        id_veiculo: parseInt(idVeiculo),
+        data_retirada: dataRetirada,
+        data_devolucao_prevista: dataPrevista,
+        opcionais: opcionaisTemp.map(op => ({
+            id_opcional: op.id_opcional,
+            quantidade: op.quantidade
+        }))
+    };
+
+    try {
+        const res = await fetch("/api/valor-previsto", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(dados)
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.valor_total_previsto !== undefined) {
+            document.getElementById("valor_total_previsto").value = json.valor_total_previsto.toFixed(2);
+        }
+    } catch(err) {
+        console.error("Erro ao calcular valor previsto:", err);
+    }
+}
+
+
+// Inicialização
 window.onload = function() {
     carregarCategorias();
     carregarOpcionais();
     verificarStatus();
     document.getElementById("btn-adicionar-opcional").addEventListener("click", adicionarOpcionalTemp);
+    document.getElementById("veiculo").addEventListener("change", function() {
+        const option = this.options[this.selectedIndex];
+        const km = option.dataset.km || "";
+        document.getElementById("km_saida").value = km;
+    atualizarValorPrevisto();
+    });
+    document.getElementById("data_retirada").addEventListener("change", atualizarValorPrevisto);
+    document.getElementById("data_devolucao_prevista").addEventListener("change", atualizarValorPrevisto);
 };
+</script>
+
 </script>
 
 </body>
