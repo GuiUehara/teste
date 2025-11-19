@@ -2,6 +2,8 @@ from flask import render_template, request, redirect, url_for, flash, session, c
 from itsdangerous import URLSafeTimedSerializer
 from email.message import EmailMessage
 from smtplib import SMTP
+from db import conectar
+from providers import hash_provider
 
 
 def init_redefinirSenha(app):
@@ -32,10 +34,15 @@ def init_redefinirSenha(app):
 
     @app.route('/solicitar_redefinir', methods=['GET', 'POST'])
     def solicitar_redefinir():
-        from app import usuarios
         if request.method == 'POST':
             email = request.form.get('email')
-            if email in usuarios:
+            conn = conectar()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM usuario WHERE email=%s", (email,))
+            usuario = cursor.fetchone()
+            conn.close()
+
+            if usuario:
                 token = gerar_token(email)
                 enviar_email_reset(email, token)
                 flash("Email enviado com instruções para redefinir sua senha.", "success")
@@ -44,9 +51,9 @@ def init_redefinirSenha(app):
             return redirect(url_for('login'))
         return render_template('solicitar_redefinir.html')
 
+
     @app.route('/resetar_senha/<token>', methods=['GET', 'POST'])
     def resetar_senha(token):
-        from app import usuarios
         email = confirmar_token(token)
         if not email:
             flash("Link inválido ou expirado.", "error")
@@ -58,8 +65,18 @@ def init_redefinirSenha(app):
             if nova_senha != confirmar_senha:
                 flash("As senhas não coincidem", "error")
                 return redirect(url_for('resetar_senha', token=token))
-            usuarios[email]['senha'] = nova_senha
+            
+            nova_senha = hash_provider.gerar_hash(nova_senha)
+
+            # Atualiza senha
+            conn = conectar()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE usuario SET senha=%s WHERE email=%s", (nova_senha, email))
+            conn.commit()
+            conn.close()
+
             flash("Senha redefinida com sucesso!", "success")
             return redirect(url_for('login'))
 
         return render_template('resetar_senha.html')
+

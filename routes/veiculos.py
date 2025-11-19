@@ -1,5 +1,7 @@
-from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask import render_template, request, redirect, url_for, flash, session, abort, jsonify
 from db import conectar
+from datetime import datetime
+from .api_locacao import calcular_valor_previsto
 
 def init_veiculos(app):
 
@@ -223,7 +225,7 @@ def init_veiculos(app):
                 SET vencimento=%s
                 WHERE id_seguro=%s
             """, (vencimento_seguro, id_seguro))
-            
+
             conn.commit()
             flash("Veículo atualizado com sucesso!", "success")
             return redirect(url_for("lista_veiculos"))
@@ -311,3 +313,5 @@ def init_veiculos(app):
         flash("Veículo removido com sucesso!", "success")
         return redirect(url_for("lista_veiculos"))
 
+
+   

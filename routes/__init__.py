@@ -11,6 +11,7 @@ from .api_cep import cep_api
 from .teste import init_teste
 from .api_veiculos import veiculos_api
 from .api_locacao import locacao_api
+from .reserva import init_reserva
 
 
 def init_routes(app):
@@ -27,3 +28,4 @@ def init_routes(app):
     app.register_blueprint(cep_api)
     app.register_blueprint(veiculos_api)
     app.register_blueprint(locacao_api)
+    init_reserva(app)

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Grupo de Carros</title>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .categoria { margin-bottom: 30px; }
+    .categoria h2 { font-size: 24px; color: #333; margin-bottom: 10px; }
+    .veiculo { margin-left: 20px; margin-bottom: 10px; }
+    .veiculo span { font-weight: bold; margin-right: 10px; }
+    button { padding: 5px 10px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Grupos de Carros</h1>
+
+{% for categoria in categorias %}
+<div class="categoria">
+    <h2>{{ categoria.nome_categoria }} - R$ {{ categoria.valor_diaria }} p/dia</h2>
+    
+    {% if categoria.veiculos %}
+        {% for v in categoria.veiculos %}
+            <div class="veiculo">
+                <span>{{ v.nome_marca }} {{ v.nome_modelo }}</span>
+                <button onclick="window.location.href='/reservar/{{ v.id_veiculo }}'">Reservar</button>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Não há veículos disponíveis nesta categoria.</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+</body>
+</html>
+
+<script>
+    // Atualiza valor_total_previsto em tempo real
+async function atualizarValorPrevisto() {
+    const idVeiculo = document.getElementById("veiculo").value;
+    const dataRetirada = document.getElementById("data_retirada").value;
+    const dataPrevista = document.getElementById("data_devolucao_prevista").value;
+
+    if (!idVeiculo || !dataRetirada || !dataPrevista) return;
+
+    const dados = {
+        id_veiculo: parseInt(idVeiculo),
+        data_retirada: dataRetirada,
+        data_devolucao_prevista: dataPrevista,
+        opcionais: opcionaisTemp.map(op => ({
+            id_opcional: op.id_opcional,
+            quantidade: op.quantidade
+        }))
+    };
+
+    try {
+        const res = await fetch("/api/valor-previsto", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(dados)
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.valor_total_previsto !== undefined) {
+            document.getElementById("valor_total_previsto").value = json.valor_total_previsto.toFixed(2);
+        }
+    } catch(err) {
+        console.error("Erro ao calcular valor previsto:", err);
+    }
+}
+</script>

@@ -3,7 +3,7 @@ from random import randint
 from smtplib import SMTP
 from email.message import EmailMessage
 from db import conectar
-
+from providers import hash_provider
 
 def init_auth(app):
     from app import usuarios, atendentes
@@ -62,8 +62,11 @@ def init_auth(app):
                 flash("Usuário não cadastrado.", "error")
                 return redirect(url_for("login"))
 
-            # Verifica senha diretamente
-            if row['senha'] == senha:
+            # Verifica senha usando função de criptografar
+            if hash_provider.verificar_hash(senha, row['senha']):
+                usuario = row
+                perfil = usuario['perfil']
+
                 usuario = row
                 perfil = usuario['perfil']
 
@@ -101,6 +104,8 @@ def init_auth(app):
         if request.method == "POST":
             email = request.form.get("email")
             senha = request.form.get("senha")
+
+            senha = hash_provider.gerar_hash(senha)
 
             if not email or not senha:
                 flash("Preencha todos os campos obrigatórios", "error")
@@ -155,7 +160,7 @@ def init_auth(app):
                     session["usuario_logado"] = email
                     session["perfil"] = perfil_temp
                     flash("Login realizado com sucesso!", "success")
-                    return redirect(url_for("listagem_veiculos"))
+                    return redirect(url_for("lista_veiculos"))
 
                 elif session.get("processo") == "cadastro":
                     # Verifica se o email já está registrado
@@ -190,7 +195,7 @@ def init_auth(app):
                     session["perfil"] = perfil_temp
 
                     flash("Cadastro completo. Bem-vindo!", "success")
-                    return redirect(url_for("listagem_veiculos"))
+                    return redirect(url_for("lista_veiculos"))
             else:
                 flash("Código incorreto. Tente novamente.", "error")
                 return redirect(url_for("verificacao"))

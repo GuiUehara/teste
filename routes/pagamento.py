@@ -12,7 +12,7 @@ def init_pagamento(app):
 
             try:
                 flash("Pagamento concluído", "success")
-                return redirect(url_for("listagem_veiculos"))  # Redireciona para página inicial ou de confirmação
+                return redirect(url_for("lista_veiculos"))  # Redireciona para página inicial ou de confirmação
 
             except Exception as e:
                 flash(f"Erro ao processar pagamento: {e}", "error")
