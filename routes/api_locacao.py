@@ -34,6 +34,7 @@ def calcular_valor_previsto(id_veiculo, dt_retirada, dt_prevista, opcionais, cur
 
     return dias * valor_diaria + total_opcionais
 
+# CRIAR LOCAÇÃO
 @locacao_api.route('/api/locacao', methods=['POST'])
 def criar_locacao():
     dados = request.get_json()
@@ -163,7 +164,7 @@ def criar_locacao():
             """, (id_veiculo,))
 
         # -------------------------------------------------------------
-        # 8) INSERIR OPCIONAIS NA TABELA locacao_opcional
+        # INSERIR OPCIONAIS NA TABELA locacao_opcional
         # -------------------------------------------------------------
         for op in opcionais:
             cur.execute("""
@@ -236,14 +237,6 @@ def get_locacao(id_locacao):
         import traceback
         traceback.print_exc()
         return jsonify({"erro": str(e)}), 500
-
-
-
-
-
-
-
-    
 
 @locacao_api.route('/api/locacao/<int:id_loc>', methods=['PUT'])
 def atualizar_locacao(id_loc):
@@ -420,13 +413,10 @@ def atualizar_locacao(id_loc):
             
             # Se o status foi alterado para Chegada ou Locado, atualiza o status do veículo
             if status_novo == "Chegada":
-                 # Status 2: Disponível (assumindo que 2 é o status de "disponível para locação" após a devolução)
                  cur.execute("UPDATE veiculo SET id_status_veiculo = 1 WHERE id_veiculo = %s", (loc["id_veiculo"],))
             elif status_novo == "Locado":
-                 # Status 3: Locado (assumindo que 3 é o status de "alugado/em uso")
                  cur.execute("UPDATE veiculo SET id_status_veiculo = 2 WHERE id_veiculo = %s", (loc["id_veiculo"],))
             elif status_novo == "Reserva":
-                 # Status 4: Reservado (assumindo que 4 é o status de "reservado")
                  cur.execute("UPDATE veiculo SET id_status_veiculo = 2 WHERE id_veiculo = %s", (loc["id_veiculo"],))
 
 
@@ -624,7 +614,7 @@ def listar_historico_locacao():
     try:
         cur = conn.cursor(dictionary=True)
         
-        # Query para buscar todos os dados de locação com JOINs para Cliente e Veículo/Modelo/Marca
+        # Query incluindo valor_total_previsto e valor_final (ADICIONADO)
         sql = """
             SELECT
                 l.id_locacao,
@@ -632,6 +622,8 @@ def listar_historico_locacao():
                 l.data_retirada,
                 l.data_devolucao_prevista,
                 l.data_devolucao_real,
+                l.valor_total_previsto,   -- ADICIONADO
+                l.valor_final,            -- ADICIONADO
                 c.nome_completo,
                 v.placa,
                 m.nome_modelo,
@@ -649,7 +641,6 @@ def listar_historico_locacao():
 
         # Formatar as datas e criar a descrição do veículo
         for loc in locacoes:
-            # Formata datas para o padrão YYYY-MM-DD HH:MM
             date_format = "%Y-%m-%d %H:%M"
             
             loc["data_retirada"] = loc["data_retirada"].strftime(date_format)
@@ -658,12 +649,26 @@ def listar_historico_locacao():
             if loc["data_devolucao_real"]:
                 loc["data_devolucao_real"] = loc["data_devolucao_real"].strftime(date_format)
             else:
-                loc["data_devolucao_real"] = "N/A" # Mostrar "N/A" se não houver devolução real
+                loc["data_devolucao_real"] = "N/A"
+
+        # Valores
+            if loc.get("valor_total_previsto") is not None:
+                try:
+                    loc["valor_total_previsto"] = float(loc["valor_total_previsto"])
+                except:
+                    pass
+
+            if loc.get("valor_final") is not None:
+                try:
+                    loc["valor_final"] = float(loc["valor_final"])
+                except:
+                    pass
+            else:
+                loc["valor_final"] = None
             
-            # Combina placa, modelo e marca para o campo 'veiculo'
+
             loc["veiculo"] = f'{loc["placa"]} - {loc["nome_modelo"]} ({loc["nome_marca"]})'
             
-            # Remove campos desnecessários após a formatação
             del loc["placa"]
             del loc["nome_modelo"]
             del loc["nome_marca"]
@@ -676,4 +681,68 @@ def listar_historico_locacao():
     finally:
         if conn:
             cur.close()
+            conn.close()
+
+#Rota para VALOR FINAL em tempo real (só quando status for "Chegada")
+@locacao_api.route("/api/locacao/calcular_final/<int:id_loc>", methods=["PUT"])
+def calcular_valor_final(id_loc):
+    try:
+        dados = request.get_json()
+        data_devolucao_real = dados.get("data_devolucao_real")
+
+        if not data_devolucao_real:
+            return jsonify({"erro": "data_devolucao_real é obrigatória"}), 400
+
+        conn = conectar()
+        cur = conn.cursor(dictionary=True)
+
+        # Converter data recebida
+        try:
+            dt_real = datetime.strptime(data_devolucao_real, "%Y-%m-%dT%H:%M")
+        except:
+            return jsonify({"erro": "Formato de data inválido"}), 400
+
+        # 1 — Buscar locação existente
+        cur.execute("""
+            SELECT id_locacao, data_devolucao_prevista, valor_total_previsto
+            FROM locacao WHERE id_locacao=%s
+        """, (id_loc,))
+        loc = cur.fetchone()
+
+        if not loc:
+            return jsonify({"erro": "Locação não encontrada"}), 404
+
+        # 2 — Atualizar somente a data_devolucao_real
+        #     Trigger fará o cálculo automático
+        cur.execute("""
+            UPDATE locacao
+            SET data_devolucao_real = %s
+            WHERE id_locacao = %s
+        """, (dt_real, id_loc))
+
+        conn.commit()
+
+        # 3 — Buscar valores recalculados pela TRIGGER
+        cur.execute("""
+            SELECT valor_total_previsto, valor_final
+            FROM locacao
+            WHERE id_locacao = %s
+        """, (id_loc,))
+        valores = cur.fetchone()
+
+        return jsonify({
+            "mensagem": "Valor final calculado com sucesso",
+            "valor_total_previsto": float(valores["valor_total_previsto"]),
+            "valor_final": float(valores["valor_final"]) if valores["valor_final"] else None
+        }), 200
+
+    except Exception as e:
+        conn.rollback()
+        print("ERRO calcular_final:", e)
+        return jsonify({"erro": str(e)}), 500
+
+    finally:
+        if 'cur' in locals() and cur:
+            cur.close()
+        if conn:
             conn.close()

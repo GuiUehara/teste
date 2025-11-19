@@ -10,9 +10,9 @@
   <p>Perfil atual: {{ session.perfil }}</p>
 
   <nav>
-    <a href="{{ url_for('listagem_veiculos') }}">Veículos</a> |
     <a href="{{ url_for('cadastro_cliente') }}">Cadastrar Cliente</a> |
     <a href="{{ url_for('cadastro_veiculo') }}">Cadastrar Veículo</a> |
+    <a href="{{ url_for('lista_veiculos') }}">Lista veiculos</a> |
     {% if session.perfil == 'Gerente' %}
       <a href="{{ url_for('cadastro_funcionario') }}">Cadastrar Funcionário</a> |
     {% endif %}

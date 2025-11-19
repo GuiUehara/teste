@@ -16,15 +16,12 @@
         display: flex;
     }
 
-    /* Painel principal */
     .form-container {
         flex: 1;
         padding: 20px 40px;
     }
 
-    h2 {
-        margin-top: 0;
-    }
+    h2 { margin-top: 0; }
 
     label {
         font-weight: bold;
@@ -53,12 +50,10 @@
         border: none;
         cursor: pointer;
     }
-
     button:hover {
         background: #0056b3;
     }
 
-    /* Painel lateral */
     .sidebar {
         width: 280px;
         background: white;
@@ -73,10 +68,6 @@
         padding: 10px;
         border-bottom: 1px solid #ddd;
     }
-
-    .opcional-item strong {
-        color: #333;
-    }
 </style>
 </head>
 
@@ -84,7 +75,6 @@
 
 <div class="container">
 
-    <!-- PAINEL PRINCIPAL -->
     <div class="form-container">
         <h2>Editar Locação</h2>
 
@@ -113,31 +103,30 @@
         <input type="number" id="km_chegada">
 
         <label>Tanque saída:</label>
-<select id="tanque_saida" disabled>
-    <option value="8">8 (Cheio)</option>
-    <option value="7">7/8</option>
-    <option value="6">6/8</option>
-    <option value="5">5/8</option>
-    <option value="4">4/8 (Metade)</option>
-    <option value="3">3/8</option>
-    <option value="2">2/8</option>
-    <option value="1">1/8</option>
-    <option value="0">0 (Vazio)</option>
-</select>
+        <select id="tanque_saida" disabled>
+            <option value="8">8 (Cheio)</option>
+            <option value="7">7/8</option>
+            <option value="6">6/8</option>
+            <option value="5">5/8</option>
+            <option value="4">4/8 (Metade)</option>
+            <option value="3">3/8</option>
+            <option value="2">2/8</option>
+            <option value="1">1/8</option>
+            <option value="0">0 (Vazio)</option>
+        </select>
 
-<label>Tanque chegada:</label>
-<select id="tanque_chegada">
-    <option value="8">8 (Cheio)</option>
-    <option value="7">7/8</option>
-    <option value="6">6/8</option>
-    <option value="5">5/8</option>
-    <option value="4">4/8 (Metade)</option>
-    <option value="3">3/8</option>
-    <option value="2">2/8</option>
-    <option value="1">1/8</option>
-    <option value="0">0 (Vazio)</option>
-</select>
-
+        <label>Tanque chegada:</label>
+        <select id="tanque_chegada">
+            <option value="8">8 (Cheio)</option>
+            <option value="7">7/8</option>
+            <option value="6">6/8</option>
+            <option value="5">5/8</option>
+            <option value="4">4/8 (Metade)</option>
+            <option value="3">3/8</option>
+            <option value="2">2/8</option>
+            <option value="1">1/8</option>
+            <option value="0">0 (Vazio)</option>
+        </select>
 
         <label>Data retirada:</label>
         <input type="datetime-local" id="data_retirada" readonly>
@@ -151,11 +140,11 @@
         <label>Valor total previsto:</label>
         <input type="number" id="valor_total_previsto" readonly>
 
+        <label>Valor Final:</label>
+        <input type="number" id="valor_final" readonly>
+
         <label>Caução:</label>
         <input type="number" id="caucao" readonly>
-
-        <label>Devolução:</label>
-        <input type="text" id="devolucao" readonly>
 
         <label>Status:</label>
         <select id="status">
@@ -167,7 +156,6 @@
         <button onclick="atualizarLocacao()">Atualizar</button>
     </div>
 
-    <!-- PAINEL LATERAL -->
     <div class="sidebar">
         <h3>Opcionais do Contrato</h3>
         <div id="lista-opcionais">Carregando...</div>
@@ -178,18 +166,15 @@
 <script>
 let idLocacao = new URLSearchParams(window.location.search).get("id");
 
-// Formatar data
 function formatarDataInput(dataString) {
     if (!dataString) return "";
     const data = new Date(dataString);
     return data.toISOString().slice(0, 16);
 }
 
-// Carregar locação e opcionais vinculados
 async function carregarLocacao() {
     const res = await fetch(`/api/locacao/${idLocacao}`);
     const data = await res.json();
-
     if (data.erro) return alert(data.erro);
 
     const loc = data.locacao;
@@ -216,15 +201,16 @@ async function carregarLocacao() {
     document.getElementById("data_devolucao_real").value = formatarDataInput(loc.data_devolucao_real);
 
     document.getElementById("valor_total_previsto").value = loc.valor_total_previsto;
-    document.getElementById("caucao").value = loc.caucao;
-    document.getElementById("devolucao").value = loc.devolucao;
+    document.getElementById("valor_final").value = loc.valor_final ?? "";
 
+    document.getElementById("caucao").value = loc.caucao;
     document.getElementById("status").value = loc.status;
 
     carregarOpcionais(data.opcionais);
+
+    iniciarRecalculoAutomático();
 }
 
-// LISTA APENAS OS OPCIONAIS DO CONTRATO
 function carregarOpcionais(lista) {
     const div = document.getElementById("lista-opcionais");
     div.innerHTML = "";
@@ -244,8 +230,47 @@ function carregarOpcionais(lista) {
     });
 }
 
-// Atualizar locação
+// FUNÇÃO PARA RECALCULAR VALOR FINAL EM TEMPO REAL
+async function recalcularValorFinal() {
+    const status = document.getElementById("status").value;
+
+    if (status !== "Chegada") return;
+
+    const dados = {
+        km_chegada: document.getElementById("km_chegada").value,
+        tanque_chegada: document.getElementById("tanque_chegada").value,
+        data_devolucao_real: document.getElementById("data_devolucao_real").value
+    };
+
+    const res = await fetch(`/api/locacao/calcular_final/${idLocacao}`, {
+        method: "PUT", // <--- ALTERADO AQUI
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+    });
+
+    const resposta = await res.json();
+
+    if (!resposta.erro) {
+        if (resposta.valor_final) document.getElementById("valor_final").value = resposta.valor_final;
+        if (resposta.valor_total_previsto) document.getElementById("valor_total_previsto").value = resposta.valor_total_previsto;
+    }
+}
+
+
+// ativa recálculo automático
+function iniciarRecalculoAutomático() {
+    ["km_chegada", "tanque_chegada", "data_devolucao_real", "status"]
+        .forEach(id => {
+            document.getElementById(id).addEventListener("change", recalcularValorFinal);
+        });
+}
+
+// botão atualizar
 async function atualizarLocacao() {
+
+    // se status = Chegada, força último cálculo antes de enviar
+    await recalcularValorFinal();
+
     const dados = {
         status: document.getElementById("status").value,
         quilometragem_devolucao: document.getElementById("km_chegada").value,
@@ -260,6 +285,7 @@ async function atualizarLocacao() {
     });
 
     const resposta = await res.json();
+
     if (resposta.erro) alert(resposta.erro);
     else alert("Locação atualizada com sucesso!");
 }
