@@ -1,59 +1,43 @@
 {% extends "base.html" %}
 
-{% block titulo %}Histórico de Manutenção{% endblock %}
+{% block content %}
+<div class="table-container">
+    <h2>Histórico de Manutenção</h2>
 
-{% block conteudo %}
-<h2>Histórico de Manutenção</h2>
-
-<style>
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ddd; padding: 12px 20px; text-align: left; }
-  th { background-color: #f2f2f2; }
-  th.veiculo { min-width: 120px; }
-  th.modelo { min-width: 150px; }
-  th.data { min-width: 120px; }
-  th.descricao { min-width: 250px; }
-  th.custo { min-width: 80px; }
-  th.status { min-width: 120px; }
-  th.acoes { min-width: 150px; }
-</style>
-
-<table>
-  <thead>
-    <tr>
-      <th class="veiculo">Veículo</th>
-      <th class="modelo">Modelo</th>
-      <th class="data">Data Entrada</th>
-      <th class="data">Data Saída</th>
-      <th class="descricao">Descrição</th>
-      <th class="custo">Custo</th>
-      <th class="status">Status</th>
-      <th class="acoes">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for m in manutencoes %}
-    <tr>
-      <td>{{ m.placa }}</td>
-      <td>{{ m.nome_modelo }}</td>
-      <td>{{ m.data_entrada }}</td>
-      <td>{{ m.data_saida or '-' }}</td>
-      <td>{{ m.descricao_servico }}</td>
-      <td>{{ m.custo }}</td>
-      <td>
-        <form method="POST" action="{{ url_for('atualizar_status_manutencao', id_manutencao=m.id_manutencao) }}">
-            <select name="status" onchange="this.form.submit()">
-                <option value="Em andamento" {% if m.status == 'Em andamento' %}selected{% endif %}>Em andamento</option>
-                <option value="Concluída" {% if m.status == 'Concluída' %}selected{% endif %}>Concluída</option>
-            </select>
-        </form>
-      </td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="9">Nenhuma manutenção encontrada.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <table>
+        <thead>
+            <tr>
+                <th>Veículo (Placa)</th>
+                <th>Modelo</th>
+                <th>Data Entrada</th>
+                <th>Data Saída</th>
+                <th>Descrição</th>
+                <th>Custo (R$)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in manutencoes %}
+            <tr>
+                <td>{{ m.placa }}</td>
+                <td>{{ m.nome_modelo }}</td>
+                <td>{{ m.data_entrada.strftime('%d/%m/%Y') }}</td>
+                <td>{{ m.data_saida.strftime('%d/%m/%Y') if m.data_saida else '-' }}</td>
+                <td>{{ m.descricao_servico }}</td>
+                <td>{{ "%.2f"|format(m.custo) }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('manutencao.atualizar_status_manutencao', id_manutencao=m.id_manutencao) }}" style="margin: 0;">
+                        <select name="status" onchange="this.form.submit()" class="form-control">
+                            <option value="Em andamento" {% if m.status == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+                            <option value="Concluída" {% if m.status == 'Concluída' %}selected{% endif %}>Concluída</option>
+                        </select>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align: center;">Nenhuma manutenção encontrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

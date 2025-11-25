@@ -1,106 +1,83 @@
 {% extends "base.html" %}
 
-{% block titulo %}Editar Veículo{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Editar Veículo</h2>
 
-{% block conteudo %}
-<h2>Editar Veículo</h2>
+    <form method="POST" action="{{ url_for('veiculos.editar_veiculo', id_veiculo=id_veiculo) }}" id="formVeiculo">
 
-<form method="POST" action="{{ url_for('editar_veiculo', id_veiculo=id_veiculo) }}" id="formVeiculo">
+        <div class="form-group"><label for="placaVeiculo">Placa</label><input type="text" name="placaVeiculo" id="placaVeiculo" required value="{{ veiculo.placa }}" /></div>
+        <div class="form-group"><label for="chassiVeiculo">Chassi</label><input type="text" name="chassiVeiculo" id="chassiVeiculo" required value="{{ veiculo.chassi }}" /></div>
+        <div class="form-group"><label for="anoVeiculo">Ano</label><input type="number" name="anoVeiculo" id="anoVeiculo" required value="{{ veiculo.ano }}" /></div>
+        <div class="form-group"><label for="corVeiculo">Cor</label><input type="text" name="corVeiculo" id="corVeiculo" required value="{{ veiculo.cor }}" /></div>
 
-  <!-- Campos do veículo -->
-  <label for="placaVeiculo">Placa</label>
-  <input type="text" name="placaVeiculo" id="placaVeiculo" required value="{{ veiculo.placa }}" />
+        <div class="form-group">
+            <label for="transmissaoVeiculo">Transmissão</label>
+            <select name="transmissaoVeiculo" id="transmissaoVeiculo" required>
+                <option value="manual" {% if veiculo.transmissao == "manual" %}selected{% endif %}>Manual</option>
+                <option value="automatico" {% if veiculo.transmissao == "automatico" %}selected{% endif %}>Automático</option>
+            </select>
+        </div>
 
-  <label for="chassiVeiculo">Chassi</label>
-  <input type="text" name="chassiVeiculo" id="chassiVeiculo" required value="{{ veiculo.chassi }}" />
+        <div class="form-group"><label for="dataCompra">Data da Compra</label><input type="date" name="dataCompra" id="dataCompra" required value="{{ veiculo.data_compra }}" /></div>
+        <div class="form-group"><label for="valorCompra">Valor da Compra</label><input type="number" step="0.01" name="valorCompra" id="valorCompra" required value="{{ veiculo.valor_compra }}" /></div>
+        <div class="form-group"><label for="odometro">Odômetro</label><input type="number" name="odometro" id="odometro" required value="{{ veiculo.quilometragem }}" /></div>
+        <div class="form-group"><label for="vencimentoLicenciamento">Vencimento Licenciamento</label><input type="date" name="vencimentoLicenciamento" id="vencimentoLicenciamento" required value="{{ veiculo.data_vencimento }}" /></div>
+        <div class="form-group"><label for="tanque">Tanque (litros)</label><input type="number" name="tanque" id="tanque" required value="{{ veiculo.tanque }}" /></div>
 
-  <label for="anoVeiculo">Ano</label>
-  <input type="number" name="anoVeiculo" id="anoVeiculo" required value="{{ veiculo.ano }}" />
+        <div class="form-group">
+            <label for="tanqueFracao">Tanque Fração</label>
+            <select name="tanqueFracao" id="tanqueFracao" required>
+                {% set fracoes = {'8':'Cheio (1/1)', '7':'7/8', '6':'6/8','5':'5/8','4':'4/8','3':'3/8','2':'2/8', '1': '1/8', '0': '0/8'} %}
+                {% for val,label in fracoes.items() %}
+                <option value="{{ val }}" {% if veiculo.tanque_fracao == val|float %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-  <label for="corVeiculo">Cor</label>
-  <input type="text" name="corVeiculo" id="corVeiculo" required value="{{ veiculo.cor }}" />
+        <div class="form-group">
+            <label for="combustivel">Combustível</label>
+            <select name="combustivel" id="combustivel" required>
+                {% for comb in combustiveis %}<option value="{{ comb.id_combustivel }}" {% if veiculo.id_combustivel == comb.id_combustivel %}selected{% endif %}>{{ comb.tipo_combustivel }}</option>{% endfor %}
+            </select>
+        </div>
 
-  <label for="transmissaoVeiculo">Transmissão</label>
-  <select name="transmissaoVeiculo" id="transmissaoVeiculo" required>
-    <option value="manual" {% if veiculo.transmissao == "manual" %}selected{% endif %}>Manual</option>
-    <option value="automatico" {% if veiculo.transmissao == "automatico" %}selected{% endif %}>Automático</option>
-  </select>
+        <div class="form-group">
+            <label for="marca">Marca</label>
+            <select name="marca" id="marca" required>
+                {% for m in marcas %}<option value="{{ m.id_marca }}" {% if veiculo.id_marca == m.id_marca %}selected{% endif %}>{{ m.nome_marca }}</option>{% endfor %}
+            </select>
+        </div>
 
-  <label for="dataCompra">Data da Compra</label>
-  <input type="date" name="dataCompra" id="dataCompra" required value="{{ veiculo.data_compra }}" />
+        <div class="form-group">
+            <label for="modeloVeiculo">Modelo</label>
+            <select name="modeloVeiculo" id="modeloVeiculo" required>
+                {% for mod in modelos %}<option value="{{ mod.id_modelo }}" data-categoria="{{ mod.nome_categoria }}" {% if veiculo.id_modelo == mod.id_modelo %}selected{% endif %}>{{ mod.nome_modelo }}</option>{% endfor %}
+            </select>
+        </div>
 
-  <label for="valorCompra">Valor da Compra</label>
-  <input type="number" step="0.01" name="valorCompra" id="valorCompra" required value="{{ veiculo.valor_compra }}" />
+        <div class="form-group"><label for="categoria">Categoria</label><input type="text" name="categoria" id="categoria" readonly value="{{ veiculo.nome_categoria }}" /></div>
 
-  <label for="odometro">Odômetro</label>
-  <input type="number" name="odometro" id="odometro" required value="{{ veiculo.quilometragem }}" />
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select name="status" id="status" required>
+                {% for s in status %}<option value="{{ s.id_status_veiculo }}" {% if veiculo.id_status_veiculo == s.id_status_veiculo %}selected{% endif %}>{{ s.descricao_status }}</option>{% endfor %}
+            </select>
+        </div>
 
-  <label for="vencimentoLicenciamento">Vencimento Licenciamento</label>
-  <input type="date" name="vencimentoLicenciamento" id="vencimentoLicenciamento" required value="{{ veiculo.data_vencimento }}" />
+        <div class="form-group">
+            <label for="companhiaSeguro">Companhia Seguro</label>
+            <select name="companhiaSeguro" id="companhiaSeguro">
+                <option value="">Sem seguro</option>
+                {% for s in seguros %}<option value="{{ s.id_seguro }}" {% if veiculo.id_seguro == s.id_seguro %}selected{% endif %}>{{ s.companhia }}</option>{% endfor %}
+            </select>
+        </div>
 
-  <label for="tanque">Tanque (litros)</label>
-  <input type="number" name="tanque" id="tanque" required value="{{ veiculo.tanque }}" />
+        <div class="form-group"><label for="vencimentoSeguro">Vencimento Seguro</label><input type="date" name="vencimentoSeguro" id="vencimentoSeguro" value="{{ veiculo.vencimento_seguro }}" /></div>
 
-  <label for="tanqueFracao">Tanque Fração</label>
-  <select name="tanqueFracao" id="tanqueFracao" required>
-    {% set fracoes = {'1':'Cheio (1/1)', '0.875':'7/8', '0.75':'6/8','0.5':'1/2','0.25':'1/4','0.125':'1/8','0.05':'Reserva'} %}
-    {% for val,label in fracoes.items() %}
-      <option value="{{ val }}" {% if veiculo.tanque_fracao == val|float %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-  </select>
-
-  <label for="combustivel">Combustível</label>
-  <select name="combustivel" id="combustivel" required>
-    {% for comb in combustiveis %}
-      <option value="{{ comb.id_combustivel }}" {% if veiculo.id_combustivel == comb.id_combustivel %}selected{% endif %}>
-        {{ comb.tipo_combustivel }}
-      </option>
-    {% endfor %}
-  </select>
-
-  <label for="marca">Marca</label>
-  <select name="marca" id="marca" required>
-    {% for m in marcas %}
-      <option value="{{ m.id_marca }}" {% if veiculo.id_marca == m.id_marca %}selected{% endif %}>{{ m.nome_marca }}</option>
-    {% endfor %}
-  </select>
-
-  <label for="modeloVeiculo">Modelo</label>
-  <select name="modeloVeiculo" id="modeloVeiculo" required>
-    {% for mod in modelos %}
-      <option value="{{ mod.id_modelo }}" data-categoria="{{ mod.nome_categoria }}" {% if veiculo.id_modelo == mod.id_modelo %}selected{% endif %}>
-        {{ mod.nome_modelo }}
-      </option>
-    {% endfor %}
-  </select>
-
-  <label for="categoria">Categoria</label>
-  <input type="text" name="categoria" id="categoria" readonly value="{{ veiculo.nome_categoria }}" />
-
-  <label for="status">Status</label>
-  <select name="status" id="status" required>
-    {% for s in status %}
-      <option value="{{ s.id_status_veiculo }}" {% if veiculo.id_status_veiculo == s.id_status_veiculo %}selected{% endif %}>
-        {{ s.descricao_status }}
-      </option>
-    {% endfor %}
-  </select>
-
-  <label for="companhiaSeguro">Companhia Seguro</label>
-  <select name="companhiaSeguro" id="companhiaSeguro">
-    <option value="">Sem seguro</option>
-    {% for s in seguros %}
-      <option value="{{ s.id_seguro }}" {% if veiculo.id_seguro == s.id_seguro %}selected{% endif %}>
-        {{ s.companhia }}
-      </option>
-    {% endfor %}
-  </select>
-
-  <label for="vencimentoSeguro">Vencimento Seguro</label>
-  <input type="date" name="vencimentoSeguro" id="vencimentoSeguro" value="{{ veiculo.vencimento_seguro }}" />
-
-  <button type="submit">Atualizar Veículo</button>
-</form>
+        <button type="submit" class="btn-primary">Atualizar Veículo</button>
+    </form>
+</div>
 {% endblock %}
 
 {% block scripts %}

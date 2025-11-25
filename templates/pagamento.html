@@ -1,19 +1,28 @@
 {% extends "base.html" %}
 
-{% block titulo %}Pagamento{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Finalizar Pagamento</h2>
+    <p class="valor-pagar">Valor total a pagar: <strong>R$ {{ "%.2f"|format(valor_a_pagar|float) }}</strong></p>    
+    
+    <!-- Exibe o valor da caução e a instrução de pagamento -->
+    <p class="caucao-info">Caução (a ser paga na retirada): <strong>R$ {{ "%.2f"|format(caucao|float) }}</strong></p>
 
-{% block conteudo %}
-<h1>Pagamento</h1>
-<form method="POST" action="/processar_pagamento" id="pagamentoForm">
-  <input type="text" name="numero_cartao" placeholder="Número do cartão" maxlength="16" required />
-  <input type="text" name="validade" placeholder="Validade (MM/AA)" maxlength="5" required />
-  <input type="text" name="cvv" placeholder="Código de segurança (CVV)" maxlength="4" required />
-  <input type="text" name="cpf" placeholder="CPF do titular" required />
-  <button type="submit">Pagar</button>
-</form>
-<p>Já tem uma conta? <a href="/login">Faça login</a></p>
+    <form method="POST" action="{{ url_for('pagamento.pagamento') }}" id="pagamentoForm">
+        <div class="form-group">
+            <label for="forma_pagamento">Forma de Pagamento</label>
+            <select name="forma_pagamento" id="forma_pagamento" required>
+                <option value="">Selecione...</option>
+                {% for forma in formas_pagamento %}
+                <option value="{{ forma.id_forma_pagamento }}">{{ forma.descricao_pagamento }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-primary">Confirmar Pagamento</button>
+    </form>
+</div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/pagamento.js') }}"></script>
 {% endblock %}

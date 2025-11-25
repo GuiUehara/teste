@@ -1,30 +1,31 @@
 {% extends "base.html" %}
 
-{% block titulo %}Cadastro de Manutenção{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Cadastro de Manutenção</h2>
 
-{% block conteudo %}
-<h2>Cadastro de Manutenção</h2>
+    <form method="POST" action="{{ url_for('manutencao.cadastro_manutencao') }}">
+        <div class="form-group">
+            <label for="idVeiculo">Veículo</label>
+            <select name="idVeiculo" id="idVeiculo" required>
+                <option value="">Selecione um veículo</option>
+                {% for v in veiculos %}
+                <option value="{{ v.id_veiculo }}">{{ v.placa }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-<form method="POST" action="{{ url_for('cadastro_manutencao') }}">
-    <label>Data de Entrada:</label>
-    <input type="date" name="dataEntrada" required><br>
+        <div class="form-group"><label for="dataEntrada">Data de Entrada</label><input type="date" name="dataEntrada" id="dataEntrada" required></div>
+        <div class="form-group"><label for="dataSaida">Data de Saída (Opcional)</label><input type="date" name="dataSaida" id="dataSaida"></div>
 
-    <label>Data de Saída:</label>
-    <input type="date" name="dataSaida"><br>
+        <div class="form-group">
+            <label for="descricaoServico">Descrição do Serviço</label>
+            <textarea name="descricaoServico" id="descricaoServico" required></textarea>
+        </div>
 
-    <label>Descrição do Serviço:</label>
-    <textarea name="descricaoServico" required></textarea><br>
+        <div class="form-group"><label for="custo">Custo</label><input type="number" step="0.01" name="custo" id="custo" required></div>
 
-    <label>Custo:</label>
-    <input type="number" step="0.01" name="custo" required><br>
-
-    <label>Veículo:</label>
-    <select name="idVeiculo" required>
-        {% for v in veiculos %}
-        <option value="{{ v.id_veiculo }}">{{ v.placa }}</option>
-        {% endfor %}
-    </select><br>
-
-    <button type="submit">Cadastrar</button>
-</form>
+        <button type="submit" class="btn-primary">Cadastrar Manutenção</button>
+    </form>
+</div>
 {% endblock %}

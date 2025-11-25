@@ -1,58 +1,72 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>{% block titulo %}Locadora{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Mobility</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <p>Perfil atual: {{ session.perfil }}</p>
 
-  <nav>
-    <a href="{{ url_for('cadastro_cliente') }}">Cadastrar Cliente</a> |
-    <a href="{{ url_for('cadastro_veiculo') }}">Cadastrar Veículo</a> |
-    <a href="{{ url_for('lista_veiculos') }}">Lista veiculos</a> |
-    {% if session.perfil == 'Gerente' %}
-      <a href="{{ url_for('cadastro_funcionario') }}">Cadastrar Funcionário</a> |
-    {% endif %}
-    {% if session.usuario_logado %}
-      <a href="{{ url_for('logout') }}">Sair ({{ session.usuario_logado }})</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Login</a> |
-      <a href="{{ url_for('cadastro') }}">Cadastro</a> |
-    {% endif %}
-      <a href="{{ url_for('pagamento') }}">Pagamento</a> |
-      <a href="{{ url_for('lista_clientes') }}">Lista clientes</a> |
-      <a href="{{ url_for('lista_funcionarios') }}">Lista funcionario</a> |
+<header>
+  <div class="header-container">
+    <div class="logo">Rider Mobility</div>
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+        <li class="menu-item">
+          Cadastro
+          <ul class="dropdown">
+            <li><a href="{{ url_for('clientes.cadastro_cliente') }}">Cadastrar Cliente</a></li>
+            <li><a href="{{ url_for('locacao.contrato_locacao') }}">Contrato de Locação</a></li>
+            <li><a href="{{ url_for('funcionarios.cadastro_funcionario') }}">Cadastrar Funcionário</a></li>
+            <li><a href="{{ url_for('veiculos.cadastro_veiculo') }}">Cadastrar Veículo</a></li>
+            <li><a href="{{ url_for('manutencao.cadastro_manutencao') }}">Cadastrar Manutenção</a></li>
+          </ul>
+        </li>
+        <li class="menu-item">
+          Lista
+          <ul class="dropdown">
+            <li><a href="{{ url_for('clientes.lista_clientes') }}">Lista Cliente</a></li>
+            <li><a href="{{ url_for('funcionarios.lista_funcionarios') }}">Lista Funcionário</a></li>
+             <li><a href="{{ url_for('veiculos.lista_veiculos') }}">Lista Veículos</a></li>
+          </ul>
+        </li>
+        <li class="menu-item">
+          Históricos
+          <ul class="dropdown">
+            <li><a href="{{ url_for('locacao.historico_locacao') }}">Histórico de Locação</a></li>
+            <li><a href="{{ url_for('multas.historico_multas') }}">Histórico de Multas</a></li>
+            <li><a href="{{ url_for('manutencao.historico_manutencao') }}">Histórico de Manutenção</a></li>
+          </ul>
+        </li>
+        <li class="menu-item">
+          Conta
+          <ul class="dropdown">
+            <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+            <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Solicitar Redefinição</a></li>
+            <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
+<main>
+  {% block content %}{% endblock %}
+</main>
 
-      <a href="{{ url_for('cadastro_manutencao') }}">Manutencao</a> |
-      <a href="{{ url_for('historico_manutencao') }}">Historico Manutencao</a> |
-      <a href="{{ url_for('historico_multas') }}">Histórico Multa</a> |
-      <a href="{{ url_for('contrato_locacao') }}">Contrato locacao</a> |
-      <a href="{{ url_for('historico_locacao') }}">Histórico locacao</a> |
-      <a href="{{ url_for('teste') }}">teste</a> 
-  </nav>
-
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="mensagens">
-      {% for categoria, mensagem in messages %}
-        <li class="{{ categoria }}">{{ mensagem }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-
-
-  <main>
-    {% block conteudo %}{% endblock %}
-  </main>
-
-  {# 💡 ADIÇÃO CRÍTICA: O bloco de scripts é adicionado aqui #}
-  {% block scripts %}{% endblock %} 
-
+<footer>
+  <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
+</footer>
+<!-- Funções centralizadas para busca de CEP -->
+<script src="{{ url_for('static', filename='js/cep.js') }}"></script>
+<!-- Funções centralizadas para gerenciamento de locações e opcionais -->
+<script src="{{ url_for('static', filename='js/locacao.js') }}"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

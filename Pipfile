@@ -8,6 +8,7 @@ flask = "*"
 mysql-connector-python = "*"
 passlib = "*"
 requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

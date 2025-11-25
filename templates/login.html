@@ -1,18 +1,29 @@
 {% extends "base.html" %}
 
-{% block titulo %}Login{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Login</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-{% block conteudo %}
-<h1>Login</h1>
-<form method="POST" action="/login" id="loginForm">
-  <input type="text" name="email" placeholder="Email" required />
-  <input type="password" name="senha" placeholder="Senha" required />
-  <button type="submit">Entrar</button>
-</form>
-<p>Não tem conta? <a href="/cadastro">Cadastre-se</a></p>
-<p>Esqueceu a senha? <a href="/solicitar_redefinir">Clique aqui</a></p>
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" required>
+        </div>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <p class="form-link">Esqueceu sua senha? <a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Redefinir</a></p>
+        <p class="form-link">Não tem uma conta? <a href="{{ url_for('auth.cadastro') }}">Cadastre-se</a></p>
+    </form>
+</div>
 {% endblock %}

@@ -1,41 +1,40 @@
 {% extends "base.html" %}
 
-{% block titulo %}Lista de Clientes{% endblock %}
+{% block content %}
+<div class="table-container">
+    <h2>Lista de Clientes</h2>
 
-{% block conteudo %}
-<h2>Clientes Cadastrados</h2>
+    <form method="GET" action="{{ url_for('clientes.lista_clientes') }}" class="search-form">
+        <input type="text" name="busca" placeholder="Buscar por nome ou CPF..." value="{{ busca or '' }}">
+        <button type="submit" class="btn-secondary">Buscar</button>
+    </form>
 
-<form method="GET" action="{{ url_for('lista_clientes') }}">
-    <input type="text" name="busca" placeholder="Buscar (mínimo 3 letras)" value="{{ busca }}">
-    <button type="submit">Buscar</button>
-</form>
-
-<table>
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>CPF</th>
-      <th>Email</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for cliente in clientes %}
-    <tr>
-      <td>{{ cliente[1] }}</td>
-      <td>{{ cliente[2] }}</td>
-      <td>{{ cliente[3] }}</td>
-      <td>
-        <a href="{{ url_for('editar_cliente', id_cliente=cliente[0]) }}" title="Editar">&#9998;</a>
-        &nbsp;&nbsp;
-        <a href="{{ url_for('deletar_cliente', id_cliente=cliente[0]) }}" title="Deletar" onclick="return confirm('Deseja realmente deletar este cliente?');">&#10060;</a>
-      </td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="4">Nenhum cliente encontrado.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome Completo</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th class="actions-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.nome_completo }}</td>
+                <td>{{ cliente.cpf }}</td>
+                <td>{{ cliente.email }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('clientes.editar_cliente', id_cliente=cliente.id_cliente) }}" class="btn-edit">Editar</a>
+                    <a href="{{ url_for('clientes.deletar_cliente', id_cliente=cliente.id_cliente) }}" class="btn-delete" onclick="return confirm('Tem certeza que deseja deletar este cliente?');">Deletar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">Nenhum cliente encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

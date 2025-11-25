@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<title>Veículos - {{ categoria.nome_categoria }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1>{{ categoria.nome_categoria }}</h1>
+    <p>Valor da diária: R$ {{ categoria.valor_diaria }}</p>
+    
+    <div class="veiculos-lista">
+        {% if veiculos %}
+            {% for v in veiculos %}
+                <div class="veiculo-item">
+                    <span>{{ v.nome_marca }} {{ v.nome_modelo }}</span>
+                    <button class="btn-secondary" onclick="window.location.href='{{ url_for('reserva.reservar_veiculo', id_veiculo=v.id_veiculo) }}'">Reservar</button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Não há veículos disponíveis nesta categoria no momento.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

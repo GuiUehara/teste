@@ -1,87 +1,56 @@
 {% extends "base.html" %}
 
-{% block titulo %}Cadastro de Cliente{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Cadastro de Cliente</h2>
 
-{% block conteudo %}
-<h2>Cadastro de Cliente para Locação</h2>
+    <form method="POST" action="{{ url_for('clientes.cadastro_cliente') }}" id="formCliente">
 
-<form method="POST" action="{{ url_for('cadastro_cliente') }}" id="formCliente">
+        <div class="form-group">
+            <label for="nomeCliente">Nome Completo</label>
+            <input type="text" id="nomeCliente" name="nomeCliente" required />
+        </div>
+        <div class="form-group">
+            <label for="cpfCliente">CPF</label>
+            <input type="text" id="cpfCliente" name="cpfCliente" placeholder="Somente números" pattern="\d{11}" required />
+        </div>
+        <div class="form-group">
+            <label for="dataNascCliente">Data de Nascimento</label>
+            <input type="date" id="dataNascCliente" name="dataNascCliente" required />
+        </div>
+        <div class="form-group">
+            <label for="telefoneCliente">Telefone</label>
+            <input type="tel" id="telefoneCliente" name="telefoneCliente" required />
+        </div>
+        <div class="form-group">
+            <label for="emailCliente">Email</label>
+            <input type="email" id="emailCliente" name="emailCliente" required />
+        </div>
 
-    <input type="text" name="nomeCliente" placeholder="Nome completo" required />
-    <input type="text" name="cpfCliente" placeholder="CPF (somente números)" pattern="\d{11}" required />
-    <label>Data de nascimento:</label>
-    <input type="date" name="dataNascCliente" required />
-    <input type="tel" name="telefoneCliente" placeholder="Telefone" required />
-    <input type="email" name="emailCliente" placeholder="Email" required />
+        <hr>
+        <h3>Endereço</h3>
+        
+        <div class="form-group cep-group">
+            <input type="text" name="cepCliente" id="cepCliente" placeholder="CEP" pattern="\d{8}" required />
+            <!-- A função consultaCep() é importada de /static/js/cep.js -->
+            <button type="button" class="btn-secondary" onclick="consultaCep('cepCliente', 'logradouroCliente', 'bairroCliente', 'cidadeCliente', 'estadoCliente')">Buscar CEP</button> 
+        </div>
 
-    <hr>
-    <h3>Endereço</h3>
-    
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" name="cepCliente" id="cepCliente" placeholder="CEP (somente números)" pattern="\d{8}" required style="flex-grow: 1;" />
-        <button type="button" onclick="consultaCep()">Buscar</button> 
-    </div>
+        <div class="form-group"><input type="text" name="logradouroCliente" id="logradouroCliente" placeholder="Logradouro" required /></div>
+        <div class="form-group"><input type="text" name="numeroCliente" placeholder="Número" required /></div>
+        <div class="form-group"><input type="text" name="complementoCliente" placeholder="Complemento (Opcional)" /></div>
+        <div class="form-group"><input type="text" name="bairroCliente" id="bairroCliente" placeholder="Bairro" required /></div>
+        <div class="form-group"><input type="text" name="cidadeCliente" id="cidadeCliente" placeholder="Cidade" required /></div>
+        <div class="form-group"><input type="text" name="estadoCliente" id="estadoCliente" placeholder="Estado (UF)" maxlength="2" required /></div>
 
-    <input type="text" name="logradouroCliente" id="logradouroCliente" placeholder="Logradouro (Rua, Avenida...)" required />
-    <input type="text" name="numeroCliente" placeholder="Número" required />
-    <input type="text" name="complementoCliente" placeholder="Complemento (Opcional)" />
-    <input type="text" name="bairroCliente" id="bairroCliente" placeholder="Bairro" required />
-    <input type="text" name="cidadeCliente" id="cidadeCliente" placeholder="Cidade" required />
-    <input type="text" name="estadoCliente" id="estadoCliente" placeholder="Estado (UF)" maxlength="2" required />
+        <hr>
+        <h3>CNH</h3>
+        <div class="form-group"><input type="text" name="cnhCliente" placeholder="Número da CNH" required /></div>
+        <div class="form-group"><input type="text" name="categoriaCNHCliente" placeholder="Categoria CNH (Ex: B)" maxlength="2" required /></div>
+        <div class="form-group"><label>Validade da CNH:</label><input type="date" name="validadeCNHCliente" required /></div>
+        <div class="form-group"><input type="number" name="tempoHabilitacaoCliente" placeholder="Tempo de habilitação (anos)" min="0" required /></div>
 
-    <hr>
-    <h3>CNH</h3>
-    <input type="text" name="cnhCliente" placeholder="Número da CNH" required />
-    <input type="text" name="categoriaCNHCliente" placeholder="Categoria CNH (Ex: B)" maxlength="2" required />
-    <label>Validade da CNH:</label>
-    <input type="date" name="validadeCNHCliente" required />
-    <input type="number" name="tempoHabilitacaoCliente" placeholder="Tempo de habilitação (anos)" min="0" required />
-
-    <button type="submit">Registrar Cliente</button>
-
-</form>
-{% endblock %}
-
-{% block scripts %}
-<script>
-
-
-    // chama a API de CEP
-    function consultaCep() {
-        const cepInput = document.getElementById("cepCliente");
-        const cep = cepInput.value.replace(/\D/g, ''); // remove tudo que não for número
-
-        if (cep.length !== 8) {
-            alert("Por favor, digite um CEP válido com 8 números.");
-            clearFields();
-            return;
-        }
-
-        fetch(`/api/cep/${cep}`)
-            .then(resp => {
-                if (!resp.ok) {
-                    return resp.json().then(errorData => Promise.reject(errorData));
-                }
-                return resp.json();
-            })
-            .then(dados => {
-                if (dados.erro) {
-                    alert(dados.erro);
-                    clearFields();
-                    return;
-                }
-
-                document.getElementById("logradouroCliente").value = dados.logradouro || '';
-                document.getElementById("bairroCliente").value = dados.bairro || '';
-                document.getElementById("cidadeCliente").value = dados.localidade || '';
-                document.getElementById("estadoCliente").value = dados.uf || '';
-            })
-            .catch(error => {
-                const errorMessage = error.erro || "Erro ao consultar o CEP.";
-                alert(errorMessage);
-                clearFields();
-                console.error(error);
-            });
-    }
-</script>
+        <button type="submit" class="btn-primary">Registrar Cliente</button>
+    </form>
+</div>
 {% endblock %}

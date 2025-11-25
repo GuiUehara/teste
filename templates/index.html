@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-content">
+    <h1>Bem-vindo à Rider Mobility</h1>
+    <p>Gerencie sua frota, clientes e locações de forma prática e eficiente.</p>
+    <a href="{{ url_for('clientes.cadastro_cliente') }}" class="btn-hero">Comece Agora</a>
+  </div>
+</section>
+{% endblock %}

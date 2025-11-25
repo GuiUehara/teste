@@ -1,71 +1,40 @@
 {% extends "base.html" %}
 
-{% block titulo %}Editar Cliente{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Editar Cliente</h2>
 
-{% block conteudo %}
-<h2>Editar Cliente</h2>
+    <form method="POST" action="{{ url_for('editar_cliente', id_cliente=id_cliente) }}" id="formCliente">
 
-<form method="POST" action="{{ url_for('editar_cliente', id_cliente=id_cliente) }}" id="formCliente">
+        <h3>Dados Pessoais</h3>
+        <div class="form-group"><label for="nomeCliente">Nome Completo</label><input type="text" name="nomeCliente" id="nomeCliente" value="{{ dados.nome_completo }}" required /></div>
+        <div class="form-group"><label for="cpfCliente">CPF</label><input type="text" name="cpfCliente" id="cpfCliente" value="{{ dados.cpf }}" pattern="\d{11}" title="Digite 11 números" required /></div>
+        <div class="form-group"><label for="dataNascCliente">Data de Nascimento</label><input type="date" name="dataNascCliente" id="dataNascCliente" value="{{ dados.data_nascimento }}" required /></div>
+        <div class="form-group"><label for="telefoneCliente">Telefone</label><input type="tel" name="telefoneCliente" id="telefoneCliente" value="{{ dados.telefone }}" required /></div>
+        <div class="form-group"><label for="emailCliente">Email</label><input type="email" name="emailCliente" id="emailCliente" value="{{ dados.email }}" required /></div>
 
-  <h3>Dados Pessoais</h3>
+        <hr>
+        <h3>Endereço</h3>
+        <div class="form-group cep-group">
+            <input type="text" name="cepCliente" id="cepCliente" value="{{ dados.cep }}" placeholder="CEP" pattern="\d{8}" required>
+            <!-- A função consultaCep() é importada de /static/js/cep.js -->
+            <button type="button" class="btn-secondary" onclick="consultaCep('cepCliente', 'logradouroCliente', 'bairroCliente', 'cidadeCliente', 'estadoCliente')">Buscar CEP</button> 
+        </div>
+        <div class="form-group"><input type="text" name="logradouroCliente" id="logradouroCliente" value="{{ dados.logradouro }}" placeholder="Logradouro" required /></div>
+        <div class="form-group"><input type="text" name="numeroCliente" id="numeroCliente" value="{{ dados.numero }}" placeholder="Número" required /></div>
+        <div class="form-group"><input type="text" name="complementoCliente" id="complementoCliente" value="{{ dados.complemento }}" placeholder="Complemento (Opcional)" /></div>
+        <div class="form-group"><input type="text" name="bairroCliente" id="bairroCliente" value="{{ dados.bairro }}" placeholder="Bairro" required /></div>
+        <div class="form-group"><input type="text" name="cidadeCliente" id="cidadeCliente" value="{{ dados.cidade }}" placeholder="Cidade" required /></div>
+        <div class="form-group"><input type="text" name="estadoCliente" id="estadoCliente" value="{{ dados.estado }}" placeholder="Estado (UF)" maxlength="2" required /></div>
 
-  <input type="text" name="nomeCliente" placeholder="Nome completo"
-         value="{{ dados.nome_completo }}" required />
+        <hr>
+        <h3>CNH</h3>
+        <div class="form-group"><label for="cnhCliente">Número da CNH</label><input type="text" name="cnhCliente" id="cnhCliente" value="{{ dados.numero_registro }}" required /></div>
+        <div class="form-group"><label for="categoriaCNHCliente">Categoria</label><input type="text" name="categoriaCNHCliente" id="categoriaCNHCliente" maxlength="2" value="{{ dados.categoria }}" required /></div>
+        <div class="form-group"><label for="validadeCNHCliente">Validade da CNH</label><input type="date" name="validadeCNHCliente" id="validadeCNHCliente" value="{{ dados.data_validade }}" required /></div>
+        <div class="form-group"><label for="tempoHabilitacaoCliente">Tempo de Habilitação (anos)</label><input type="number" name="tempoHabilitacaoCliente" id="tempoHabilitacaoCliente" min="0" value="{{ dados.tempo_habilitacao_anos }}" required /></div>
 
-  <input type="text" name="cpfCliente" placeholder="CPF"
-         pattern="\d{11}" title="Digite 11 números"
-         value="{{ dados.cpf }}" required />
-
-  <label>Data de nascimento:</label>
-  <input type="date" name="dataNascCliente"
-         value="{{ dados.data_nascimento }}" required />
-
-  <input type="tel" name="telefoneCliente" placeholder="Telefone"
-         value="{{ dados.telefone }}" required />
-
-  <input type="email" name="emailCliente" placeholder="Email"
-         value="{{ dados.email }}" required />
-
-  <input type="number" name="tempoHabilitacaoCliente"
-         placeholder="Tempo de habilitação (anos)"
-         min="0" value="{{ dados.tempo_habilitacao_anos }}" required />
-
-  <h3>Endereço</h3>
-
-  <input type="text" name="logradouroCliente" placeholder="Logradouro"
-         value="{{ dados.logradouro }}" required />
-
-  <input type="text" name="numeroCliente" placeholder="Número"
-         value="{{ dados.numero }}" required />
-
-  <input type="text" name="complementoCliente" placeholder="Complemento (opcional)"
-         value="{{ dados.complemento }}" />
-
-  <input type="text" name="bairroCliente" placeholder="Bairro"
-         value="{{ dados.bairro }}" required />
-
-  <input type="text" name="cidadeCliente" placeholder="Cidade"
-         value="{{ dados.cidade }}" required />
-
-  <input type="text" name="estadoCliente" placeholder="UF (Ex: SP)"
-         maxlength="2" value="{{ dados.estado }}" required />
-
-  <input type="text" name="cepCliente" placeholder="CEP"
-         value="{{ dados.cep }}" required />
-
-  <h3>CNH</h3>
-
-  <input type="text" name="cnhCliente" placeholder="Número da CNH"
-         value="{{ dados.numero_registro }}" required />
-
-  <input type="text" name="categoriaCNHCliente" placeholder="Categoria (Ex: B)"
-         maxlength="2" value="{{ dados.categoria }}" required />
-
-  <label>Validade da CNH:</label>
-  <input type="date" name="validadeCNHCliente"
-         value="{{ dados.data_validade }}" required />
-
-  <button type="submit">Atualizar Cliente</button>
-
-</form>
+        <button type="submit" class="btn-primary">Atualizar Cliente</button>
+    </form>
+</div>
 {% endblock %}

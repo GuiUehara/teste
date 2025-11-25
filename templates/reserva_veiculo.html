@@ -1,174 +1,297 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Reservar Veículo</title>
-</head>
-<body>
-<h2>Reserva do Veículo: {{ veiculo.nome_modelo }} - {{ veiculo.nome_marca }}</h2>
+{% extends "base.html" %}
 
-<form id="form-locacao">
-    <input type="hidden" id="veiculo" value="{{ veiculo.id_veiculo }}">
+{% block titulo %}Reservar Veículo{% endblock %}
 
-    <label for="data_retirada">Data de Retirada:</label>
-    <input type="date" id="data_retirada" name="data_retirada" required>
+{% block content %}
+<div class="reserva-layout">
+    
+    <!-- COLUNA PRINCIPAL (ESQUERDA) - Formulário de Datas e Opcionais -->
+    <div class="main-content-reserva">
+        <h2>Reserva do Veículo: {{ veiculo.nome_modelo }} - {{ veiculo.nome_marca }}</h2>
 
-    <label for="data_devolucao_prevista">Data de Devolução Prevista:</label>
-    <input type="date" id="data_devolucao_prevista" name="data_devolucao_prevista" required>
+        <form id="form-locacao"> 
+            <input type="hidden" id="veiculo" value="{{ veiculo.id_veiculo }}">
+            
+            <!-- Os campos de entrada de dados do usuário -->
+            <label for="data_retirada">Data de Retirada:</label>
+            <input type="date" id="data_retirada" name="data_retirada" required>
 
-    <label for="select-opcional">Opcionais:</label>
-    <select id="select-opcional"></select>
-    <input type="number" id="quantidade-opcional" value="1" min="1">
-    <button type="button" id="btn-adicionar-opcional">Adicionar</button>
+            <label for="data_devolucao_prevista">Data de Devolução Prevista:</label>
+            <input type="date" id="data_devolucao_prevista" name="data_devolucao_prevista" required>
 
-    <ul id="lista-opcionais"></ul>
+            <div class="opcionais-group">
+                <label for="select-opcional">Opcionais:</label>
+                <select id="select-opcional"></select>
+                <input type="number" id="quantidade-opcional" value="1" min="1" style="width: 60px;">
+                <button type="button" id="btn-adicionar-opcional">Adicionar</button>
+            </div>
+            <ul id="lista-opcionais"></ul>
+            
+            <!-- Este input armazena o valor calculado para ser enviado no submit -->
+            <input type="hidden" id="valor_total_previsto" value="{{ valor_previsto or 0 }}">
+        </form>
+    </div>
+    
+    <!-- COLUNA LATERAL (DIREITA) - Resumo de Preço e Ação de Reserva -->
+    <div class="resumo-lateral">
+        <div class="resumo-card">
+            
+            <!-- Display do Valor Total (Grande) -->
+            <div class="resumo-header">
+                <div class="valor-previsto-group">
+                    <span class="valor-total-label">R$</span>
+                    <!-- IDs para o JavaScript atualizar o valor principal -->
+                    <span id="valor_total_previsto_display" class="valor-total-display">{{ valor_previsto or '0,00' }}</span>
+                    <p class="valor-subtext">Total Previsto</p>
+                </div>
+            </div>
 
-    <label for="valor_total_previsto">Valor Total Previsto (R$):</label>
-    <input type="text" id="valor_total_previsto" readonly value="{{ valor_previsto or 0 }}">
+            <!-- Detalhes do preço (Simulado) -->
+            <div class="detalhes-preco">
+                <p class="detalhes-titulo">Detalhes do preço</p>
+                <div class="linha-detalhe"><span>Diária Veículo</span><span class="preco-detalhe" id="diaria_valor">R$ {{ "%.2f"|format(veiculo.valor_diaria)|replace('.', ',') }}</span></div>
+                <div class="linha-detalhe"><span>Opcionais</span><span class="preco-detalhe" id="opcionais_valor">R$ 0,00</span></div>
+                <div class="linha-detalhe total-linha"><span>Valor Previsto</span><span class="preco-detalhe" id="valor_previsto_detalhe">R$ {{ valor_previsto or '0,00' }}</span></div>
+            </div>
 
-    <button type="submit">Reservar</button>
-</form>
+            <!-- Botão de Reserva (usa 'form="form-locacao"' para enviar o formulário da outra coluna) -->
+            <button type="submit" form="form-locacao" class="btn-primary btn-reservar">Reservar</button>
+        </div>
+</div>
 
-<script>
-let opcionaisTemp = [];
-
-// Carregar opcionais disponíveis
-function carregarOpcionais() {
-    fetch('/api/opcionais')
-        .then(res => res.json())
-        .then(opcionais => {
-            const select = document.getElementById("select-opcional");
-            select.innerHTML = '<option value="">Selecione</option>';
-            opcionais.forEach(o => {
-                const option = document.createElement("option");
-                option.value = o.id_opcional;
-                option.textContent = `${o.descricao} - R$ ${parseFloat(o.valor_diaria).toFixed(2)}`;
-                option.dataset.valor = parseFloat(o.valor_diaria);
-                select.appendChild(option);
-            });
-        })
-        .catch(err => console.error("Erro ao carregar opcionais:", err));
-}
-
-// Adiciona item ao carrinho de opcionais
-function adicionarOpcionalTemp() {
-    const select = document.getElementById("select-opcional");
-    const quantidade = parseInt(document.getElementById("quantidade-opcional").value);
-    const id_opcional = parseInt(select.value);
-    if (!id_opcional || quantidade < 1) return;
-
-    const descricao = select.options[select.selectedIndex].text.split(" - R$")[0];
-    const valor_diaria = parseFloat(select.options[select.selectedIndex].dataset.valor);
-
-    const existente = opcionaisTemp.find(o => o.id_opcional === id_opcional);
-    if (existente) existente.quantidade += quantidade;
-    else opcionaisTemp.push({ id_opcional, descricao, quantidade, valor_diaria });
-
-    listarOpcionaisTemp();
-    atualizarValorPrevisto();
-}
-
-// Atualiza a lista visual do carrinho
-function listarOpcionaisTemp() {
-    const lista = document.getElementById("lista-opcionais");
-    lista.innerHTML = "";
-    opcionaisTemp.forEach((op, idx) => {
-        const li = document.createElement("li");
-        li.textContent = `${op.descricao} - R$ ${op.valor_diaria.toFixed(2)} x ${op.quantidade}`;
-        const btn = document.createElement("button");
-        btn.textContent = "Remover";
-        btn.type = "button";
-        btn.onclick = () => {
-            opcionaisTemp.splice(idx, 1);
-            listarOpcionaisTemp();
-            atualizarValorPrevisto();
-        };
-        li.appendChild(btn);
-        lista.appendChild(li);
-    });
-}
-
-// Atualiza valor_total_previsto em tempo real
-function atualizarValorPrevisto() {
-    const idVeiculo = document.getElementById("veiculo").value;
-    const dataRetirada = document.getElementById("data_retirada").value;
-    const dataPrevista = document.getElementById("data_devolucao_prevista").value;
-    const inputValor = document.getElementById("valor_total_previsto");
-
-    if (!idVeiculo || !dataRetirada || !dataPrevista) {
-        inputValor.value = 0;
-        return;
+<style>
+    /* ---------------------------------------------------- */
+    /* 1. LAYOUT PRINCIPAL (GRID) - REPLICANDO DUAS COLUNAS */
+    /* ---------------------------------------------------- */
+    .reserva-layout {
+        display: grid;
+        /* Coluna principal (maior) e coluna lateral (menor) */
+        grid-template-columns: 2fr 1fr; /* Ex: 66% / 34% */
+        gap: 30px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Responsive adjustment for small screens */
+    @media (max-width: 900px) {
+        .reserva-layout {
+            grid-template-columns: 1fr; /* Stack columns on smaller screens */
+            gap: 20px;
+        }
     }
 
-    const dados = {
-        id_veiculo: parseInt(idVeiculo),
-        data_retirada: dataRetirada,
-        data_devolucao_prevista: dataPrevista,
-        opcionais: opcionaisTemp.map(op => ({
-            id_opcional: op.id_opcional,
-            quantidade: op.quantidade
-        }))
-    };
+    /* 2. ESTILO DA COLUNA PRINCIPAL (Formulário) */
+    .main-content-reserva {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .main-content-reserva h2 {
+        margin-top: 0;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+    }
 
-    fetch("/api/valor-previsto-reserva", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
-    })
-    .then(res => res.json())
-    .then(json => {
-        inputValor.value = json.valor_total_previsto ? parseFloat(json.valor_total_previsto).toFixed(2) : 0;
-    })
-    .catch(err => console.error("Erro ao calcular valor previsto:", err));
-}
+    /* Estilos de campo de formulário */
+    #form-locacao label {
+        display: block;
+        width: 100%;
+        margin-top: 15px;
+        font-weight: 500;
+        color: #444;
+    }
+    #form-locacao input[type="date"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .opcionais-group {
+        display: flex;
+        align-items: flex-end; /* Alinha o botão e o input no final */
+        gap: 10px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+    .opcionais-group label {
+        margin-top: 0;
+    }
+    #select-opcional {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        height: 40px;
+    }
+    #quantidade-opcional {
+        height: 40px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
+    }
+    #btn-adicionar-opcional {
+        padding: 8px 15px;
+        height: 40px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+    #lista-opcionais {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+    }
+    #lista-opcionais li {
+        background-color: #f9f9f9;
+        border: 1px solid #eee;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    .btn-remover {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    /* ---------------------------------------------------- */
+    /* 3. ESTILO DA COLUNA LATERAL (CARD DE RESUMO) */
+    /* ---------------------------------------------------- */
+    .resumo-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .resumo-header {
+        text-align: right;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .valor-total-label {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+    .valor-total-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #004d26; /* Cor primária do style.css */
+        margin-left: 5px;
+    }
+    .valor-subtext {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: -5px;
+    }
+    
+    .detalhes-preco {
+        padding: 15px 0;
+    }
+    .detalhes-titulo {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 5px;
+    }
+    .linha-detalhe {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .total-linha {
+        font-weight: bold;
+        padding-top: 10px;
+        border-top: 1px dashed #ddd;
+        color: #333;
+    }
 
-// Função para salvar a reserva e redirecionar
-function salvarReserva() {
-    const idVeiculo = document.getElementById("veiculo").value;
-    const dataRetirada = document.getElementById("data_retirada").value;
-    const dataPrevista = document.getElementById("data_devolucao_prevista").value;
-    const valorPrevisto = document.getElementById("valor_total_previsto").value;
+    /* Botão de Reservar */
+    .btn-reservar {
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        background-color: #004d26; /* Cor primária do style.css */
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .btn-reservar:hover {
+        background-color: #00331a; /* Cor hover do style.css */
+    }
+    
+    .nota-reserva {
+        font-size: 0.8rem;
+        color: #666;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    /* Card de Oferta */
+    .oferta-card {
+        background-color: #f0f8ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 0.9rem;
+        color: #004085;
+    }
+    .oferta-card strong {
+        color: #007bff;
+    }
+</style>
+{% endblock %}
 
-    const dados = {
-        id_veiculo: parseInt(idVeiculo),
-        data_retirada: dataRetirada,
-        data_devolucao_prevista: dataPrevista,
-        valor_previsto: parseFloat(valorPrevisto),
-        opcionais: opcionaisTemp
-    };
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/reserva.js') }}"></script>
+<script>
+    // Inicialização unificada
+    window.addEventListener("load", function() {
+        carregarOpcionais('select-opcional'); // Chama a função global de reserva.js
+        document.getElementById("btn-adicionar-opcional").addEventListener("click", () => adicionarOpcionalTemp('select-opcional', 'quantidade-opcional'));
+        document.getElementById("data_retirada").addEventListener("change", atualizarValorPrevisto);
+        document.getElementById("data_devolucao_prevista").addEventListener("change", atualizarValorPrevisto);
+        
+        // Ouve o evento personalizado para atualizar o valor quando opcionais mudam
+        document.addEventListener('opcionaisAtualizados', atualizarValorPrevisto);
 
-    fetch("/reserva/criar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
-    })
-    .then(res => res.json())
-    .then(resp => {
-        if (resp.sucesso) {
-            window.location.href = resp.redirect;
-        } else {
-            alert("Erro ao criar reserva: " + (resp.erro || "Erro desconhecido"));
-        }
-    })
-    .catch(err => console.error(err));
+        // Atualiza valor ao carregar a página
+        atualizarValorPrevisto();
 
-    return false;
-}
-
-// Inicialização unificada
-window.addEventListener("load", function() {
-    carregarOpcionais();
-    document.getElementById("btn-adicionar-opcional").addEventListener("click", adicionarOpcionalTemp);
-    document.getElementById("data_retirada").addEventListener("change", atualizarValorPrevisto);
-    document.getElementById("data_devolucao_prevista").addEventListener("change", atualizarValorPrevisto);
-
-    atualizarValorPrevisto();
-
-    document.getElementById("form-locacao").addEventListener("submit", function(event) {
-        event.preventDefault();
-        salvarReserva();
+        // Adicionar submit do formulário
+        document.getElementById("form-locacao").addEventListener("submit", function(event) {
+            event.preventDefault();
+            salvarReserva();
+        });
     });
-});
 </script>
-</body>
-</html>
+{% endblock %}

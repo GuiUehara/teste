@@ -1,297 +1,347 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Editar Locação</title>
+{% extends "base.html" %}
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 0;
-    }
-
-    .container {
-        display: flex;
-    }
-
-    .form-container {
-        flex: 1;
-        padding: 20px 40px;
-    }
-
-    h2 { margin-top: 0; }
-
-    label {
-        font-weight: bold;
-        display: block;
-        margin-top: 10px;
-    }
-
-    input, select, button {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
-
-    input[readonly], select[disabled] {
-        background-color: #eee;
-        cursor: not-allowed;
-    }
-
-    button {
-        margin-top: 20px;
-        background: #007bff;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #0056b3;
-    }
-
-    .sidebar {
-        width: 280px;
-        background: white;
-        border-left: 2px solid #ddd;
-        padding: 20px;
-        box-shadow: -3px 0 8px rgba(0,0,0,0.1);
-        overflow-y: auto;
-        height: 100vh;
-    }
-
-    .opcional-item {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
+{% block content %}
+<div class="contrato-container">
     <div class="form-container">
-        <h2>Editar Locação</h2>
+        <h2>Editar Locação #<span id="locacao-id-titulo"></span></h2>
 
-        <label>Cliente:</label>
-        <input type="text" id="busca_cliente" readonly>
+        <div class="form-group">
+            <label>Status:</label>
+            <select id="status" onchange="verificarStatus()">
+                <option value="Reserva">Reserva</option>
+                <option value="Locado">Locado</option>
+                <option value="Chegada">Chegada</option>
+            </select>
+        </div>
 
-        <label>CPF:</label>
-        <input type="text" id="cpf" readonly>
+        <div class="form-group"><label>Data de saída:</label><input type="datetime-local" id="data_retirada"></div>
+        <div class="form-group"><label>Data de chegada prevista:</label><input type="datetime-local" id="data_devolucao_prevista"></div>
+        <div class="form-group" id="div_data_chegada_real" style="display: none;"><label>Data de chegada real:</label><input type="datetime-local" id="data_devolucao_real"></div>
 
-        <label>CNH:</label>
-        <input type="text" id="cnh" readonly>
+        <hr>
+        <h3>Cliente</h3>
+        <div class="form-group"><label>Cliente:</label><input type="text" id="busca_cliente" readonly></div>
+        <div class="form-group"><label>CPF:</label><input type="text" id="cpf" readonly></div>
+        <div class="form-group"><label>CNH:</label><input type="text" id="cnh" readonly></div>
+        <div class="form-group"><label>Data de validade da CNH:</label><input type="text" id="data_validade" readonly></div>
 
-        <label>Data validade CNH:</label>
-        <input type="date" id="data_validade" readonly>
+        <hr>
+        <h3>Veículo</h3>
+        <div class="form-group"><label>Marca:</label><input type="text" id="marca" readonly></div>
+        <div class="form-group"><label>Modelo:</label><input type="text" id="modelo" readonly></div>
+        <div class="form-group"><label>Placa:</label><input type="text" id="placa" readonly></div>
 
-        <label>Categoria:</label>
-        <select id="categoria" disabled></select>
+        <hr>
+        <h3>Quilometragem</h3>
+        <div class="form-group"><label>Quilometragem de saída:</label><input type="number" id="km_saida" readonly></div>
+        <div class="form-group" id="div_km_chegada" style="display: none;"><label>Quilometragem de chegada:</label><input type="number" id="km_chegada"></div>
 
-        <label>Veículo:</label>
-        <select id="veiculo" disabled></select>
+        <hr>
+        <h3>Tanque</h3>
+        <div class="form-group"><label>Tanque de saída:</label><input type="text" id="tanque_saida" readonly></div>
+        <div class="form-group" id="div_tanque_chegada" style="display: none;"><label>Tanque de chegada:</label>
+            <select id="tanque_chegada">
+                <option value="8">Cheio</option>
+                <option value="7">7/8</option>
+                <option value="6">6/8</option>
+                <option value="5">5/8</option>
+                <option value="4">4/8</option>
+                <option value="3">3/8</option>
+                <option value="2">2/8</option>
+                <option value="1">1/8</option>
+                <option value="0">0/8</option>
+            </select>
+        </div>
 
-        <label>Quilometragem saída:</label>
-        <input type="number" id="km_saida" readonly>
+        <hr>
+        <h3>Opcionais</h3>
+        <ul id="lista-opcionais"></ul>
 
-        <label>Quilometragem chegada:</label>
-        <input type="number" id="km_chegada">
+        <hr>
+        <h3>Caução</h3>
+        <div class="form-group"><label>Valor da caução:</label><input type="number" id="caucao" step="0.01"></div>
+        <div class="form-group">
+            <label>Devolução:</label>
+            <select id="devolucao">
+                <option value="na devolução">Na devolução</option>
+                <option value="5 dias">5 dias</option>
+                <option value="15 dias">15 dias</option>
+                <option value="30 dias">30 dias</option>
+            </select>
+        </div>
 
-        <label>Tanque saída:</label>
-        <select id="tanque_saida" disabled>
-            <option value="8">8 (Cheio)</option>
-            <option value="7">7/8</option>
-            <option value="6">6/8</option>
-            <option value="5">5/8</option>
-            <option value="4">4/8 (Metade)</option>
-            <option value="3">3/8</option>
-            <option value="2">2/8</option>
-            <option value="1">1/8</option>
-            <option value="0">0 (Vazio)</option>
-        </select>
+        <hr>
+        <h3>Valores</h3>
+        
+        <!-- Valor Total Previsto (readonly) -->
+        <div class="form-group">
+            <label>Valor Total Previsto (R$):</label>
+            <input type="number" id="valor_total_previsto" readonly>
+        </div>
 
-        <label>Tanque chegada:</label>
-        <select id="tanque_chegada">
-            <option value="8">8 (Cheio)</option>
-            <option value="7">7/8</option>
-            <option value="6">6/8</option>
-            <option value="5">5/8</option>
-            <option value="4">4/8 (Metade)</option>
-            <option value="3">3/8</option>
-            <option value="2">2/8</option>
-            <option value="1">1/8</option>
-            <option value="0">0 (Vazio)</option>
-        </select>
-
-        <label>Data retirada:</label>
-        <input type="datetime-local" id="data_retirada" readonly>
-
-        <label>Data devolução prevista:</label>
-        <input type="datetime-local" id="data_devolucao_prevista" readonly>
-
-        <label>Data devolução real:</label>
-        <input type="datetime-local" id="data_devolucao_real">
-
-        <label>Valor total previsto:</label>
-        <input type="number" id="valor_total_previsto" readonly>
-
-        <label>Valor Final:</label>
-        <input type="number" id="valor_final" readonly>
-
-        <label>Caução:</label>
-        <input type="number" id="caucao" readonly>
-
-        <label>Status:</label>
-        <select id="status">
-            <option value="Reserva">Reserva</option>
-            <option value="Locado">Locado</option>
-            <option value="Chegada">Chegada</option>
-        </select>
-
-        <button onclick="atualizarLocacao()">Atualizar</button>
+        <!-- Valor Final (realtime - visível apenas na Chegada) -->
+        <div class="form-group" id="div_valor_final" style="display: none;">
+            <label>Valor Final (R$):</label>
+            <input type="number" id="valor_final" readonly>
+        </div>
+        <button type="button" onclick="atualizarLocacao()" class="btn-primary">Atualizar Locação</button>
     </div>
 
-    <div class="sidebar">
-        <h3>Opcionais do Contrato</h3>
-        <div id="lista-opcionais">Carregando...</div>
-    </div>
+    <style>
+    /* CSS ATUALIZADO: Mantido o estilo de largura total para o formulário */
+    .contrato-container {
+        width: 100%;
+    }
+    .form-container {
+        width: 100%;
+    }
+    </style>
 
-</div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-let idLocacao = new URLSearchParams(window.location.search).get("id");
+    const idLocacao = {{ id_locacao }};
 
-function formatarDataInput(dataString) {
-    if (!dataString) return "";
-    const data = new Date(dataString);
-    return data.toISOString().slice(0, 16);
-}
-
-async function carregarLocacao() {
-    const res = await fetch(`/api/locacao/${idLocacao}`);
-    const data = await res.json();
-    if (data.erro) return alert(data.erro);
-
-    const loc = data.locacao;
-
-    document.getElementById("busca_cliente").value = loc.cliente_nome;
-    document.getElementById("cpf").value = loc.cliente_cpf;
-    document.getElementById("cnh").value = loc.cliente_cnh;
-    document.getElementById("data_validade").value = loc.cliente_validade;
-
-    document.getElementById("categoria").innerHTML =
-        `<option value="${loc.id_categoria}">${loc.categoria_nome}</option>`;
-
-    document.getElementById("veiculo").innerHTML =
-        `<option value="${loc.id_veiculo}">${loc.placa} - ${loc.modelo} - ${loc.marca}</option>`;
-
-    document.getElementById("km_saida").value = loc.quilometragem_retirada;
-    document.getElementById("km_chegada").value = loc.quilometragem_devolucao ?? "";
-
-    document.getElementById("tanque_saida").value = loc.tanque_saida;
-    document.getElementById("tanque_chegada").value = loc.tanque_chegada;
-
-    document.getElementById("data_retirada").value = formatarDataInput(loc.data_retirada);
-    document.getElementById("data_devolucao_prevista").value = formatarDataInput(loc.data_devolucao_prevista);
-    document.getElementById("data_devolucao_real").value = formatarDataInput(loc.data_devolucao_real);
-
-    document.getElementById("valor_total_previsto").value = loc.valor_total_previsto;
-    document.getElementById("valor_final").value = loc.valor_final ?? "";
-
-    document.getElementById("caucao").value = loc.caucao;
-    document.getElementById("status").value = loc.status;
-
-    carregarOpcionais(data.opcionais);
-
-    iniciarRecalculoAutomático();
-}
-
-function carregarOpcionais(lista) {
-    const div = document.getElementById("lista-opcionais");
-    div.innerHTML = "";
-
-    if (!lista || lista.length === 0) {
-        div.innerHTML = "<p>Nenhum opcional incluído.</p>";
-        return;
+    // Função para formatar a data que vem do banco para o input datetime-local
+    function formatarDataParaInput(dataString) {
+        if (!dataString) return '';
+        const data = new Date(dataString);
+        // Ajusta para o fuso horário local
+        const offset = data.getTimezoneOffset();
+        const dataAjustada = new Date(data.getTime() - (offset * 60 * 1000));
+        return dataAjustada.toISOString().slice(0, 16);
     }
 
-    lista.forEach(o => {
-        div.innerHTML += `
-            <div class="opcional-item">
-                <strong>${o.descricao}</strong><br>
-                Quantidade: ${o.quantidade}
-            </div>
-        `;
-    });
-}
-
-// FUNÇÃO PARA RECALCULAR VALOR FINAL EM TEMPO REAL
-async function recalcularValorFinal() {
-    const status = document.getElementById("status").value;
-
-    if (status !== "Chegada") return;
-
-    const dados = {
-        km_chegada: document.getElementById("km_chegada").value,
-        tanque_chegada: document.getElementById("tanque_chegada").value,
-        data_devolucao_real: document.getElementById("data_devolucao_real").value
-    };
-
-    const res = await fetch(`/api/locacao/calcular_final/${idLocacao}`, {
-        method: "PUT", // <--- ALTERADO AQUI
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
-    });
-
-    const resposta = await res.json();
-
-    if (!resposta.erro) {
-        if (resposta.valor_final) document.getElementById("valor_final").value = resposta.valor_final;
-        if (resposta.valor_total_previsto) document.getElementById("valor_total_previsto").value = resposta.valor_total_previsto;
+    // Função para formatar a fração do tanque
+    function formatarTanque(valor) {
+        if (valor === null || valor === undefined) return '';
+        return `${valor}/8`;
     }
-}
 
+    // Mapeia os IDs dos campos de chegada para adicionar os listeners
+    const camposChegada = ['data_devolucao_real', 'km_chegada', 'tanque_chegada'];
 
-// ativa recálculo automático
-function iniciarRecalculoAutomático() {
-    ["km_chegada", "tanque_chegada", "data_devolucao_real", "status"]
-        .forEach(id => {
-            document.getElementById(id).addEventListener("change", recalcularValorFinal);
+    // Adiciona os listeners de evento (change ou input)
+    function adicionarListenersCalculoFinal() {
+        camposChegada.forEach(id => {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                // Usa 'input' para data/KM e 'change' para Selects
+                const evento = (id === 'km_chegada' || id === 'data_devolucao_real') ? 'input' : 'change';
+                elemento.addEventListener(evento, calcularValorFinalRealtime);
+            }
         });
-}
+    }
 
-// botão atualizar
-async function atualizarLocacao() {
+    // Remove os listeners de evento
+    function removerListenersCalculoFinal() {
+        camposChegada.forEach(id => {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                const evento = (id === 'km_chegada' || id === 'data_devolucao_real') ? 'input' : 'change';
+                elemento.removeEventListener(evento, calcularValorFinalRealtime);
+            }
+        });
+    }
 
-    // se status = Chegada, força último cálculo antes de enviar
-    await recalcularValorFinal();
+    // Rota de Simulação (POST) - CÁLCULO EM TEMPO REAL
+    async function calcularValorFinalRealtime() {
+        const status = document.getElementById('status').value;
+        const dataDevolucaoReal = document.getElementById('data_devolucao_real').value;
+        const kmChegada = document.getElementById('km_chegada').value;
+        const tanqueChegada = document.getElementById('tanque_chegada').value; // Valor 0-8
 
-    const dados = {
-        status: document.getElementById("status").value,
-        quilometragem_devolucao: document.getElementById("km_chegada").value,
-        tanque_chegada: document.getElementById("tanque_chegada").value,
-        data_devolucao_real: document.getElementById("data_devolucao_real").value
-    };
+        // Só calcula se estiver no status "Chegada" e tiver dados mínimos
+        if (status !== 'Chegada' || !dataDevolucaoReal || kmChegada === '' || tanqueChegada === '') {
+            document.getElementById('valor_final').value = '';
+            return;
+        }
 
-    const res = await fetch(`/api/locacao/${idLocacao}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
+        const dados = {
+            data_devolucao_real: dataDevolucaoReal,
+            km_chegada: parseFloat(kmChegada),
+            tanque_chegada: parseInt(tanqueChegada)
+        };
+        
+        // Limpa o valor final durante o cálculo
+        document.getElementById('valor_final').value = 'Calculando...';
+
+        try {
+            const res = await fetch(`/api/locacao/calcular_final/${idLocacao}`, {
+                method: "POST", 
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(dados)
+            });
+
+            const json = await res.json();
+            
+            if (res.ok) {
+                // Atualiza o Valor Final com o resultado da simulação
+                document.getElementById("valor_final").value = parseFloat(json.valor_final).toFixed(2);
+            } else {
+                console.error("Erro no cálculo em tempo real:", json.erro);
+                document.getElementById('valor_final').value = 'Erro: ' + json.erro;
+            }
+        } catch(err) {
+            console.error("Erro de conexão com a API de cálculo:", err);
+            document.getElementById('valor_final').value = 'Erro API';
+        }
+    }
+
+
+    // Função que popula o formulário
+    function popularFormulario(data) {
+        const locacao = data.locacao;
+        const opcionais = data.opcionais;
+
+        // ... (resto da população de dados)
+        document.getElementById('locacao-id-titulo').textContent = locacao.id_locacao;
+        document.getElementById('status').value = locacao.status;
+        document.getElementById('data_retirada').value = formatarDataParaInput(locacao.data_retirada);
+        document.getElementById('data_devolucao_prevista').value = formatarDataParaInput(locacao.data_devolucao_prevista);
+        
+        // Data de devolução real pode ser null
+        if (locacao.data_devolucao_real) {
+            document.getElementById('data_devolucao_real').value = formatarDataParaInput(locacao.data_devolucao_real);
+        } else {
+             document.getElementById('data_devolucao_real').value = '';
+        }
+
+        // NOVO: Valor Total Previsto
+        document.getElementById('valor_total_previsto').value = parseFloat(locacao.valor_total_previsto || 0).toFixed(2);
+        
+        // Cliente
+        document.getElementById('busca_cliente').value = locacao.cliente_nome;
+        document.getElementById('cpf').value = locacao.cliente_cpf;
+        document.getElementById('cnh').value = locacao.cliente_cnh;
+        document.getElementById('data_validade').value = locacao.cliente_validade;
+
+        // Veículo
+        document.getElementById('marca').value = locacao.marca;
+        document.getElementById('modelo').value = locacao.modelo;
+        document.getElementById('placa').value = locacao.placa;
+
+        // Quilometragem
+        document.getElementById('km_saida').value = locacao.quilometragem_saida;
+        document.getElementById('km_chegada').value = locacao.quilometragem_devolucao;
+
+        // Tanque
+        document.getElementById('tanque_saida').value = formatarTanque(locacao.tanque_saida);
+        document.getElementById('tanque_chegada').value = locacao.tanque_chegada;
+
+        // Caução
+        document.getElementById('caucao').value = parseFloat(locacao.caucao || 0).toFixed(2);
+        document.getElementById('devolucao').value = locacao.devolucao;
+
+        // Opcionais
+        const listaOpcionais = document.getElementById('lista-opcionais');
+        listaOpcionais.innerHTML = '';
+        if (opcionais && opcionais.length > 0) {
+            opcionais.forEach(op => {
+                const li = document.createElement('li');
+                li.textContent = `${op.descricao} (Qtd: ${op.quantidade})`;
+                listaOpcionais.appendChild(li);
+            });
+        } else {
+            listaOpcionais.innerHTML = '<li>Nenhum opcional adicionado.</li>';
+        }
+
+        // Valor Final
+        if (locacao.valor_final) {
+            document.getElementById('valor_final').value = parseFloat(locacao.valor_final).toFixed(2);
+        }
+        
+        verificarStatus(); // Ajusta a visibilidade e listeners
+    }
+
+    // Habilita/desabilita campos e listeners com base no status
+    function verificarStatus() {
+        const status = document.getElementById('status').value;
+        const isChegada = status === 'Chegada';
+
+        document.getElementById('div_data_chegada_real').style.display = isChegada ? 'block' : 'none';
+        document.getElementById('div_km_chegada').style.display = isChegada ? 'block' : 'none';
+        document.getElementById('div_tanque_chegada').style.display = isChegada ? 'block' : 'none';
+        
+        // Div Valor Final (somente na Chegada)
+        document.getElementById('div_valor_final').style.display = isChegada ? 'block' : 'none';
+        
+        if (isChegada) {
+            // ATIVAR LISTENERS
+            adicionarListenersCalculoFinal();
+            // Se já houver dados de chegada, calcula na hora da mudança de status
+            calcularValorFinalRealtime(); 
+        } else {
+            // DESATIVAR LISTENERS
+            removerListenersCalculoFinal();
+        }
+    }
+
+
+    // Função para atualizar a locação
+    async function atualizarLocacao() {
+        const status = document.getElementById('status').value;
+        const valorFinal = document.getElementById('valor_final').value;
+
+        // Se o status for Chegada, verifica se o cálculo foi feito e se não deu erro
+        if (status === 'Chegada' && (valorFinal === '' || isNaN(parseFloat(valorFinal)) || valorFinal.includes('Erro'))) {
+            alert("Preencha todos os campos de chegada (data, km, tanque) e resolva erros de cálculo antes de atualizar.");
+            return;
+        }
+
+        const dadosAtualizados = {
+            status: status,
+            data_retirada: document.getElementById('data_retirada').value,
+            data_devolucao_prevista: document.getElementById('data_devolucao_prevista').value,
+            // Envia null se não estiver na Chegada
+            data_devolucao_real: status === 'Chegada' ? document.getElementById('data_devolucao_real').value : null,
+            quilometragem_devolucao: status === 'Chegada' ? document.getElementById('km_chegada').value : null,
+            tanque_chegada: status === 'Chegada' ? document.getElementById('tanque_chegada').value : null,
+            caucao: document.getElementById('caucao').value,
+            devolucao: document.getElementById('devolucao').value,
+            // Envia o valor final calculado em tempo real para o banco salvar
+            valor_final: status === 'Chegada' ? parseFloat(valorFinal) : null
+        };
+
+        try {
+            // A rota PUT /api/locacao/id_locacao espera todos os dados da locação
+            const response = await fetch(`/api/locacao/${idLocacao}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosAtualizados)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.erro || 'Erro desconhecido ao atualizar.');
+            }
+
+            // Mostra a mensagem e redireciona após o usuário clicar em "OK"
+            const mensagem = result.mensagem || 'Locação atualizada com sucesso!';
+            alert(mensagem);
+            window.location.href = "{{ url_for('locacao.historico_locacao') }}";
+
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+            console.error('Falha ao atualizar locação:', error);
+        }
+    }
+
+    // Carrega os dados da locação quando a página é carregada
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch(`/api/locacao/${idLocacao}`);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.erro || 'Não foi possível carregar os dados da locação.');
+            }
+            popularFormulario(data);
+        } catch (error) {
+            alert(`Erro ao carregar dados: ${error.message}`);
+            console.error(error);
+        }
     });
-
-    const resposta = await res.json();
-
-    if (resposta.erro) alert(resposta.erro);
-    else alert("Locação atualizada com sucesso!");
-}
-
-window.onload = carregarLocacao;
 </script>
-
-</body>
-</html>
+{% endblock %}

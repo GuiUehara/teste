@@ -1,50 +1,20 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Histórico de Multas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-            padding: 20px;
-        }
+{% extends "base.html" %}
 
-        h1 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+{% block content %}
+<div class="table-container">
+    <h2>Histórico de Multas por Atraso</h2>
 
-        table {
-            width: 95%;
-            margin: auto;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 0 10px #aaa;
-        }
-
-        th, td {
-            border: 1px solid #777;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background: #1c1c1c;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Histórico de Multas por Atraso</h1>
+    <form method="GET" action="{{ url_for('multas.historico_multas') }}" class="search-form">
+        <input type="text" name="busca" placeholder="Buscar por ID da locação..." value="{{ busca or '' }}">
+        <button type="submit" class="btn-secondary">Buscar</button>
+    </form>
 
     <table>
         <thead>
             <tr>
                 <th>ID Locação</th>
-                <th>ID Cliente</th>
-                <th>ID Veículo</th>
+                <th>Cliente</th>
+                <th>Veículo (Placa)</th>
                 <th>Valor Previsto (R$)</th>
                 <th>Valor Final (R$)</th>
                 <th>Dias de Atraso</th>
@@ -54,20 +24,21 @@
         </thead>
 
         <tbody>
-            {% for m in multas %}
+            {% for multa in multas %}
             <tr>
-                <td>{{ m.id_locacao }}</td>
-                <td>{{ m.id_cliente }}</td>
-                <td>{{ m.id_veiculo }}</td>
-                <td>{{ m.valor_total_previsto }}</td>
-                <td>{{ m.valor_final }}</td>
-                <td>{{ m.dias_atraso }}</td>
-                <td>{{ m.data_devolucao_prevista }}</td>
-                <td>{{ m.data_devolucao_real }}</td>
+                <td>{{ multa.id_locacao }}</td>
+                <td>{{ multa.nome_completo }}</td>
+                <td>{{ multa.placa }}</td>
+                <td>{{ "%.2f"|format(multa.valor_total_previsto) }}</td>
+                <td>{{ "%.2f"|format(multa.valor_final) }}</td>
+                <td>{{ multa.dias_atraso }}</td>
+                <td>{{ multa.data_devolucao_prevista.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ multa.data_devolucao_real.strftime('%d/%m/%Y %H:%M') }}</td>
             </tr>
+            {% else %}
+            <tr><td colspan="8" style="text-align: center;">Nenhuma multa por atraso encontrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-
-</body>
-</html>
+</div>
+{% endblock %}

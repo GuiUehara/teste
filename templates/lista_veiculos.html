@@ -1,56 +1,49 @@
 {% extends "base.html" %}
 
-{% block titulo %}Lista de Veículos{% endblock %}
+{% block content %}
+<div class="table-container">
+    <h2>Veículos Cadastrados</h2>
 
-{% block conteudo %}
-<h2>Veículos Cadastrados</h2>
+    <form method="GET" action="{{ url_for('veiculos.lista_veiculos') }}" class="search-form">
+        <input
+            type="text"
+            name="busca"
+            placeholder="Buscar por placa ou chassi..."
+            value="{{ busca or '' }}"
+        >
+        <button type="submit" class="btn-secondary">Buscar</button>
+    </form>
 
-<form method="GET" action="{{ url_for('lista_veiculos') }}">
-    <input
-        type="text"
-        name="busca"
-        placeholder="Buscar por placa ou chassi (mínimo 3 letras)"
-        value="{{ busca }}"
-    >
-    <button type="submit">Buscar</button>
-</form>
-
-<table>
-    <thead>
-        <tr>
-            <th>Placa</th>
-            <th>Chassi</th>
-            <th>Modelo</th>
-            <th>Categoria</th>
-            <th>Status</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for v in veiculos %}
-        <tr>
-            <td>{{ v.placa }}</td>
-            <td>{{ v.chassi }}</td>
-            <td>{{ v.nome_modelo }}</td>
-            <td>{{ v.nome_categoria }}</td>
-            <td>{{ v.descricao_status }}</td>
-            <td>
-                <a href="{{ url_for('editar_veiculo', id_veiculo=v.id_veiculo) }}">✎ Editar</a>
-                &nbsp;
-                <a title="Excluir"
-                   href="{{ url_for('deletar_veiculo', id_veiculo=v.id_veiculo) }}"
-                   onclick="return confirm('Deseja realmente deletar este veículo?');">
-                    &#10060;
-                </a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" style="text-align: center; padding: 10px;">
-                Nenhum veículo encontrado.
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table>
+        <thead>
+            <tr>
+                <th>Placa</th>
+                <th>Chassi</th>
+                <th>Modelo</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th class="actions-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in veiculos %}
+            <tr>
+                <td>{{ v.placa }}</td>
+                <td>{{ v.chassi }}</td>
+                <td>{{ v.nome_modelo }}</td>
+                <td>{{ v.nome_categoria }}</td>
+                <td>{{ v.descricao_status }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('veiculos.editar_veiculo', id_veiculo=v.id_veiculo) }}" class="btn-edit">Editar</a>
+                    <a href="{{ url_for('veiculos.deletar_veiculo', id_veiculo=v.id_veiculo) }}" class="btn-delete" onclick="return confirm('Deseja realmente deletar este veículo?');">Deletar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center;">Nenhum veículo encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

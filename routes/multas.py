@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from db import conectar
 
+
 def init_multa(app):
 
     @app.route("/historico_multas")
@@ -17,21 +18,23 @@ def init_multa(app):
         cursor = conexao.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT 
-                id_locacao,
-                id_cliente,
-                id_veiculo,
-                valor_total_previsto,
-                valor_final,
-                data_devolucao_prevista,
-                data_devolucao_real,
+            SELECT
+                l.id_locacao,
+                c.nome_completo,
+                v.placa,
+                l.valor_total_previsto,
+                l.valor_final,
+                l.data_devolucao_prevista,
+                l.data_devolucao_real,
                 CEILING(
-                    TIMESTAMPDIFF(HOUR, data_devolucao_prevista, data_devolucao_real) / 24.0
+                    TIMESTAMPDIFF(HOUR, l.data_devolucao_prevista, l.data_devolucao_real) / 24.0
                 ) AS dias_atraso
-            FROM locacao
-            WHERE data_devolucao_real IS NOT NULL
-              AND data_devolucao_real > data_devolucao_prevista
-            ORDER BY data_devolucao_real DESC
+            FROM locacao l
+            JOIN cliente c ON l.id_cliente = c.id_cliente
+            JOIN veiculo v ON l.id_veiculo = v.id_veiculo
+            WHERE l.data_devolucao_real IS NOT NULL
+              AND l.data_devolucao_real > l.data_devolucao_prevista
+            ORDER BY l.data_devolucao_real DESC
         """)
 
         multas = cursor.fetchall()
@@ -40,4 +43,3 @@ def init_multa(app):
         conexao.close()
 
         return render_template("historico_multas.html", multas=multas)
-

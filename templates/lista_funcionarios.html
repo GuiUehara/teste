@@ -1,59 +1,40 @@
 {% extends "base.html" %}
 
-{% block titulo %}Lista de Funcionários{% endblock %}
+{% block content %}
+<div class="table-container">
+    <h2>Lista de Funcionários</h2>
 
-{% block conteudo %}
-<h2>Funcionários Cadastrados</h2>
+    <form method="GET" action="{{ url_for('funcionarios.lista_funcionarios') }}" class="search-form">
+        <input type="text" name="busca" placeholder="Buscar por nome, CPF ou email..." value="{{ busca or '' }}">
+        <button type="submit" class="btn-secondary">Buscar</button>
+    </form>
 
-<form method="GET" action="{{ url_for('lista_funcionarios') }}">
-    <input
-        type="text"
-        name="busca"
-        placeholder="Buscar (mínimo 3 letras)"
-        value="{{ busca }}"
-    >
-    <button type="submit">Buscar</button>
-</form>
-
-<table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>CPF</th>
-            <th>Cargo</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for f in funcionarios %}
-        <tr>
-            <td>{{ f.nome }}</td>
-            <td>{{ f.cpf }}</td>
-            <td>{{ f.cargo }}</td>
-            <td>
-                <td>
-                <a href="{{ url_for('editar_funcionario', id_usuario=f.id_usuario) }}">✎ Editar</a>
-            </td>
-
-                &nbsp;
-
-                <!-- Ícone de deletar -->
-                <a title="Excluir"
-                   href="{{ url_for('deletar_funcionario', id_usuario=f.id_usuario) }}"
-                   onclick="return confirm('Deseja realmente deletar este funcionário?');">
-                    &#10060;
-                </a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="4" style="text-align: center; padding: 10px;">
-                Nenhum funcionário encontrado.
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Cargo</th>
+                <th class="actions-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for funcionario in funcionarios %}
+            <tr>
+                <td>{{ funcionario.nome }}</td>
+                <td>{{ funcionario.cpf }}</td>
+                <td>{{ funcionario.cargo }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('funcionarios.editar_funcionario', id_usuario=funcionario.id_usuario) }}" class="btn-edit">Editar</a>
+                    <a href="{{ url_for('funcionarios.deletar_funcionario', id_usuario=funcionario.id_usuario) }}" class="btn-delete" onclick="return confirm('Tem certeza que deseja deletar este funcionário?');">Deletar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">Nenhum funcionário encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

@@ -1,71 +1,447 @@
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-
-h1 {
-  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9f9f9;
   color: #333;
-}
+  line-height: 1.6;
 
-form {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-input {
-  margin: 8px 0;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #aaa;
-  border-radius: 4px;
+/* HEADER */
+header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  background-color: #004d26;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
 }
 
-button {
-  margin-top: 12px;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #007BFF;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  transition: background-color 0.3s;
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-button:hover {
-  background-color: #0056b3;
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
 }
 
-ul {
-  padding: 0;
-  list-style: none;
-  margin: 10px 0;
-}
-
-li.success {
-  color: green;
-}
-
-li.error {
-  color: red;
-}
-
-p {
-  text-align: center;
-  margin-top: 14px;
-}
-
-a {
-  color: #007BFF;
+.logo a {
+  color: #fff;
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+.logo a:hover {
+  color: #b2ff59;
 }
+
+.menu-toggle {
+  display: none;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+}
+
+/* NAV */
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+}
+
+nav ul li {
+  position: relative;
+}
+
+nav ul li a, nav ul li {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+nav ul li:hover > a, nav ul li:hover > .dropdown li a {
+  color: #b2ff59;
+}
+
+/* Dropdown */
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #006644;
+  border-radius: 5px;
+  overflow: hidden;
+  min-width: 200px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.menu-item:hover > .dropdown {
+  display: block;
+}
+
+.dropdown li {
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.dropdown li:last-child {
+  border-bottom: none;
+}
+
+.dropdown li a {
+  display: block;
+  padding: 12px 20px;
+  font-weight: 500;
+}
+
+.dropdown li a:hover {
+  background-color: #00994d;
+}
+
+/* HERO */
+.hero {
+  height: 75vh;
+  background: linear-gradient(to bottom right, rgba(0,50,0,0.6), rgba(0,77,38,0.6)), url('viagem2.webp') center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-top: 70px; /* Ajuste para a altura do header fixo */
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  color: #fff;
+  margin-bottom: 15px;
+}
+
+.hero-content p {
+  font-size: 1.3rem;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.btn-hero {
+  background: #b2ff59;
+  color: #004d26;
+  font-weight: 700;
+  padding: 12px 30px;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn-hero:hover {
+  background: #99e64d;
+}
+
+main {
+    flex-grow: 1; /* Faz o main crescer e ocupar todo o espaço vertical disponível */
+    padding-top: 90px; /* Margem superior para o conteúdo não ficar atrás do header fixo */
+}
+
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #004d26;
+  color: white;
+  margin-top: auto; /* IMPORTANTE: Não é necessário, mas garante que o footer se afaste do main */
+}
+
+
+/* RESPONSIVO */
+@media(max-width: 1024px){
+  .menu-toggle {
+    display: block;
+  }
+  nav {
+    position: fixed;
+    top: 70px;
+    right: -300px; /* Esconde o menu */
+    width: 250px;
+    height: calc(100% - 70px);
+    background-color: #004d26;
+    flex-direction: column;
+    padding-top: 20px;
+    transition: right 0.3s ease;
+  }
+  nav.active {
+    right: 0; /* Mostra o menu */
+  }
+  nav ul {
+    flex-direction: column;
+    gap: 0;
+  }
+  nav ul li {
+    width: 100%;
+  }
+  nav ul li .dropdown {
+    position: static; /* Dropdown se expande para baixo */
+    display: none;
+  }
+  nav ul li.active .dropdown {
+    display: block;
+  }
+}
+
+/* --- ESTILOS DE FORMULÁRIO --- */
+.form-container {
+  max-width: 700px;
+  margin: 100px auto 40px auto; /* Margem superior para não ficar atrás do header */
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-container h2 {
+  text-align: center;
+  color: #004d26;
+  margin-bottom: 25px;
+  font-size: 2rem;
+}
+
+.form-container h3 {
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+}
+
+.form-container hr {
+  border: none;
+  height: 1px;
+  background-color: #ddd;
+  margin: 25px 0;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-container input[type="text"],
+.form-container input[type="email"],
+.form-container input[type="tel"],
+.form-container input[type="date"],
+.form-container input[type="number"],
+.form-container input[type="password"],
+.form-container textarea,
+.form-container select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.3s;
+}
+
+.form-container textarea {
+  min-height: 120px; /* Altura mínima para a área de texto */
+  resize: vertical; /* Permite redimensionar apenas verticalmente */
+}
+
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+  outline: none;
+  border-color: #004d26;
+}
+
+.cep-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-primary, .btn-secondary {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #004d26;
+  color: white;
+  margin-top: 20px;
+}
+
+.btn-primary:hover {
+  background-color: #00331a;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  width: auto; /* Para não ocupar a largura toda */
+  padding: 12px 20px;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+.form-links {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.form-links a {
+  color: #004d26;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* --- ESTILOS DE TABELA --- */
+.table-container {
+  max-width: 1200px;
+  margin: 100px auto 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow-x: auto; /* Para rolagem em telas pequenas */
+}
+
+.table-container h2 {
+  text-align: center;
+  color: #004d26;
+  margin-bottom: 25px;
+  font-size: 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #004d26;
+  color: white;
+  font-weight: 600;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #f9f9f9;
+}
+
+table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.actions a {
+  margin-right: 10px;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+}
+
+.btn-edit {
+  background-color: #ffc107;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+}
+
+/* --- ESTILOS DE BUSCA --- */
+.search-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-form input {
+  flex-grow: 1; /* Faz o input ocupar o espaço disponível */
+}
+
+.search-form button {
+  width: auto; /* Ajusta a largura do botão */
+}
+.actions-header {
+    width: 180px; /* Largura fixa para a coluna de ações */
+}
+
+/* Bloqueia a interação do mouse no campo */
+#tanque_saida.locked {
+    pointer-events: none; /* Impede cliques */
+    /* Para navegadores mais antigos, adicione a cor cinza */
+    /* background-color: #f8f9fa; */ 
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* --- ESTILOS GRUPO DE CARROS --- */
+.page-container {
+  max-width: 1200px;
+  margin: 100px auto 40px auto; /* Margem superior para não ficar atrás do header */
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.page-container h1 {
+  text-align: center;
+  color: #004d26;
+  margin-bottom: 25px;
+  font-size: 2rem;
+}
+
+.categoria { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+.categoria:last-child { border-bottom: none; }
+.categoria h2 { font-size: 22px; color: #333; margin-bottom: 15px; }
+.veiculo { display: flex; justify-content: space-between; align-items: center; margin-left: 20px; margin-bottom: 10px; padding: 10px; border-radius: 5px; transition: background-color 0.3s; }
+.veiculo:hover { background-color: #f9f9f9; }
+.veiculo span { font-weight: 600; font-size: 1.1rem; color: #555; }
+.veiculo .btn-secondary { width: auto; padding: 8px 15px; }

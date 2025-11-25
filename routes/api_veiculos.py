@@ -3,23 +3,13 @@ from db import conectar
 
 veiculos_api = Blueprint("veiculos_api", __name__)
 
-# Retorna todas as marcas
-@veiculos_api.route("/api/marcas")
-def api_marcas():
-    conexao = conectar()
-    cursor = conexao.cursor()
-    cursor.execute("SELECT id_marca, nome_marca FROM marca")
-    marcas = [{"id": row[0], "nome": row[1]} for row in cursor.fetchall()]
-    cursor.close()
-    conexao.close()
-    return jsonify(marcas)
-
 # --- Função auxiliar que só retorna as categorias (utilizado no api_locacao.py) ---
-@veiculos_api.route("/api/categorias")
+
+
 def get_categorias():
     conexao = conectar()
     cursor = conexao.cursor(dictionary=True)
-    
+
     cursor.execute("""
         SELECT 
             id_categoria_veiculo AS id,
@@ -31,15 +21,7 @@ def get_categorias():
     categorias = cursor.fetchall()
     cursor.close()
     conexao.close()
-    return jsonify(categorias)
-
-
-
-
-# --- usa a função auxiliar ---
-@veiculos_api.route("/api/categorias")
-def api_categorias():
-    return jsonify(get_categorias())
+    return categorias
 
 
 @veiculos_api.route("/api/modelos/<int:id_marca>")
@@ -53,10 +35,10 @@ def api_modelos_por_marca(id_marca):
         WHERE m.id_marca = %s
     """, (id_marca,))
     modelos = [
-        {"id": row[0], "nome": row[1], "id_categoria_nome": row[2]}  # Nome da categoria
+        # Nome da categoria
+        {"id": row[0], "nome": row[1], "id_categoria_nome": row[2]}
         for row in cursor.fetchall()
     ]
     cursor.close()
     conexao.close()
     return jsonify(modelos)
-
