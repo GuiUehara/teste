@@ -1,5 +1,6 @@
-
-/* Reset */
+/* ==============================
+   1. RESET E PADRÕES GERAIS
+============================== */
 * {
   margin: 0;
   padding: 0;
@@ -12,57 +13,75 @@ body {
   color: #333;
   line-height: 1.6;
 
+  /* Garante que o footer fique embaixo mesmo com pouco conteúdo */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* HEADER */
+main {
+    flex-grow: 1;
+    /* Espaço para não ficar escondido atrás do header fixo */
+    padding-top: 80px; 
+}
+
+/* ==============================
+   2. HEADER E NAVEGAÇÃO (Do Style 1 - Melhorado)
+============================== */
 header {
   position: fixed;
   width: 100%;
   top: 0;
   background-color: #004d26;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   z-index: 1000;
 }
 
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 15px 30px;
+  padding: 10px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* LOGO */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .logo {
-  font-size: 28px;
+  max-height: 50px;
+}
+
+.brand-name {
+  color: #fff;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #fff;
 }
 
-.logo a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.logo a:hover {
-  color: #b2ff59;
-}
-
+/* MENU HAMBURGER */
 .menu-toggle {
   display: none;
   font-size: 28px;
   color: white;
   cursor: pointer;
+  transition: color 0.3s;
 }
 
-/* NAV */
+.menu-toggle:hover {
+  color: #b2ff59;
+}
+
+/* NAV MENU */
 nav ul {
   list-style: none;
   display: flex;
-  gap: 25px;
+  gap: 20px;
+  align-items: center;
 }
 
 nav ul li {
@@ -73,178 +92,359 @@ nav ul li a, nav ul li {
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  padding: 10px 5px;
+  padding: 10px 12px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: color 0.3s, background 0.3s;
+  border-radius: 8px;
+  font-size: 0.95rem;
 }
 
-nav ul li:hover > a, nav ul li:hover > .dropdown li a {
-  color: #b2ff59;
+nav ul li a:hover, 
+nav ul li:hover > a {
+  color: #004d26;
+  background-color: #b2ff59;
 }
 
-/* Dropdown */
+/* DROPDOWN (Menu Suspenso) */
 .dropdown {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
   background-color: #006644;
-  border-radius: 5px;
-  overflow: hidden;
-  min-width: 200px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  min-width: 220px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
   z-index: 1000;
+  overflow: hidden; /* Garante bordas arredondadas */
 }
 
 .menu-item:hover > .dropdown {
   display: block;
+  animation: fadeIn 0.3s ease;
 }
 
 .dropdown li {
-  border-bottom: 1px solid rgba(255,255,255,0.2);
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .dropdown li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .dropdown li a {
   display: block;
   padding: 12px 20px;
   font-weight: 500;
+  color: #fff;
 }
 
 .dropdown li a:hover {
-  background-color: #00994d;
+  background-color: #b2ff59;
+  color: #004d26;
 }
+
+/* ÍCONE CONTA */
+.login-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================
+   3. SEÇÕES DA HOME PAGE (Do Style 1)
+============================== */
 
 /* HERO */
 .hero {
   height: 75vh;
-  background: linear-gradient(to bottom right, rgba(0,50,0,0.6), rgba(0,77,38,0.6)), url('viagem2.webp') center/cover no-repeat;
+  /* Ajuste do caminho da imagem: sobe um nível (..) sai de css/ e entra em img/ */
+  background: linear-gradient(to bottom right, rgba(0,77,38,0.6), rgba(0,77,38,0.6)), url('../img/img1.webp') center/cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  margin-top: 70px; /* Ajuste para a altura do header fixo */
+  color: #fff;
+  margin-top: -20px; /* Compensar padding do main na home */
 }
 
 .hero-content h1 {
   font-size: 3rem;
-  color: #fff;
+  font-weight: 700;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
   margin-bottom: 15px;
 }
 
 .hero-content p {
   font-size: 1.3rem;
-  color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.4);
 }
 
 .btn-hero {
   background: #b2ff59;
   color: #004d26;
   font-weight: 700;
-  padding: 12px 30px;
-  border-radius: 30px;
+  padding: 14px 36px;
+  border-radius: 50px;
   text-decoration: none;
-  transition: 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  display: inline-block;
 }
 
 .btn-hero:hover {
   background: #99e64d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
 }
 
-main {
-    flex-grow: 1; /* Faz o main crescer e ocupar todo o espaço vertical disponível */
-    padding-top: 90px; /* Margem superior para o conteúdo não ficar atrás do header fixo */
+/* SERVIÇOS */
+.services {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
 }
 
-
-/* FOOTER */
-footer {
-  text-align: center;
-  padding: 20px;
-  background-color: #004d26;
-  color: white;
-  margin-top: auto; /* IMPORTANTE: Não é necessário, mas garante que o footer se afaste do main */
+.services h2, .benefits h2, .gallery h2, .testimonials h2, .faq h2 {
+  text-align: center;
+  color: #004d26;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  font-weight: 700;
 }
 
-
-/* RESPONSIVO */
-@media(max-width: 1024px){
-  .menu-toggle {
-    display: block;
-  }
-  nav {
-    position: fixed;
-    top: 70px;
-    right: -300px; /* Esconde o menu */
-    width: 250px;
-    height: calc(100% - 70px);
-    background-color: #004d26;
-    flex-direction: column;
-    padding-top: 20px;
-    transition: right 0.3s ease;
-  }
-  nav.active {
-    right: 0; /* Mostra o menu */
-  }
-  nav ul {
-    flex-direction: column;
-    gap: 0;
-  }
-  nav ul li {
-    width: 100%;
-  }
-  nav ul li .dropdown {
-    position: static; /* Dropdown se expande para baixo */
-    display: none;
-  }
-  nav ul li.active .dropdown {
-    display: block;
-  }
+.service-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
 }
 
-/* --- ESTILOS DE FORMULÁRIO --- */
-.form-container {
-  max-width: 700px;
-  margin: 100px auto 40px auto; /* Margem superior para não ficar atrás do header */
+.service-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  flex: 1 1 280px;
+  max-width: 350px;
+  text-align: center;
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.service-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.service-card h3 {
+  color: #004d26;
+  margin-bottom: 10px;
+}
+
+/* BENEFÍCIOS */
+.benefits {
+  background: #e9f5ec; /* Tom leve de verde */
+  padding: 60px 20px;
+}
+
+.benefits-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.benefit-card {
+  flex: 1 1 280px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.benefit-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%; /* Imagens redondas nos benefícios */
+  margin-bottom: 15px;
+  border: 3px solid #004d26;
+}
+
+.benefit-card h3 {
+  color: #004d26;
+  margin-bottom: 10px;
+}
+
+/* GALERIA */
+.gallery {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.gallery-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.gallery-cards img {
+  flex: 1 1 280px;
+  max-width: 300px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s;
+}
+
+.gallery-cards img:hover {
+  transform: scale(1.05);
+}
+
+/* DEPOIMENTOS */
+.testimonials {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.testimonial-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.testimonial-card {
+  flex: 1 1 280px;
+  max-width: 450px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  border-left: 5px solid #b2ff59;
+}
+
+.testimonial-card p {
+  font-style: italic;
+  margin-bottom: 15px;
+  font-size: 1.05rem;
+}
+
+.testimonial-card h4 {
+  color: #004d26;
+  font-weight: 700;
+}
+
+/* FAQ */
+.faq {
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.faq-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.faq-item:hover {
+  transform: translateX(5px);
+  border-left: 4px solid #004d26;
+}
+
+.faq-item h4 {
+  color: #004d26;
+  margin-bottom: 8px;
+}
+
+/* CTA FINAL */
+.cta-final {
+  padding: 80px 20px;
+  text-align: center;
+  background: #004d26;
+  color: #fff;
+}
+
+.cta-final h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.cta-final p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+/* ==============================
+   4. APLICAÇÃO (Formulários e Tabelas do Style Original)
+   Essenciais para o funcionamento do sistema
+============================== */
+
+/* Containers */
+.form-container, .table-container {
+  max-width: 900px;
+  margin: 40px auto;
   padding: 30px;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.form-container h2 {
-  text-align: center;
-  color: #004d26;
-  margin-bottom: 25px;
-  font-size: 2rem;
+.table-container {
+    max-width: 1200px; /* Tabela precisa de mais espaço */
+    overflow-x: auto;
 }
 
-.form-container h3 {
-  color: #333;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 5px;
+h2 {
+    color: #004d26;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
 }
 
-.form-container hr {
-  border: none;
-  height: 1px;
-  background-color: #ddd;
-  margin: 25px 0;
-}
-
+/* Campos de Formulário */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: 600;
   color: #555;
 }
@@ -253,6 +453,7 @@ footer {
 .form-container input[type="email"],
 .form-container input[type="tel"],
 .form-container input[type="date"],
+.form-container input[type="datetime-local"],
 .form-container input[type="number"],
 .form-container input[type="password"],
 .form-container textarea,
@@ -260,22 +461,26 @@ footer {
   width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1rem;
   font-family: 'Poppins', sans-serif;
   transition: border-color 0.3s;
 }
 
-.form-container textarea {
-  min-height: 120px; /* Altura mínima para a área de texto */
-  resize: vertical; /* Permite redimensionar apenas verticalmente */
+.form-container input:focus,
+.form-container select:focus,
+.form-container textarea:focus {
+    outline: none;
+    border-color: #004d26;
+    box-shadow: 0 0 0 3px rgba(0, 77, 38, 0.1);
 }
 
-.form-container input:focus,
-.form-container textarea:focus,
-.form-container select:focus {
-  outline: none;
-  border-color: #004d26;
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+.form-row .form-group {
+  flex: 1;
 }
 
 .cep-group {
@@ -284,21 +489,25 @@ footer {
   align-items: center;
 }
 
+/* Botões do Sistema */
 .btn-primary, .btn-secondary {
   width: 100%;
   padding: 12px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.3s;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
 }
 
 .btn-primary {
   background-color: #004d26;
   color: white;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .btn-primary:hover {
@@ -308,52 +517,36 @@ footer {
 .btn-secondary {
   background-color: #6c757d;
   color: white;
-  width: auto; /* Para não ocupar a largura toda */
-  padding: 12px 20px;
+  width: auto;
+  padding: 10px 20px;
+  font-size: 1rem;
 }
 
 .btn-secondary:hover {
   background-color: #5a6268;
 }
-.form-links {
-  text-align: center;
-  margin-top: 20px;
+
+.form-link {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+.form-link a {
+    color: #004d26;
+    font-weight: bold;
 }
 
-.form-links a {
-  color: #004d26;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* --- ESTILOS DE TABELA --- */
-.table-container {
-  max-width: 1200px;
-  margin: 100px auto 40px auto;
-  padding: 30px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  overflow-x: auto; /* Para rolagem em telas pequenas */
-}
-
-.table-container h2 {
-  text-align: center;
-  color: #004d26;
-  margin-bottom: 25px;
-  font-size: 2rem;
-}
-
+/* Tabelas */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 table th, table td {
-  padding: 12px 15px;
+  padding: 15px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
 }
 
 table th {
@@ -367,27 +560,58 @@ table tbody tr:nth-of-type(even) {
 }
 
 table tbody tr:hover {
-  background-color: #f1f1f1;
+  background-color: #e9f5ec;
 }
 
+/* Ações da Tabela (Editar/Deletar) */
+.actions-header {
+    width: 180px;
+    text-align: center;
+}
+.actions {
+    text-align: center;
+}
 .actions a {
-  margin-right: 10px;
+  margin: 0 5px;
   text-decoration: none;
   padding: 6px 12px;
   border-radius: 4px;
   color: white;
   font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
 }
 
 .btn-edit {
   background-color: #ffc107;
+  color: #333 !important;
 }
+.btn-edit:hover { background-color: #e0a800; }
 
 .btn-delete {
   background-color: #dc3545;
 }
+.btn-delete:hover { background-color: #c82333; }
 
-/* --- ESTILOS DE BUSCA --- */
+/* Mensagens Flash (Alertas) */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.alert-error, .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Utilitários de Formulário */
 .search-form {
   display: flex;
   gap: 10px;
@@ -395,53 +619,93 @@ table tbody tr:hover {
 }
 
 .search-form input {
-  flex-grow: 1; /* Faz o input ocupar o espaço disponível */
+  flex-grow: 1;
 }
 
-.search-form button {
-  width: auto; /* Ajusta a largura do botão */
-}
-.actions-header {
-    width: 180px; /* Largura fixa para a coluna de ações */
-}
-
-/* Bloqueia a interação do mouse no campo */
 #tanque_saida.locked {
-    pointer-events: none; /* Impede cliques */
-    /* Para navegadores mais antigos, adicione a cor cinza */
-    /* background-color: #f8f9fa; */ 
+    pointer-events: none;
+    background-color: #e9ecef;
 }
 
-.form-row {
-  display: flex;
-  gap: 20px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-/* --- ESTILOS GRUPO DE CARROS --- */
-.page-container {
-  max-width: 1200px;
-  margin: 100px auto 40px auto; /* Margem superior para não ficar atrás do header */
-  padding: 30px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.page-container h1 {
+/* ==============================
+   5. RODAPÉ
+============================== */
+footer {
   text-align: center;
-  color: #004d26;
-  margin-bottom: 25px;
-  font-size: 2rem;
+  padding: 25px 20px;
+  background-color: #004d26;
+  color: white;
+  margin-top: auto;
+  font-size: 0.9rem;
 }
 
-.categoria { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-.categoria:last-child { border-bottom: none; }
-.categoria h2 { font-size: 22px; color: #333; margin-bottom: 15px; }
-.veiculo { display: flex; justify-content: space-between; align-items: center; margin-left: 20px; margin-bottom: 10px; padding: 10px; border-radius: 5px; transition: background-color 0.3s; }
-.veiculo:hover { background-color: #f9f9f9; }
-.veiculo span { font-weight: 600; font-size: 1.1rem; color: #555; }
-.veiculo .btn-secondary { width: auto; padding: 8px 15px; }
+/* ==============================
+   6. RESPONSIVIDADE
+============================== */
+@media(max-width: 1024px){
+  .menu-toggle {
+    display: block;
+  }
+  nav {
+    position: fixed;
+    top: 70px;
+    right: -300px;
+    width: 250px;
+    height: calc(100% - 70px);
+    background-color: #004d26;
+    flex-direction: column;
+    padding-top: 20px;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+  }
+  nav.active {
+    right: 0;
+  }
+  nav ul {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  nav ul li {
+    width: 100%;
+  }
+  nav ul li a {
+      border-radius: 0;
+      padding: 15px 20px;
+      display: block;
+  }
+  /* No mobile, dropdowns abrem abaixo do item */
+  nav ul li .dropdown {
+    position: static;
+    display: none;
+    background-color: #003d1e;
+    box-shadow: none;
+    width: 100%;
+  }
+  /* Classe 'active' adicionada via JS no mobile para abrir dropdown */
+  nav ul li.active .dropdown {
+    display: block;
+  }
+  
+  .service-cards, .benefits-cards, .testimonial-cards, .gallery-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .form-container, .table-container {
+      padding: 20px;
+      margin: 20px;
+  }
+}
+
+@media(max-width: 480px){
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  .hero-content p {
+    font-size: 1rem;
+  }
+  .btn-hero {
+      padding: 12px 24px;
+  }
+}

@@ -80,7 +80,7 @@ class ClienteController:
             if self.cliente_model.cadastrar(dados_cliente, dados_endereco, dados_cnh):
                 flash("Cliente cadastrado com sucesso!", "success")
 
-                # --- LÓGICA DE REDIRECIONAMENTO INTELIGENTE ---
+                # --- Verifica se há reserva pendente na sessão ---
                 if 'reserva_pendente' in session:
                     try:
                         cliente_novo = self.cliente_model.buscar_por_cpf(cpf_cliente)

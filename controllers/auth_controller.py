@@ -94,9 +94,8 @@ class AuthController:
                 return redirect(url_for("auth.verificacao"))
         return render_template("cadastro.html")
 
-    # Rota para a página de verificação do código.
+    # Rota para a página de verificação do código. (cadastro ou login)
     def verificacao(self):
-        """Verifica o código enviado por e-mail para login ou cadastro."""
         email = session.get("email_temp")
         senha = session.get("senha_temp")
         perfil_temp = session.get("perfil_temp")
@@ -104,31 +103,43 @@ class AuthController:
         if not email:
             flash("Acesso inválido. Complete o cadastro novamente.", "error")
             return redirect(url_for("auth.cadastro"))
+            
         if request.method == "POST":
             codigo_recebido = request.form.get("codigo")
             codigo_armazenado = session.get("codigo_verificacao")
+            
             if codigo_recebido == codigo_armazenado:
-                perfil_temp = session.get("perfil_temp")
-                if session.get("processo") == "login":
+                # Salva o processo antes de limpar a sessão
+                processo = session.get("processo")
+                
+                # Limpa dados temporários AGORA (antes do return)
+                for key in ['email_temp', 'senha_temp', 'perfil_temp', 'codigo_verificacao', 'processo']:
+                    session.pop(key, None)
+
+                if processo == "login":
                     session["usuario_logado"] = email
                     session["perfil"] = perfil_temp
                     flash("Login realizado com sucesso!", "success")
-                    # Correção já estava ok, mantido por consistência.
-                    return redirect(url_for("veiculos.grupo_carros"))
-                elif session.get("processo") == "cadastro":
+                    
+                    # MUDANÇA AQUI: Redireciona para a página inicial (index)
+                    return redirect(url_for("index"))
+                
+                elif processo == "cadastro":
                     if auth_model.obter_usuario_por_email(email):
                         flash("Este email já está registrado.", "error")
                         return redirect(url_for("auth.login"))
+                        
                     auth_model.criar_usuario(email, senha, perfil_temp)
 
                     session["usuario_logado"] = email
                     session["perfil"] = perfil_temp
 
                     flash("Cadastro completo. Bem-vindo!", "success")
-                    return redirect(url_for("veiculos.grupo_carros"))
-                for key in ['email_temp', 'senha_temp', 'perfil_temp', 'codigo_verificacao', 'processo']:
-                    session.pop(key, None)
+                    
+                    # MUDANÇA AQUI: Redireciona para a página inicial (index)
+                    return redirect(url_for("index"))
             else:
                 flash("Código incorreto. Tente novamente.", "error")
                 return redirect(url_for("auth.verificacao"))
+                
         return render_template("verificacao.html")

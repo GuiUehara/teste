@@ -3,19 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rider Mobility</title>
+  <title>Rider Mobility - Locadora de Viagens Familiares</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
 <header>
   <div class="header-container">
-    <div class="logo">Rider Mobility</div>
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+      <span class="brand-name">Rider Mobility</span>
+    </div>
+
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
+
+        <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+
     <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+
     <nav id="top-menu">
       <ul>
         <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+        
+        {# Menu CADASTRO: Oculto para Clientes #}
+        {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
         <li class="menu-item">
           Cadastro
           <ul class="dropdown">
@@ -26,29 +41,46 @@
             <li><a href="{{ url_for('manutencao.cadastro_manutencao') }}">Cadastrar Manutenção</a></li>
           </ul>
         </li>
+        {% endif %}
+
+        {# Menu LISTAS: Oculto para Clientes #}
+        {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
         <li class="menu-item">
-          Lista
+          Listas
           <ul class="dropdown">
-            <li><a href="{{ url_for('clientes.lista_clientes') }}">Lista Cliente</a></li>
-            <li><a href="{{ url_for('funcionarios.lista_funcionarios') }}">Lista Funcionário</a></li>
-             <li><a href="{{ url_for('veiculos.lista_veiculos') }}">Lista Veículos</a></li>
+            <li><a href="{{ url_for('clientes.lista_clientes') }}">Lista de Clientes</a></li>
+            <li><a href="{{ url_for('funcionarios.lista_funcionarios') }}">Lista de Funcionários</a></li>
+            <li><a href="{{ url_for('veiculos.lista_veiculos') }}">Lista Veículos</a></li>
           </ul>
         </li>
+        {% endif %}
+
+        {# Menu HISTÓRICOS #}
         <li class="menu-item">
           Históricos
           <ul class="dropdown">
             <li><a href="{{ url_for('locacao.historico_locacao') }}">Histórico de Locação</a></li>
-            <li><a href="{{ url_for('multas.historico_multas') }}">Histórico de Multas</a></li>
-            <li><a href="{{ url_for('manutencao.historico_manutencao') }}">Histórico de Manutenção</a></li>
+            {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
+                <li><a href="{{ url_for('multas.historico_multas') }}">Histórico de Multas</a></li>
+                <li><a href="{{ url_for('manutencao.historico_manutencao') }}">Histórico de Manutenção</a></li>
+            {% endif %}
           </ul>
         </li>
+
+        {# Menu CONTA (Ícone e lógica de login) #}
         <li class="menu-item">
-          Conta
+          <a href="#" class="login-link">
+            <img src="{{ url_for('static', filename='img/conta.png') }}" alt="Usuário" class="login-icon"> Conta
+          </a>
           <ul class="dropdown">
-            <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
-            <li><a href="{{ url_for('auth.login') }}">Login</a></li>
-            <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Solicitar Redefinição</a></li>
-            <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% if session.get('usuario_logado') %}
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Solicitar Redefinição</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Esqueci minha senha</a></li>
+            {% endif %}
           </ul>
         </li>
       </ul>
@@ -57,16 +89,30 @@
 </header>
 
 <main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages container" style="padding: 20px; max-width: 1200px; margin: 80px auto 0;">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; 
+                 {% if category == 'error' %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% else %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   {% block content %}{% endblock %}
 </main>
 
 <footer>
   <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
 </footer>
-<!-- Funções centralizadas para busca de CEP -->
+
 <script src="{{ url_for('static', filename='js/cep.js') }}"></script>
-<!-- Funções centralizadas para gerenciamento de locações e opcionais -->
 <script src="{{ url_for('static', filename='js/locacao.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% block scripts %}{% endblock %}
+
 </body>
 </html>
