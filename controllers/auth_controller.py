@@ -53,7 +53,7 @@ class AuthController:
                 if self._enviar_codigo_verificacao(email, usuario['perfil']):
                     session["email_temp"] = email
                     session["perfil_temp"] = usuario['perfil']
-                    flash("Código de verificação enviado para seu e-mail.", "success")
+                    
                     return redirect(url_for("auth.verificacao"))
             else:
                 flash("Email ou senha inválidos.", "error")
@@ -90,7 +90,7 @@ class AuthController:
                 session['email_temp'] = email
                 session['senha_temp'] = senha_hash
                 session['perfil_temp'] = perfil
-                flash("Cadastro iniciado. Código de verificação enviado para o e-mail.")
+                
                 return redirect(url_for("auth.verificacao"))
         return render_template("cadastro.html")
 

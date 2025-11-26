@@ -385,7 +385,7 @@ class LocacaoModel:
         try:
             params = []
             where_clause = ""
-            if perfil == "Cliente":
+            if perfil == "cliente":
                 cursor.execute(
                     "SELECT id_cliente FROM cliente WHERE email = %s", (email_usuario,))
                 cliente = cursor.fetchone()

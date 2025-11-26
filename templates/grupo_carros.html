@@ -8,13 +8,41 @@
 
 {% block content %}
 <div class="page-container">
-    <h1>Grupos de Carros</h1>
-    {% for categoria in categorias %}
-    <div class="categoria">
-        <a href="{{ url_for('veiculos.veiculos_por_categoria', id_categoria=categoria.id_categoria) }}" class="categoria-link">
-            <h2>{{ categoria.nome_categoria }} - R$ {{ categoria.valor_diaria }} p/dia</h2>
+    <h1 class="page-title">Grupos de Carros</h1>
+    
+    <div class="lista-categorias">
+        {% for categoria in categorias %}
+        
+        <a href="{{ url_for('veiculos.veiculos_por_categoria', id_categoria=categoria.id_categoria) }}" class="card-categoria">
+            
+            <div class="card-header">
+                <h2>{{ categoria.nome_categoria }}</h2>
+                <span class="preco">R$ {{ categoria.valor_diaria }} <small>p/dia</small></span>
+            </div>
+
+            <div class="card-imagem">
+                {% if categoria.nome_categoria == 'Compacto' %}
+                    <img src="{{ url_for('static', filename='img/grupo_carros/compacto.jpg') }}" alt="Carro Compacto">
+                
+                {% elif categoria.nome_categoria == 'Sedan Médio' %}
+                    <img src="{{ url_for('static', filename='img/grupo_carros/sedan-medio.jpg') }}" alt="Sedan Médio">
+                
+                {% elif categoria.nome_categoria == 'SUV' %}
+                    <img src="{{ url_for('static', filename='img/grupo_carros/suv.jpg') }}" alt="SUV">
+                
+                {% elif categoria.nome_categoria == 'Picape' %}
+                    <img src="{{ url_for('static', filename='img/grupo_carros/picape.jpg') }}" alt="Picape">
+                
+                {% elif categoria.nome_categoria == 'Elétrico' %}
+                    <img src="{{ url_for('static', filename='img/grupo_carros/eletrico.jpg') }}" alt="Carro Elétrico">
+                {% endif %}
+            </div>
+            
+            <div class="card-footer">
+                <button class="btn-ver-mais">Ver Opções</button>
+            </div>
         </a>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endblock %}

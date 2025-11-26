@@ -174,7 +174,7 @@ nav ul li:hover > a {
 .hero {
   height: 75vh;
   /* Ajuste do caminho da imagem: sobe um nível (..) sai de css/ e entra em img/ */
-  background: linear-gradient(to bottom right, rgba(0,77,38,0.6), rgba(0,77,38,0.6)), url('../img/img1.webp') center/cover no-repeat;
+  background: linear-gradient(to bottom right, rgba(0,77,38,0.6), rgba(0,77,38,0.6)), url('../img/pagina_inicial/img1.webp') center/cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -708,4 +708,195 @@ footer {
   .btn-hero {
       padding: 12px 24px;
   }
+}
+
+/* ==============================
+   7. PÁGINA DE GRUPOS DE CARROS (NOVO)
+============================== */
+
+/* Container específico para páginas de exibição (diferente de forms) */
+.page-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.page-title {
+  text-align: center;
+  color: #004d26; /* Verde oficial do header */
+  margin-bottom: 40px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Lista Vertical */
+.lista-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* Espaço generoso entre os carros */
+}
+
+/* O Card do Carro */
+.card-categoria {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  text-decoration: none; /* Remove sublinhado do link */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.card-categoria:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 77, 38, 0.15); /* Sombra esverdeada suave */
+  border-color: #b2ff59; /* Borda verde limão sutil ao passar o mouse */
+}
+
+/* Cabeçalho do Card */
+.card-header {
+  padding: 25px;
+  text-align: center;
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #004d26;
+  font-weight: 700;
+}
+
+.card-header .preco {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 500;
+}
+
+/* Área da Imagem */
+.card-imagem {
+  width: 100%;
+  height: 350px; /* Altura fixa para impacto visual */
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Garante que a foto preencha tudo sem distorcer */
+  transition: transform 0.6s ease;
+}
+
+.card-categoria:hover .card-imagem img {
+  transform: scale(1.05); /* Zoom elegante ao passar o mouse */
+}
+
+/* Rodapé do Card (Botão) */
+.card-footer {
+  padding: 18px;
+  text-align: center;
+  background-color: #004d26;
+  transition: background-color 0.3s;
+}
+
+.card-categoria:hover .card-footer {
+  background-color: #003d1e; /* Escurece levemente no hover */
+}
+
+.btn-ver-mais {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* --- NOVOS ESTILOS (Quilometragem) --- */
+
+/* Ajuste para o item da lista ficar organizado */
+.veiculo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Agrupa nome e badge */
+.info-carro {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nome-modelo {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* O selo verde de destaque */
+.badge-km {
+    font-size: 0.85rem;
+    color: #28a745; /* Verde sucesso */
+    font-weight: 600;
+    background-color: #e6f4ea;
+    padding: 2px 8px;
+    border-radius: 12px;
+    width: fit-content;
+}
+
+/* O cartão de aviso na reserva (Sem borda) */
+.oferta-card {
+    background-color: #004d26;
+    border: none; /* <--- REMOVIDA A BORDA AQUI */
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 0.95rem;
+    color: #ffffff;
+    text-align: center;
+    margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(0, 77, 38, 0.2);
+}
+
+/* Mantém o destaque do texto */
+.oferta-card strong {
+    color: #b2ff59;
+    font-weight: 700;
+}
+
+/* --- Estilo do Link do Logo --- */
+.logo-link {
+    display: flex;        /* Mantém imagem e texto alinhados */
+    align-items: center;  /* Centraliza verticalmente */
+    gap: 12px;            /* Espaço entre o logo e o texto */
+    text-decoration: none; /* Remove o sublinhado do link */
+    color: #fff;          /* Garante que o texto fique branco */
+    transition: all 0.3s; /* Suaviza o efeito ao passar o mouse */
+}
+
+/* Efeito ao passar o mouse (Hover) */
+.logo-link:hover .brand-name {
+    color: #b2ff59; /* Muda a cor do texto para verde limão */
+}
+
+.logo-link:hover .logo {
+    transform: scale(1.05); /* Aumenta levemente o logo */
+    transition: transform 0.3s;
 }

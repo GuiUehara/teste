@@ -3,31 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rider Mobility - Locadora de Viagens Familiares</title>
+  <title>Rider Mobility</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 <body>
 
 <header>
   <div class="header-container">
     <div class="logo-container">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Rider Mobility" class="logo">
-      <span class="brand-name">Rider Mobility</span>
+      <a href="{{ url_for('index') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+        <span class="brand-name">Rider Mobility</span>
+      </a>
     </div>
 
-    <nav id="top-menu">
-      <ul>
-        <li><a href="{{ url_for('index') }}">Início</a></li>
     <div class="menu-toggle" id="menu-toggle">&#9776;</div>
 
     <nav id="top-menu">
       <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
         <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
         
-        {# Menu CADASTRO: Oculto para Clientes #}
-        {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
+        {# Menu CADASTRO #}
+        {% if session.get('usuario_logado') and session.get('perfil') not in ['Cliente', 'cliente'] %}
         <li class="menu-item">
           Cadastro
           <ul class="dropdown">
@@ -40,19 +39,20 @@
         </li>
         {% endif %}
 
-        {# Menu LISTAS: Oculto para Clientes #}
-        {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
+        {# Menu LISTAS #}
+        {% if session.get('usuario_logado') and session.get('perfil') not in ['Cliente', 'cliente'] %}
         <li class="menu-item">
           Listas
           <ul class="dropdown">
             <li><a href="{{ url_for('clientes.lista_clientes') }}">Lista de Clientes</a></li>
             <li><a href="{{ url_for('funcionarios.lista_funcionarios') }}">Lista de Funcionários</a></li>
-            <li><a href="{{ url_for('veiculos.lista_veiculos') }}">Lista Veículos</a></li>
+             <li><a href="{{ url_for('veiculos.lista_veiculos') }}">Lista Veículos</a></li>
           </ul>
         </li>
         {% endif %}
 
         {# Menu HISTÓRICOS #}
+        {% if session.get('usuario_logado') %}
         <li class="menu-item">
           Históricos
           <ul class="dropdown">
@@ -63,11 +63,12 @@
             {% endif %}
           </ul>
         </li>
+        {% endif %}
 
-        {# Menu CONTA (Ícone e lógica de login) #}
+        {# Menu CONTA #}
         <li class="menu-item">
           <a href="#" class="login-link">
-            <img src="{{ url_for('static', filename='img/conta.png') }}" alt="Usuário" class="login-icon"> Conta
+            <img src="{{ url_for('static', filename='img/pagina_inicial/conta.png') }}" alt="Usuário" class="login-icon"> Conta
           </a>
           <ul class="dropdown">
             {% if session.get('usuario_logado') %}
@@ -90,8 +91,7 @@
     {% if messages %}
       <div class="flash-messages container" style="padding: 20px; max-width: 1200px; margin: 80px auto 0;">
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; 
-                 {% if category == 'error' %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% else %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% endif %}">
+            <div class="alert alert-{{ category }}">
                 {{ message }}
             </div>
         {% endfor %}

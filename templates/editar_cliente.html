@@ -4,7 +4,7 @@
 <div class="form-container">
     <h2>Editar Cliente</h2>
 
-    <form method="POST" action="{{ url_for('editar_cliente', id_cliente=id_cliente) }}" id="formCliente">
+    <form method="POST" action="{{ url_for('clientes.editar_cliente', id_cliente=id_cliente) }}" id="formCliente">
 
         <h3>Dados Pessoais</h3>
         <div class="form-group"><label for="nomeCliente">Nome Completo</label><input type="text" name="nomeCliente" id="nomeCliente" value="{{ dados.nome_completo }}" required /></div>

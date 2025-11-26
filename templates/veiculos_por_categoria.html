@@ -15,7 +15,10 @@
         {% if veiculos %}
             {% for v in veiculos %}
                 <div class="veiculo-item">
-                    <span>{{ v.nome_marca }} {{ v.nome_modelo }}</span>
+                    <div class="info-carro">
+                        <span class="nome-modelo">{{ v.nome_marca }} {{ v.nome_modelo }}</span>
+                        <span class="badge-km"> Quilometragem Ilimitada</span>
+                    </div>
                     <button class="btn-secondary" onclick="window.location.href='{{ url_for('reserva.reservar_veiculo', id_veiculo=v.id_veiculo) }}'">Reservar</button>
                 </div>
             {% endfor %}

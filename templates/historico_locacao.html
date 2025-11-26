@@ -47,9 +47,12 @@
             }
 
             // --- Lógica para Ocultar Coluna Cliente ---
-            const perfilUsuario = "{{ session.get('perfil') }}"; // Pega o perfil da sessão Flask
-            if (perfilUsuario === 'Cliente') {
-                document.getElementById('coluna-cliente').style.display = 'none';
+            const perfilUsuario = "{{ session.get('perfil') }}"; 
+            
+            // Verifica se é 'Cliente' OU 'cliente'
+            if (['Cliente', 'cliente'].includes(perfilUsuario)) {
+                const thCliente = document.getElementById('coluna-cliente');
+                if (thCliente) thCliente.style.display = 'none';
             }
             // -----------------------------------------
 
@@ -81,7 +84,7 @@
             });
             
             // Oculta as células de dados se o perfil for Cliente
-            if (perfilUsuario === 'Cliente') {
+            if (['Cliente', 'cliente'].includes(perfilUsuario)) {
                 document.querySelectorAll('.col-cliente-data').forEach(td => {
                     td.style.display = 'none';
                 });
