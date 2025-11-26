@@ -1,6 +1,5 @@
 from db import conectar
 
-
 class ClienteModel:
     """
     Modelo responsável por todas as operações de banco de dados
@@ -67,6 +66,21 @@ class ClienteModel:
             if 'conexao' in locals() and conexao.is_connected():
                 cursor.close()
                 conexao.close()
+    
+    # --- NOVO MÉTODO ADICIONADO AQUI ---
+    def buscar_por_cpf(self, cpf):
+        """Busca um cliente pelo CPF (Usado para recuperar ID após cadastro)."""
+        try:
+            conexao = conectar()
+            cursor = conexao.cursor(dictionary=True)
+            sql = "SELECT * FROM cliente WHERE cpf = %s"
+            cursor.execute(sql, (cpf,))
+            return cursor.fetchone()
+        finally:
+            if 'conexao' in locals() and conexao.is_connected():
+                cursor.close()
+                conexao.close()
+    # -----------------------------------
 
     def editar(self, id_cliente, dados_cliente, id_endereco, dados_endereco, id_cnh, dados_cnh):
         """Atualiza os dados de um cliente, seu endereço e CNH."""
