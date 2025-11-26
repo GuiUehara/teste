@@ -52,7 +52,18 @@
         <div class="form-group">
             <label for="modeloVeiculo">Modelo</label>
             <select name="modeloVeiculo" id="modeloVeiculo" required>
-                {% for mod in modelos %}<option value="{{ mod.id_modelo }}" data-categoria="{{ mod.nome_categoria }}" {% if veiculo.id_modelo == mod.id_modelo %}selected{% endif %}>{{ mod.nome_modelo }}</option>{% endfor %}
+                {% for mod in modelos %}
+                    <!-- Só mostra o modelo se ele for da mesma marca do veículo -->
+                    {% if mod.id_marca == veiculo.id_marca %}
+                        <option 
+                            value="{{ mod.id_modelo }}" 
+                            data-categoria="{{ mod.nome_categoria }}" 
+                            {% if veiculo.id_modelo == mod.id_modelo %}selected{% endif %}
+                        >
+                            {{ mod.nome_modelo }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
             </select>
         </div>
 

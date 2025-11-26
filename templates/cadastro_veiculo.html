@@ -44,7 +44,9 @@
             <label for="combustivel">Combustível</label>
             <select name="combustivel" id="combustivel" required>
                 <option value="">Selecione</option>
-                {% for comb in combustiveis %}<option value="{{ comb[0] }}">{{ comb[1] }}</option>{% endfor %}
+                {% for comb in combustiveis %}
+                    <option value="{{ comb.id_combustivel }}">{{ comb.tipo_combustivel }}</option>
+                {% endfor %}
             </select>
         </div>
 
@@ -52,24 +54,31 @@
             <label for="marca">Marca</label>
             <select name="marca" id="marca" required>
                 <option value="">Selecione</option>
-                {% for m in marcas %}<option value="{{ m[0] }}">{{ m[1] }}</option>{% endfor %}
+                {% for m in marcas %}
+                    <option value="{{ m.id_marca }}">{{ m.nome_marca }}</option>
+                {% endfor %}
             </select>
         </div>
 
         <div class="form-group">
             <label for="modeloVeiculo">Modelo</label>
             <select name="modeloVeiculo" id="modeloVeiculo" required>
-                <option value="">Selecione uma marca</option>
+                <option value="">Selecione uma marca primeiro</option>
             </select>
         </div>
-
-        <div class="form-group"><label for="categoria">Categoria</label><input type="text" name="categoria" id="categoria" readonly placeholder="Selecione um modelo para ver a categoria" /></div>
+        
+        <div class="form-group">
+            <label for="categoria">Categoria</label>
+            <input type="text" name="categoria" id="categoria" readonly placeholder="Automático" />
+        </div>
 
         <div class="form-group">
             <label for="status">Status</label>
             <select name="status" id="status" required>
                 <option value="">Selecione</option>
-                {% for s in status %}<option value="{{ s[0] }}">{{ s[1] }}</option>{% endfor %}
+                {% for s in status %}
+                    <option value="{{ s.id_status_veiculo }}">{{ s.descricao_status }}</option>
+                {% endfor %}
             </select>
         </div>
 
@@ -77,7 +86,9 @@
             <label for="companhiaSeguro">Companhia Seguro</label>
             <select name="companhiaSeguro" id="companhiaSeguro">
                 <option value="">Selecione</option>
-                {% for c in seguros %}<option value="{{ c[0] }}">{{ c[1] }}</option>{% endfor %}
+                {% for c in seguros %}
+                    <option value="{{ c.id_seguro }}">{{ c.companhia }}</option>
+                {% endfor %}
             </select>
         </div>
 

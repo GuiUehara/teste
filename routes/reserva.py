@@ -86,7 +86,15 @@ def criar_reserva_json():
                     "SELECT id_cliente FROM cliente WHERE email = %s", (usuario_email,))
                 cliente = cursor.fetchone()
                 if not cliente:
-                    # Se não for cliente, redireciona para o cadastro de cliente
+                    # --- SALVA A RESERVA NA SESSÃO ANTES DE IR EMBORA ---
+                    session['reserva_pendente'] = {
+                        "id_veiculo": id_veiculo,
+                        "data_retirada": dt_retirada_str,
+                        "data_devolucao_prevista": dt_prevista_str,
+                        "opcionais": opcionais
+                    }
+                    
+                    # Agora sim, redireciona para o cadastro
                     return jsonify({"sucesso": True, "redirect": url_for("clientes.cadastro_cliente")})
                 id_cliente = cliente["id_cliente"]
 
