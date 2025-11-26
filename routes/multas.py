@@ -8,7 +8,7 @@ def init_multa(app):
     def historico_multas():
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
         # Apenas Gerente ou Atendente pode ver multas
         if session.get("perfil") not in ["Gerente", "Atendente"]:

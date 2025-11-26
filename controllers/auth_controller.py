@@ -113,6 +113,7 @@ class AuthController:
                     session["usuario_logado"] = email
                     session["perfil"] = perfil_temp
                     flash("Login realizado com sucesso!", "success")
+                    # Correção já estava ok, mantido por consistência.
                     return redirect(url_for("veiculos.grupo_carros"))
                 elif session.get("processo") == "cadastro":
                     if auth_model.obter_usuario_por_email(email):

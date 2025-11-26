@@ -10,7 +10,7 @@ class VeiculoController:
     def cadastrar(self):
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
         if session.get("perfil") not in ["Gerente", "Atendente"]:
             abort(403)
@@ -70,7 +70,7 @@ class VeiculoController:
     def listar(self):
         if "usuario_logado" not in session:
             flash("Faça login para acessar.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
         busca = request.args.get("busca", "").strip()
         veiculos = self.veiculo_model.listar(busca)
@@ -137,7 +137,7 @@ class VeiculoController:
     def deletar(self, id_veiculo):
         if "usuario_logado" not in session:
             flash("Faça login para acessar.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
         if self.veiculo_model.deletar(id_veiculo):
             flash("Veículo removido com sucesso!", "success")

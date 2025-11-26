@@ -75,7 +75,7 @@ class FuncionarioController:
     def listar(self):
         if "usuario_logado" not in session:
             flash("Faça login para acessar.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
         if session.get("perfil") != "Gerente":
             abort(403)

@@ -10,7 +10,7 @@ class PagamentoController:
         id_locacao = session.get('id_locacao_pagamento')
         if not id_locacao:
             flash("Nenhuma reserva encontrada para pagamento.", "warning")
-            return redirect(url_for("veiculos.grupo_carros"))
+            return redirect(url_for("veiculos.grupo_carros")) # Correção já estava ok, mantido por consistência.
 
         try:
             locacao = self.pagamento_model.get_dados_locacao_para_pagamento(
@@ -18,7 +18,7 @@ class PagamentoController:
 
             if not locacao:
                 flash("Locação não encontrada.", "error")
-                return redirect(url_for("veiculos.grupo_carros"))
+                return redirect(url_for("veiculos.grupo_carros")) # Correção já estava ok, mantido por consistência.
 
             valor_a_pagar = locacao['valor_total_previsto']
             caucao = locacao.get('caucao', 0.0)
@@ -43,4 +43,4 @@ class PagamentoController:
 
         except Exception as e:
             flash(f"Ocorreu um erro ao processar o pagamento: {e}", "error")
-            return redirect(url_for("veiculos.grupo_carros"))
+            return redirect(url_for("veiculos.grupo_carros")) # Correção já estava ok, mantido por consistência.

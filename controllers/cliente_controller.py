@@ -11,6 +11,7 @@ class ClienteController:
     def cadastrar(self):
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
+            # Correção já estava ok, mantido por consistência.
             return redirect(url_for("auth.login"))
 
         if request.method == "POST":
@@ -79,7 +80,8 @@ class ClienteController:
     def listar(self):
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
-            return redirect(url_for("login"))
+            # Correção já estava ok, mantido por consistência.
+            return redirect(url_for("auth.login"))
 
         if session.get("perfil") not in ["Gerente", "Atendente"]:
             abort(403)
@@ -93,6 +95,7 @@ class ClienteController:
     def editar(self, id_cliente):
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
+            # Correção já estava ok, mantido por consistência.
             return redirect(url_for("auth.login"))
 
         if session.get("perfil") not in ["Gerente", "Atendente"]:
@@ -147,7 +150,8 @@ class ClienteController:
     def deletar(self, id_cliente):
         if "usuario_logado" not in session:
             flash("Faça login para acessar", "error")
-            return redirect(url_for("login"))
+            # Correção já estava ok, mantido por consistência.
+            return redirect(url_for("auth.login"))
 
         if session.get("perfil") not in ["Gerente", "Atendente"]:
             abort(403)

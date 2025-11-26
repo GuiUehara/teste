@@ -55,6 +55,7 @@ class RedefinirSenhaController:
                     "Email enviado com instruções para redefinir sua senha.", "success")
             else:
                 flash("Email não cadastrado.", "error")
+            # Correção já estava ok, mantido por consistência.
             return redirect(url_for('auth.login'))
         return render_template('solicitar_redefinir.html')
 
@@ -63,6 +64,7 @@ class RedefinirSenhaController:
         email = self._confirmar_token(token)
         if not email:
             flash("Link inválido ou expirado.", "error")
+            # Correção já estava ok, mantido por consistência.
             return redirect(url_for('redefinir_senha.solicitar_redefinir'))
 
         if request.method == 'POST':
@@ -71,6 +73,7 @@ class RedefinirSenhaController:
 
             if nova_senha != confirmar_senha:
                 flash("As senhas não coincidem", "error")
+                # Correção já estava ok, mantido por consistência.
                 return redirect(url_for('redefinir_senha.resetar_senha', token=token))
 
             if self.redefinir_senha_model.atualizar_senha(email, nova_senha):
@@ -78,6 +81,7 @@ class RedefinirSenhaController:
                 return redirect(url_for('auth.login'))
             else:
                 flash("Ocorreu um erro ao redefinir a senha.", "error")
+                # Correção já estava ok, mantido por consistência.
                 return redirect(url_for('redefinir_senha.resetar_senha', token=token))
 
         return render_template('resetar_senha.html')

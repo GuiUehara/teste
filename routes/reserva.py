@@ -27,6 +27,7 @@ def reservar_veiculo(id_veiculo):
         cursor.close()
         conn.close()
         flash("Veículo não encontrado.", "error")
+        # Correção já estava ok, mantido por consistência.
         return redirect(url_for("veiculos.grupo_carros"))
 
     return render_template("reserva_veiculo.html", veiculo=veiculo)

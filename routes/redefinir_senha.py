@@ -58,7 +58,7 @@ def init_redefinirSenha(app):
                     "Email enviado com instruções para redefinir sua senha.", "success")
             else:
                 flash("Email não cadastrado.", "error")
-            return redirect(url_for('login'))
+            return redirect(url_for('auth.login'))
         return render_template('solicitar_redefinir.html')
 
     @app.route('/resetar_senha/<token>', methods=['GET', 'POST'])
@@ -66,14 +66,14 @@ def init_redefinirSenha(app):
         email = confirmar_token(token)
         if not email:
             flash("Link inválido ou expirado.", "error")
-            return redirect(url_for('solicitar_redefinir'))
+            return redirect(url_for('redefinir_senha.solicitar_redefinir'))
 
         if request.method == 'POST':
             nova_senha = request.form.get('nova_senha')
             confirmar_senha = request.form.get('confirmar_senha')
             if nova_senha != confirmar_senha:
                 flash("As senhas não coincidem", "error")
-                return redirect(url_for('resetar_senha', token=token))
+                return redirect(url_for('redefinir_senha.resetar_senha', token=token))
 
             nova_senha = hash_provider.gerar_hash(nova_senha)
 
@@ -86,6 +86,6 @@ def init_redefinirSenha(app):
             conn.close()
 
             flash("Senha redefinida com sucesso!", "success")
-            return redirect(url_for('login'))
+            return redirect(url_for('auth.login'))
 
         return render_template('resetar_senha.html')
