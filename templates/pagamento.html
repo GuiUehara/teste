@@ -3,10 +3,10 @@
 {% block content %}
 <div class="form-container">
     <h2>Finalizar Pagamento</h2>
-    <p class="valor-pagar">Valor total a pagar: <strong>R$ {{ "%.2f"|format(valor_a_pagar|float) }}</strong></p>    
     
-    <!-- Exibe o valor da caução e a instrução de pagamento -->
-    <p class="caucao-info">Caução (a ser paga na retirada): <strong>R$ {{ "%.2f"|format(caucao|float) }}</strong></p>
+    <p class="valor-pagar">Valor total a pagar: <strong>R$ {{ valor_a_pagar }}</strong></p>      
+    
+    <p class="caucao-info">Caução (a ser paga na retirada): <strong>R$ {{ caucao }}</strong></p>
 
     <form method="POST" action="{{ url_for('pagamento.pagamento') }}" id="pagamentoForm">
         <div class="form-group">

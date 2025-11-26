@@ -19,9 +19,13 @@ class PagamentoController:
             if not locacao:
                 flash("Locação não encontrada.", "error")
                 return redirect(url_for("veiculos.grupo_carros")) # Correção já estava ok, mantido por consistência.
-
-            valor_a_pagar = locacao['valor_total_previsto']
-            caucao = locacao.get('caucao', 0.0)
+            # Pega os valores brutos
+            valor_bruto = locacao['valor_total_previsto']
+            caucao_bruto = locacao.get('caucao', 0.0)
+            
+            # --- Correção 1: Criando as variáveis certas ---
+            valor_formatado = "{:.2f}".format(float(valor_bruto))
+            caucao_formatado = "{:.2f}".format(float(caucao_bruto))
 
             formas_pagamento = self.pagamento_model.get_formas_pagamento()
 
@@ -30,16 +34,28 @@ class PagamentoController:
 
                 if not id_forma_pagamento:
                     flash("Selecione uma forma de pagamento.", "error")
-                    return render_template("pagamento.html", valor_a_pagar=valor_a_pagar, caucao=caucao, formas_pagamento=formas_pagamento)
+                    # --- Correção 2: Passar as variáveis novas (formatadas) aqui também ---
+                    return render_template(
+                        "pagamento.html", 
+                        valor_a_pagar=valor_formatado,  # <--- Mudei aqui
+                        caucao=caucao_formatado,        # <--- Mudei aqui
+                        formas_pagamento=formas_pagamento
+                    )
 
+                # --- Correção 3: Na hora de salvar, use o valor BRUTO (número), não o texto ---
                 self.pagamento_model.registrar_pagamento(
-                    id_locacao, id_forma_pagamento, valor_a_pagar)
+                    id_locacao, id_forma_pagamento, valor_bruto) # <--- Use valor_bruto aqui
 
                 flash("Pagamento registrado com sucesso!", "success")
-                session.pop('id_locacao_pagamento', None)  # Limpa a sessão
+                session.pop('id_locacao_pagamento', None)  
                 return redirect(url_for("pagamento.pagamento_concluido"))
 
-            return render_template("pagamento.html", valor_a_pagar=valor_a_pagar, caucao=caucao, formas_pagamento=formas_pagamento)
+            return render_template(
+                "pagamento.html", 
+                valor_a_pagar=valor_formatado, 
+                caucao=caucao_formatado,       
+                formas_pagamento=formas_pagamento
+            )
 
         except Exception as e:
             flash(f"Ocorreu um erro ao processar o pagamento: {e}", "error")
