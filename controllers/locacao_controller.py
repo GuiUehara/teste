@@ -1,4 +1,4 @@
-from flask import jsonify, request, session
+from flask import jsonify, request, session, flash, redirect, url_for, abort 
 from models.locacao_model import LocacaoModel
 from datetime import datetime
 
@@ -161,3 +161,19 @@ class LocacaoController:
         except Exception as e:
             print("ERRO calcular_simulacao controller:", e)
             return jsonify({"erro": str(e)}), 500
+        
+    def deletar_locacao(self, id_locacao):
+        # Apenas Gerente ou Atendente podem deletar locações
+        if session.get("perfil") not in ["Gerente", "Atendente"]:
+            abort(403)
+
+        try:
+            if self.locacao_model.deletar_locacao(id_locacao):
+                flash("Locação removida com sucesso! O veículo está novamente disponível.", "success")
+            else:
+                flash("Erro ao remover locação. Locação não encontrada ou falha no banco de dados.", "error")
+        except Exception as e:
+            print(f"Erro ao deletar locação {id_locacao}: {e}")
+            flash("Erro interno ao tentar deletar a locação.", "error")
+            
+        return redirect(url_for("locacao.historico_locacao"))

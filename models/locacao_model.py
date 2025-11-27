@@ -465,3 +465,43 @@ class LocacaoModel:
         finally:
             cursor.close()
             conn.close()
+
+    def deletar_locacao(self, id_locacao):
+        """Deleta uma locação, excluindo pagamentos relacionados e devolvendo o veículo para 'Disponível' (ID 1)."""
+        try:
+            conexao = conectar()
+            cursor = conexao.cursor(dictionary=True) 
+
+            # 1. Obter o id_veiculo da locação antes de deletá-la
+            cursor.execute(
+                "SELECT id_veiculo FROM locacao WHERE id_locacao=%s", (id_locacao,))
+            locacao_data = cursor.fetchone()
+            
+            if not locacao_data:
+                return False
+
+            id_veiculo = locacao_data['id_veiculo']
+
+            # 2. Deletar pagamentos relacionados
+            cursor.execute(
+                "DELETE FROM pagamento WHERE id_locacao=%s", (id_locacao,))
+            
+            # 3. Deletar a locação. (Locacao_Opcional será excluído automaticamente via CASCADE)
+            cursor.execute(
+                "DELETE FROM locacao WHERE id_locacao=%s", (id_locacao,))
+
+            # 4. Atualizar o status do veículo para 'Disponível' (ID 1)
+            cursor.execute(
+                "UPDATE veiculo SET id_status_veiculo = 1 WHERE id_veiculo=%s", (id_veiculo,))
+
+            conexao.commit()
+            return True
+        except Exception as e:
+            if 'conexao' in locals() and conexao.is_connected():
+                conexao.rollback()
+            print(f"Erro ao deletar locação {id_locacao}: {e}") 
+            return False
+        finally:
+            if 'conexao' in locals() and conexao.is_connected():
+                cursor.close()
+                conexao.close()

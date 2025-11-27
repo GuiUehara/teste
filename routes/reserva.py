@@ -77,26 +77,42 @@ def criar_reserva_json():
         return jsonify({"sucesso": False, "erro": "Campos obrigatórios faltando"})
 
     locacao_model = LocacaoModel()
+    
+    # Inicializa 'conn' e 'id_cliente' fora do bloco try para garantir que possam ser usados
+    conn = None 
+    id_cliente = None
 
     try:
-        with conectar() as conn:
-            with conn.cursor(dictionary=True) as cursor:
-                # --- 2. Buscar id_cliente a partir do email na sessão ---
-                cursor.execute(
-                    "SELECT id_cliente FROM cliente WHERE email = %s", (usuario_email,))
-                cliente = cursor.fetchone()
-                if not cliente:
-                    # --- SALVA A RESERVA NA SESSÃO ANTES DE IR EMBORA ---
-                    session['reserva_pendente'] = {
-                        "id_veiculo": id_veiculo,
-                        "data_retirada": dt_retirada_str,
-                        "data_devolucao_prevista": dt_prevista_str,
-                        "opcionais": opcionais
-                    }
-                    
-                    # Agora sim, redireciona para o cadastro
-                    return jsonify({"sucesso": True, "redirect": url_for("clientes.cadastro_cliente")})
-                id_cliente = cliente["id_cliente"]
+        # --- 2. Buscar id_cliente a partir do email na sessão (Corrigido para usar try...finally) ---
+        conn = conectar()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute(
+            "SELECT id_cliente FROM cliente WHERE email = %s", (usuario_email,))
+        cliente = cursor.fetchone()
+        
+        if not cliente:
+            # --- SALVA A RESERVA NA SESSÃO ANTES DE IR EMBORA ---
+            session['reserva_pendente'] = {
+                "id_veiculo": id_veiculo,
+                "data_retirada": dt_retirada_str,
+                "data_devolucao_prevista": dt_prevista_str,
+                "opcionais": opcionais
+            }
+            
+            # Fecha a conexão aberta manualmente
+            cursor.close()
+            conn.close() 
+
+            # Agora sim, redireciona para o cadastro
+            return jsonify({"sucesso": True, "redirect": url_for("clientes.cadastro_cliente")})
+        
+        id_cliente = cliente["id_cliente"]
+        
+        # Fecha a conexão usada para leitura antes de abrir outra no model.criar_locacao
+        cursor.close()
+        conn.close() 
+        conn = None # Zera para não fechar duas vezes no finally
 
         # --- 3. Converter datas (adicionando hora padrão 12:00) ---
         dt_retirada = datetime.strptime(
@@ -126,3 +142,8 @@ def criar_reserva_json():
         # Log do erro no servidor para depuração
         print(f"Erro ao criar reserva: {e}")
         return jsonify({"sucesso": False, "erro": str(e)})
+    
+    finally:
+        # Garante que a conexão seja fechada em caso de erro na seção de leitura
+        if conn:
+            conn.close()

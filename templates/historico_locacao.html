@@ -17,10 +17,10 @@
                 <th>Valor Final (R$)</th>
                 {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
                 <th class="actions-header">Ações</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody id="locacao-body">
-            <!-- Conteúdo será carregado via JavaScript -->
             <tr>
                 <td colspan="9" style="text-align: center;">Carregando histórico...</td>
             </tr>
@@ -49,9 +49,10 @@
 
             // --- Lógica para Ocultar Coluna Cliente ---
             const perfilUsuario = "{{ session.get('perfil') }}"; 
+            const isFuncionario = !['Cliente', 'cliente'].includes(perfilUsuario); // Verifica se NÃO é cliente
             
             // Verifica se é 'Cliente' OU 'cliente'
-            if (['Cliente', 'cliente'].includes(perfilUsuario)) {
+            if (!isFuncionario) {
                 const thCliente = document.getElementById('coluna-cliente');
                 if (thCliente) thCliente.style.display = 'none';
             }
@@ -68,6 +69,24 @@
                 const row = document.createElement('tr');
                 const valorFinal = locacao.valor_final ? parseFloat(locacao.valor_final).toFixed(2) : '—';
                 
+                // Variável para conter os botões de ação (Editar e Deletar)
+                let acoesHtml = '';
+                
+                if (isFuncionario) {
+                    acoesHtml = `
+                        <td class="actions">
+                            <a href="/editar_locacao/${locacao.id_locacao}" class="btn-edit">Editar</a>
+                            <a 
+                                href="/deletar_locacao/${locacao.id_locacao}" 
+                                class="btn-delete" 
+                                onclick="return confirm('Deseja realmente deletar a locação #${locacao.id_locacao}?');"
+                            >
+                                Deletar
+                            </a>
+                        </td>
+                    `;
+                }
+
                 row.innerHTML = `
                     <td>${locacao.id_locacao}</td>
                     <td class="col-cliente-data">${locacao.nome_completo}</td>
@@ -77,15 +96,13 @@
                     <td>${locacao.data_devolucao_real}</td>
                     <td>${locacao.status}</td>
                     <td>${valorFinal}</td>
-                    <td class="actions">
-                        <a href="/editar_locacao/${locacao.id_locacao}" class="btn-edit">Editar</a>
-                    </td>
+                    ${acoesHtml}
                 `;
                 body.appendChild(row);
             });
             
-            // Oculta as células de dados se o perfil for Cliente
-            if (['Cliente', 'cliente'].includes(perfilUsuario)) {
+            // Oculta as células de dados do cliente se o perfil for Cliente
+            if (!isFuncionario) {
                 document.querySelectorAll('.col-cliente-data').forEach(td => {
                     td.style.display = 'none';
                 });
