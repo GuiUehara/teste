@@ -2,8 +2,8 @@ from db import conectar
 
 
 class ManutencaoModel:
+    # Lista veículos disponíveis para manutenção
     def listar_veiculos_para_manutencao(self):
-        """Lista veículos com status 'Disponível'."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -15,8 +15,8 @@ class ManutencaoModel:
                 cursor.close()
                 conexao.close()
 
+    # Cadastra uma nova manutenção
     def cadastrar(self, dados_manutencao):
-        """Cadastra uma nova manutenção e atualiza o status do veículo."""
         try:
             conexao = conectar()
             cursor = conexao.cursor()
@@ -31,8 +31,8 @@ class ManutencaoModel:
                 cursor.close()
                 conexao.close()
 
+    # Lista o histórico de manutenções
     def listar_historico(self):
-        """Retorna o histórico de todas as manutenções."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)

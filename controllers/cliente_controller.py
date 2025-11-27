@@ -116,7 +116,6 @@ class ClienteController:
                 return redirect(url_for("clientes.lista_clientes"))
 
             else:
-                # Se cair aqui, é porque o Model retornou False (CPF duplicado, etc)
                 flash("Erro ao cadastrar. CPF ou Email já existem.", "error")
                 return redirect(url_for("clientes.cadastro_cliente"))
 

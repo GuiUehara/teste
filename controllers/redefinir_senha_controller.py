@@ -7,13 +7,16 @@ from models import auth_model
 from models.redefinir_senha_model import RedefinirSenhaModel
 
 
+# Token prova que o usuário que clicou é dona do email
+
 class RedefinirSenhaController:
     def __init__(self):
         self.redefinir_senha_model = RedefinirSenhaModel()
 
+    # Gera um token seguro para o email fornecido
     def _gerar_token(self, email):
         serializer = URLSafeTimedSerializer(
-            current_app.config['TOKEN_SECRET_KEY'])
+            current_app.config['TOKEN_SECRET_KEY']) # UrlSafeTimedSerializer "embrulha" o token para ser seguro em URLs
         return serializer.dumps(email, salt=current_app.config['TOKEN_SALT'])
 
     def _confirmar_token(self, token, expiration=1800):
@@ -21,11 +24,12 @@ class RedefinirSenhaController:
             current_app.config['TOKEN_SECRET_KEY'])
         try:
             email = serializer.loads(
-                token, salt=current_app.config['TOKEN_SALT'], max_age=expiration)
+                token, salt=current_app.config['TOKEN_SALT'], max_age=expiration) # loads decodifica o token e verifica se não expirou
             return email
         except Exception:
             return False
 
+    # Envia o email de redefinição de senha com o token
     def _enviar_email_reset(self, email, token):
         reset_url = url_for('redefinir_senha.resetar_senha',
                             token=token, _external=True)
@@ -42,8 +46,8 @@ class RedefinirSenhaController:
                          os.environ.get("EMAIL_PASSWORD"))
             server.send_message(mensagem)
 
+    # Rota para solicitar a redefinição de senha
     def solicitar(self):
-        """Processa a solicitação de redefinição de senha."""
         if request.method == 'POST':
             email = request.form.get('email')
             usuario = auth_model.obter_usuario_por_email(email)
@@ -55,16 +59,16 @@ class RedefinirSenhaController:
                     "Email enviado com instruções para redefinir sua senha.", "success")
             else:
                 flash("Email não cadastrado.", "error")
-            # Correção já estava ok, mantido por consistência.
+            
             return redirect(url_for('auth.login'))
         return render_template('solicitar_redefinir.html')
 
+    # Rota para redefinir a senha usando o token
     def resetar(self, token):
-        """Processa a redefinição da senha a partir do token."""
         email = self._confirmar_token(token)
         if not email:
             flash("Link inválido ou expirado.", "error")
-            # Correção já estava ok, mantido por consistência.
+           
             return redirect(url_for('redefinir_senha.solicitar_redefinir'))
 
         if request.method == 'POST':
@@ -73,7 +77,7 @@ class RedefinirSenhaController:
 
             if nova_senha != confirmar_senha:
                 flash("As senhas não coincidem", "error")
-                # Correção já estava ok, mantido por consistência.
+                
                 return redirect(url_for('redefinir_senha.resetar_senha', token=token))
 
             if self.redefinir_senha_model.atualizar_senha(email, nova_senha):
@@ -81,7 +85,7 @@ class RedefinirSenhaController:
                 return redirect(url_for('auth.login'))
             else:
                 flash("Ocorreu um erro ao redefinir a senha.", "error")
-                # Correção já estava ok, mantido por consistência.
+                
                 return redirect(url_for('redefinir_senha.resetar_senha', token=token))
 
         return render_template('resetar_senha.html')

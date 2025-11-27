@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato - Rider Mobility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body { background-color: #f4f4f4; }
+
+        .contato-wrapper {
+            max-width: 1100px;
+            margin: 40px auto;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        /* Cartão de Informações (Esquerda) */
+        .info-box {
+            flex: 1;
+            min-width: 300px;
+            background: #004d26;
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-box h2 { color: #fff; text-align: left; border-bottom: 2px solid #b2ff59; padding-bottom: 10px; display: inline-block; }
+        
+        .info-item { margin-top: 30px; display: flex; align-items: flex-start; gap: 15px; }
+        .info-icon { font-size: 1.5rem; }
+        .info-text h3 { font-size: 1.1rem; color: #b2ff59; margin-bottom: 5px; }
+        .info-text p { font-size: 0.95rem; opacity: 0.9; }
+
+        /* Cartão de Formulário (Direita) */
+        .form-box {
+            flex: 1.5;
+            min-width: 350px;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Reutilizando estilos de form do style.css, mas ajustando o título */
+        .form-box h2 { color: #004d26; margin-bottom: 20px; }
+
+        @media (max-width: 768px) {
+            .contato-wrapper { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo-container">
+      <a href="{{ url_for('index') }}" class="logo-link" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+        <span class="brand-name">Rider Mobility</span>
+      </a>
+    </div>
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
+        <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+        {% if session.get('usuario_logado') %}
+            <li class="menu-item">Históricos
+                <ul class="dropdown"><li><a href="{{ url_for('locacao.historico_locacao') }}">Meus Aluguéis</a></li></ul>
+            </li>
+        {% endif %}
+        <li><a href="{{ url_for('institucional.contato') }}" style="color: #b2ff59;">Contato</a></li>
+        <li class="menu-item">
+          <a href="#" class="login-link"><img src="{{ url_for('static', filename='img/pagina_inicial/conta.png') }}" class="login-icon"> Conta</a>
+          <ul class="dropdown">
+            {% if session.get('usuario_logado') %}
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Trocar Senha</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+    <div class="contato-wrapper">
+        <div class="info-box">
+            <h2>Fale Conosco</h2>
+            <p>Estamos prontos para atender você e tirar todas as suas dúvidas.</p>
+
+            <div class="info-item">
+                <div class="info-icon">📍</div>
+                <div class="info-text">
+                    <p>Av. das Viagens Seguras, 1234 - Bairro Familiar</p>
+                    <p>Jundiaí - SP, CEP 13200-000</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon">☎️</div>
+                <div class="info-text">
+                    <h3>Telefone</h3>
+                    <p>+55 (11) 99999-9999<br>+55 (11) 3333-3333</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon">📧</div>
+                <div class="info-text">
+                    <h3>E-mail</h3>
+                    <p>contato@ridermobility.com</p>
+                    <p>suporte@ridermobility.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+  <div class="footer-content" style="text-align: center; padding: 20px; background: #004d26; color: white;">
+      <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
+      <div style="margin-top: 10px; font-size: 0.9rem;">
+          <a href="{{ url_for('institucional.termos') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Termos de Uso</a> |
+          <a href="{{ url_for('institucional.privacidade') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Privacidade</a>
+      </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('menu-toggle').addEventListener('click', () => {
+    document.getElementById('top-menu').classList.toggle('active');
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidade - Rider Mobility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* Fundo levemente diferente para destacar o documento */
+        body {
+            background-color: #f4f4f4;
+        }
+
+        /* Container do texto estilo "Documento/Papel" */
+        .privacy-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 50px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Títulos */
+        .privacy-container h1 {
+            color: #004d26;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            border-bottom: 2px solid #b2ff59;
+            padding-bottom: 15px;
+        }
+
+        .privacy-container h2 {
+            color: #004d26;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .privacy-container h3 {
+            color: #006644;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* Texto e Listas */
+        .privacy-container p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .privacy-container ul {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-container li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        /* Destaques */
+        strong {
+            color: #333;
+        }
+
+        /* Responsivo para celular */
+        @media (max-width: 768px) {
+            .privacy-container {
+                padding: 20px;
+                margin: 20px;
+            }
+            .privacy-container h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo-container">
+      <a href="{{ url_for('index') }}" class="logo-link" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+        <span class="brand-name">Rider Mobility</span>
+      </a>
+    </div>
+
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
+        
+        {% if session.get('usuario_logado') %}
+        <li class="menu-item">
+          Históricos
+          <ul class="dropdown">
+            <li><a href="{{ url_for('locacao.historico_locacao') }}">Histórico de Locação</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <li class="menu-item">
+          <a href="#" class="login-link">
+            <img src="{{ url_for('static', filename='img/pagina_inicial/conta.png') }}" alt="Conta" class="login-icon"> Conta
+          </a>
+          <ul class="dropdown">
+            {% if session.get('usuario_logado') %}
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Trocar Senha</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+    <div class="privacy-container">
+        <h1>Política de Privacidade</h1>
+        
+        <p>A <strong>Rider Mobility</strong> está comprometida em proteger a privacidade e os dados pessoais de seus clientes, funcionários e usuários do website. Esta Política de Privacidade explica como coletamos, usamos, armazenamos e protegemos suas informações.</p>
+
+        <h2>1. Dados Coletados</h2>
+        
+        <h3>1.1. Dados Fornecidos pelo Usuário/Cliente</h3>
+        <p>Coletamos os dados que você nos fornece diretamente ao se cadastrar, solicitar uma reserva ou utilizar nossos serviços:</p>
+        <ul>
+            <li><strong>Dados de Identificação:</strong> Nome completo, RG, CPF, CNH, data de nascimento.</li>
+            <li><strong>Dados de Contato:</strong> Endereço residencial, telefone, e-mail.</li>
+            <li><strong>Dados Financeiros:</strong> Informações de cartão de crédito para pagamento e caução (tratadas com segurança por processadores de pagamento certificados).</li>
+            <li><strong>Dados de Locação:</strong> Histórico de reservas, datas e veículos alugados.</li>
+        </ul>
+
+        <h3>1.2. Dados de Navegação e Dispositivo</h3>
+        <ul>
+            <li><strong>Informações de Acesso:</strong> Endereço IP, tipo de navegador, sistema operacional, horários de acesso e páginas visitadas.</li>
+            <li><strong>Cookies e Tecnologias Semelhantes:</strong> Utilizamos cookies para melhorar a experiência de navegação, analisar o uso do website e personalizar conteúdo.</li>
+        </ul>
+
+        <h2>2. Finalidade do Tratamento dos Dados</h2>
+        <p>Utilizamos seus dados pessoais exclusivamente para as seguintes finalidades:</p>
+        <ul>
+            <li><strong>Execução do Contrato de Locação:</strong> Processar reservas, verificar documentação (CNH/CPF), liberar e receber o veículo.</li>
+            <li><strong>Segurança e Prevenção de Fraudes:</strong> Realizar consultas cadastrais e de crédito para garantir a segurança da frota e das transações.</li>
+            <li><strong>Comunicação:</strong> Enviar confirmações de reserva, notificações sobre a locação, manutenção do veículo e informações importantes sobre nossos serviços.</li>
+            <li><strong>Obrigações Legais:</strong> Cumprir com determinações judiciais ou regulatórias (como repassar dados em caso de multas de trânsito).</li>
+            <li><strong>Melhoria dos Serviços:</strong> Analisar o uso do site para aprimorar a experiência do usuário e a gestão da nossa frota.</li>
+        </ul>
+
+        <h2>3. Compartilhamento de Informações</h2>
+        <p>A Rider Mobility compartilha seus dados pessoais estritamente quando necessário e com total transparência:</p>
+        <ul>
+            <li><strong>Provedores de Serviço:</strong> Empresas que auxiliam na gestão de pagamento, segurança antifraude, ou manutenção técnica do nosso sistema.</li>
+            <li><strong>Autoridades de Trânsito:</strong> Em caso de multas ou infrações cometidas durante o período de locação, os dados do condutor são compartilhados conforme a lei.</li>
+            <li><strong>Exigência Legal:</strong> Em resposta a intimações judiciais ou determinações de órgãos governamentais.</li>
+        </ul>
+
+        <h2>4. Segurança e Proteção dos Dados</h2>
+        <p>Implementamos medidas técnicas e administrativas para proteger seus dados pessoais contra acesso não autorizado, destruição, perda, alteração ou divulgação. Todos os dados são armazenados em ambientes seguros e com acesso restrito.</p>
+
+        <h2>5. Direitos do Titular dos Dados</h2>
+        <p>Em conformidade com a legislação vigente, você tem o direito de:</p>
+        <ul>
+            <li>Confirmar a existência do tratamento de seus dados.</li>
+            <li>Acessar ou solicitar uma cópia dos dados que mantemos sobre você.</li>
+            <li>Corrigir dados incompletos, inexatos ou desatualizados.</li>
+            <li>Solicitar a anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desconformidade.</li>
+        </ul>
+        <p>Para exercer qualquer um desses direitos, entre em contato conosco através do e-mail fornecido na seção de Contato.</p>
+
+        <h2>6. Contato</h2>
+        <p>Se tiver dúvidas sobre esta Política de Privacidade ou sobre o tratamento de seus dados pessoais, entre em contato com nosso Encarregado de Proteção de Dados (DPO) pelo e-mail: <strong>privacidade@ridermobility.com.br</strong>.</p>
+
+        <h2>7. Atualizações desta Política</h2>
+        <p>Esta Política de Privacidade poderá ser atualizada periodicamente para refletir mudanças em nossas práticas ou exigências legais. Encorajamos você a revisá-la regularmente. A última atualização desta política foi em 26 de Novembro de 2025.</p>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="{{ url_for('index') }}" class="btn-hero">Voltar para a Página Inicial</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+  <div class="footer-content" style="text-align: center; padding: 20px; background: #004d26; color: white;">
+      <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<script>
+  const menuToggle = document.getElementById('menu-toggle');
+  const topMenu = document.getElementById('top-menu');
+
+  menuToggle.addEventListener('click', () => {
+    topMenu.classList.toggle('active');
+  });
+</script>
+
+</body>
+</html>

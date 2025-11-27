@@ -1,9 +1,8 @@
 from flask import jsonify
 from db import conectar
 
-
+# Busca todas as categorias de veículos
 def get_categorias():
-    """Busca e retorna todas as categorias de veículos."""
     conexao = conectar()
     cursor = conexao.cursor(dictionary=True)
 

@@ -17,7 +17,7 @@ def criar_locacao():
 def get_locacao(id_locacao):
     return controller.get_locacao(id_locacao)
 
-
+# atualizar locacao para editar_locacao.html
 @locacao_api.route('/api/locacao/<int:id_loc>', methods=['PUT'])
 def atualizar_locacao(id_loc):
     return controller.atualizar_locacao(id_loc)

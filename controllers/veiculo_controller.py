@@ -1,4 +1,6 @@
-from flask import render_template, request, redirect, url_for, flash, session, abort
+import os
+from flask import render_template, request, redirect, url_for, flash, session, abort, current_app
+from werkzeug.utils import secure_filename
 from models.veiculo_model import VeiculoModel
 
 
@@ -18,13 +20,31 @@ class VeiculoController:
         dados_suporte = self.veiculo_model.get_dados_suporte()
 
         if request.method == "POST":
+            # 1. Processamento da Imagem
+            imagem = request.files.get('imagem')
+            nome_imagem = None
+
+            if imagem and imagem.filename != '':
+                # secure_filename garante que o nome seja seguro (ex: "kwid.jpg")
+                nome_imagem = secure_filename(imagem.filename)
+                
+                # Define o caminho: static/img/veiculos/
+                caminho_pasta = os.path.join(current_app.root_path, 'static', 'img', 'veiculos')
+                
+                # Cria a pasta se ela não existir
+                if not os.path.exists(caminho_pasta):
+                    os.makedirs(caminho_pasta)
+                    
+                # Salva o arquivo
+                imagem.save(os.path.join(caminho_pasta, nome_imagem))
+
+            # outros dados
             id_seguro = int(request.form.get("companhiaSeguro"))
             vencimento_seguro = request.form.get("vencimentoSeguro")
 
             placa = request.form.get("placaVeiculo")
             chassi = request.form.get("chassiVeiculo")
             ano = int(request.form.get("anoVeiculo"))
-            cor = request.form.get("corVeiculo")
             transmissao = request.form.get("transmissaoVeiculo")
             data_compra = request.form.get("dataCompra")
             valor_compra = float(request.form.get("valorCompra"))
@@ -35,17 +55,18 @@ class VeiculoController:
             mapa_tanque = {"Cheio": 8, "7/8": 7, "6/8": 6, "5/8": 5,
                            "4/8": 4, "3/8": 3, "2/8": 2, "1/8": 1, "Vazio": 0}
             tanque = mapa_tanque.get(tanque_str, 0)
-            tanque_fracao = tanque / 8
+            tanque_fracao = tanque / 8.0
             valor_fracao = (tanque * 6) / 8 + 5
 
             id_status = int(request.form.get("status"))
             id_combustivel = int(request.form.get("combustivel"))
             id_modelo = int(request.form.get("modeloVeiculo"))
 
+            # Monta a tupla
             dados_veiculo = (
-                placa, ano, cor, chassi, odometro, transmissao, data_compra,
+                placa, ano, chassi, odometro, transmissao, data_compra,
                 valor_compra, data_vencimento, tanque, tanque_fracao, valor_fracao,
-                id_modelo, id_status, id_combustivel, id_seguro
+                id_modelo, id_status, id_combustivel, id_seguro, nome_imagem
             )
 
             resultado = self.veiculo_model.cadastrar(
@@ -81,10 +102,23 @@ class VeiculoController:
     def editar(self, id_veiculo):
 
         if request.method == "POST":
+            # 1. Processamento da Imagem (Só salva se enviar uma nova)
+            imagem = request.files.get('imagem')
+            nome_imagem = None
+
+            if imagem and imagem.filename != '':
+                nome_imagem = secure_filename(imagem.filename)
+                
+                caminho_pasta = os.path.join(current_app.root_path, 'static', 'img', 'veiculos')
+                if not os.path.exists(caminho_pasta):
+                    os.makedirs(caminho_pasta)
+                    
+                imagem.save(os.path.join(caminho_pasta, nome_imagem))
+
+            # 2. Captura dos outros dados
             placa = request.form.get("placaVeiculo")
             chassi = request.form.get("chassiVeiculo")
             ano = request.form.get("anoVeiculo")
-            cor = request.form.get("corVeiculo")
             transmissao = request.form.get("transmissaoVeiculo")
             data_compra = request.form.get("dataCompra")
             valor_compra = request.form.get("valorCompra")
@@ -99,13 +133,14 @@ class VeiculoController:
             vencimento_seguro = request.form.get("vencimentoSeguro") or None
 
             dados_veiculo = (
-                placa, chassi, ano, cor, transmissao, data_compra, valor_compra,
+                placa, chassi, ano, transmissao, data_compra, valor_compra,
                 quilometragem, data_vencimento, tanque, tanque_fracao,
                 id_combustivel, id_modelo, id_status_veiculo, id_seguro
             )
 
+            # Passamos nome_imagem separadamente
             resultado = self.veiculo_model.editar(
-                id_veiculo, dados_veiculo, id_seguro, vencimento_seguro)
+                id_veiculo, dados_veiculo, id_seguro, vencimento_seguro, nome_imagem)
 
             if resultado == "sucesso":
                 flash("Veículo atualizado com sucesso!", "success")
@@ -132,7 +167,6 @@ class VeiculoController:
                                status=dados_suporte["status"],
                                seguros=dados_suporte["seguros"],
                                id_veiculo=id_veiculo)
-
     # Rota para deletar um veículo.
     def deletar(self, id_veiculo):
         if "usuario_logado" not in session:

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso - Rider Mobility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        body { background-color: #f4f4f4; }
+
+        .doc-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 50px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .doc-container h1 {
+            color: #004d26;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            border-bottom: 2px solid #b2ff59;
+            padding-bottom: 15px;
+        }
+
+        .doc-container h2 { color: #004d26; margin-top: 30px; margin-bottom: 15px; }
+        .doc-container p { color: #555; line-height: 1.8; margin-bottom: 15px; text-align: justify; }
+        .doc-container ul { padding-left: 25px; margin-bottom: 20px; }
+        .doc-container li { margin-bottom: 8px; color: #444; }
+
+        @media (max-width: 768px) {
+            .doc-container { padding: 20px; margin: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo-container">
+      <a href="{{ url_for('index') }}" class="logo-link" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+        <span class="brand-name">Rider Mobility</span>
+      </a>
+    </div>
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
+        <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+        {% if session.get('usuario_logado') %}
+            <li class="menu-item">Históricos
+                <ul class="dropdown"><li><a href="{{ url_for('locacao.historico_locacao') }}">Meus Aluguéis</a></li></ul>
+            </li>
+        {% endif %}
+        <li><a href="{{ url_for('institucional.contato') }}">Contato</a></li>
+        <li class="menu-item">
+          <a href="#" class="login-link"><img src="{{ url_for('static', filename='img/pagina_inicial/conta.png') }}" class="login-icon"> Conta</a>
+          <ul class="dropdown">
+            {% if session.get('usuario_logado') %}
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Trocar Senha</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+    <div class="doc-container">
+        <h1>Termos e Condições de Uso</h1>
+        
+        <p>Bem-vindo à Rider Mobility. Ao acessar nosso site e utilizar nossos serviços, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis, e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis.</p>
+
+        <h2>1. Aceitação dos Termos</h2>
+        <p>Ao utilizar nossos serviços, você confirma que leu, compreendeu e aceita estes Termos. Se você não concordar com qualquer parte destes termos, não deverá utilizar nossos serviços.</p>
+
+        <h2>2. Requisitos para Locação</h2>
+        <ul>
+            <li>Ter idade mínima de 21 anos.</li>
+            <li>Possuir Carteira Nacional de Habilitação (CNH) válida e definitiva há pelo menos 2 anos.</li>
+            <li>Apresentar cartão de crédito válido em nome do locatário com limite disponível para caução.</li>
+            <li>Não possuir restrições financeiras impeditivas (sujeito a análise).</li>
+        </ul>
+
+        <h2>3. Responsabilidades do Locatário</h2>
+        <ul>
+            <li>O locatário é integralmente responsável pelo veículo durante o período de locação.</li>
+            <li>Multas de trânsito ocorridas no período são de responsabilidade do condutor/locatário.</li>
+            <li>O veículo deve ser devolvido nas mesmas condições de higiene e conservação em que foi entregue.</li>
+            <li>O veículo deve ser devolvido com o mesmo nível de combustível. Diferenças serão cobradas conforme tabela vigente.</li>
+        </ul>
+
+        <h2>4. Uso do Sistema</h2>
+        <p>O uso das áreas restritas do site (Login, Reservas) é pessoal e intransferível. O usuário é responsável por manter a confidencialidade de sua senha e conta.</p>
+
+        <h2>5. Modificações</h2>
+        <p>A Rider Mobility pode revisar estes termos de serviço a qualquer momento, sem aviso prévio. Ao usar este site, você concorda em ficar vinculado à versão atual desses termos de serviço.</p>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="{{ url_for('index') }}" class="btn-hero">Voltar para Início</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+  <div class="footer-content" style="text-align: center; padding: 20px; background: #004d26; color: white;">
+      <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
+      <div style="margin-top: 10px; font-size: 0.9rem;">
+          <a href="{{ url_for('institucional.termos') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Termos de Uso</a> |
+          <a href="{{ url_for('institucional.privacidade') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Privacidade</a>
+      </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('menu-toggle').addEventListener('click', () => {
+    document.getElementById('top-menu').classList.toggle('active');
+  });
+</script>
+
+</body>
+</html>

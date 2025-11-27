@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, session, jsonify
 from flask_login import LoginManager, UserMixin
 from routes import (auth_routes, cliente_routes, veiculo_routes, funcionario_routes, redefinir_senha_routes, manutencao_routes, reserva,
-                    multa_routes, locacao_routes, pagamento_routes, api_cep, api_locacao, api_veiculos, api_utils)
+                    multa_routes, locacao_routes, pagamento_routes, api_cep, api_locacao, api_veiculos, api_utils, institucional_routes)
 from dotenv import load_dotenv
 import os
 # Importa a função de conexão com o banco de dados
@@ -67,6 +67,7 @@ app.register_blueprint(api_cep.cep_api)
 app.register_blueprint(api_locacao.locacao_api)
 # Registra as rotas de /api/modelos
 app.register_blueprint(api_veiculos.veiculos_api)
+app.register_blueprint(institucional_routes.institucional_bp)
 
 
 @app.route('/')

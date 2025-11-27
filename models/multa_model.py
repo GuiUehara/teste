@@ -2,8 +2,8 @@ from db import conectar
 
 
 class MultaModel:
+    # Lista o histórico de multas
     def listar_historico(self):
-        """Busca no banco todas as locações que resultaram em multa por atraso."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)

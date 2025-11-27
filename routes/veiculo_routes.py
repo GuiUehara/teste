@@ -30,7 +30,6 @@ def deletar_veiculo(id_veiculo):
 def grupo_carros():
     conn = conectar()
     cursor = conn.cursor(dictionary=True)
-    # Renomeando id_categoria_veiculo para id_categoria para corresponder ao template
     cursor.execute(
         "SELECT id_categoria_veiculo as id_categoria, nome_categoria, valor_diaria FROM categoria_veiculo")
     categorias = cursor.fetchall()
@@ -55,7 +54,7 @@ def veiculos_por_categoria(id_categoria):
 
     # Busca os veículos disponíveis da categoria
     query = """
-        SELECT v.id_veiculo, m.nome_marca, mo.nome_modelo
+        SELECT v.id_veiculo, v.imagem, m.nome_marca, mo.nome_modelo
         FROM veiculo v
         JOIN modelo mo ON v.id_modelo = mo.id_modelo
         JOIN marca m ON mo.id_marca = m.id_marca

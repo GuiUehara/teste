@@ -15,6 +15,7 @@
                 <th>Devolução Real</th>
                 <th>Status</th>
                 <th>Valor Final (R$)</th>
+                {% if session.get('perfil') not in ['Cliente', 'cliente'] %}
                 <th class="actions-header">Ações</th>
             </tr>
         </thead>

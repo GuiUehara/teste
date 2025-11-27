@@ -422,8 +422,8 @@ class LocacaoModel:
             cursor.close()
             conn.close()
 
+    # Simula o valor final de uma locação com base nos dados de chegada (quilometragem, tanque, atraso, etc.)
     def simular_valor_final(self, id_loc, dados_chegada):
-        """Simula o cálculo do valor final de uma locação."""
         conn = conectar()
         cursor = conn.cursor(dictionary=True)
         try:

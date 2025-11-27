@@ -15,10 +15,29 @@
         {% if veiculos %}
             {% for v in veiculos %}
                 <div class="veiculo-item">
-                    <div class="info-carro">
-                        <span class="nome-modelo">{{ v.nome_marca }} {{ v.nome_modelo }}</span>
-                        <span class="badge-km"> Quilometragem Ilimitada</span>
+                    
+                    <div class="foto-carro" style="margin-right: 20px;">
+                        {% if v.imagem %}
+                            <img src="{{ url_for('static', filename='img/veiculos/' + v.imagem) }}" 
+                                 alt="Foto do {{ v.nome_modelo }}" 
+                                 style="width: 300px; height: 200px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" 
+                                 alt="Sem foto" 
+                                 style="width: 300px; height: 200px; object-fit: contain; opacity: 0.5; border: 1px solid #eee; border-radius: 8px;">
+                        {% endif %}
                     </div>
+
+                    <div class="info-carro" style="flex-grow: 1;">
+                        <span class="nome-modelo" style="font-size: 1.5rem;">{{ v.nome_marca }} {{ v.nome_modelo }}</span>
+                        <br>
+                        <span class="badge-km" style="font-size: 0.9rem; padding: 5px 10px;"> QUILOMETRAGEM ILIMITADA</span>
+                        
+                        <small style="display: block; color: #666; margin-top: 10px; font-size: 1rem;">
+
+                        </small>
+                    </div>
+                    
                     <button class="btn-secondary" onclick="window.location.href='{{ url_for('reserva.reservar_veiculo', id_veiculo=v.id_veiculo) }}'">Reservar</button>
                 </div>
             {% endfor %}

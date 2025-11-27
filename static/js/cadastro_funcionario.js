@@ -11,7 +11,6 @@ function validarDadosFuncionario(dados) {
     if (!dados.nome) erros.push("O campo 'Nome' é obrigatório.");
     if (!dados.rg) erros.push("O campo 'RG' é obrigatório.");
     if (!dados.dataNasc) erros.push("O campo 'Data de Nascimento' é obrigatório.");
-    if (!dados.sexo) erros.push("O campo 'Sexo' é obrigatório.");
     if (!dados.endereco) erros.push("O campo 'Endereço' é obrigatório.");
     if (!dados.senha) erros.push("O campo 'Senha' é obrigatório.");
 

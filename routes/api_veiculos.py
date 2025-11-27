@@ -5,7 +5,7 @@ veiculos_api = Blueprint("veiculos_api", __name__)
 
 # --- Função auxiliar que só retorna as categorias (utilizado no api_locacao.py) ---
 
-
+# Busca todas as categorias de veículos
 def get_categorias():
     conexao = conectar()
     cursor = conexao.cursor(dictionary=True)
@@ -23,7 +23,7 @@ def get_categorias():
     conexao.close()
     return categorias
 
-
+# Busca todos os modelos de uma marca específica
 @veiculos_api.route("/api/modelos/<int:id_marca>")
 def api_modelos_por_marca(id_marca):
     conexao = conectar()

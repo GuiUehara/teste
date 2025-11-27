@@ -4,12 +4,27 @@
 <div class="form-container">
     <h2>Editar Veículo</h2>
 
-    <form method="POST" action="{{ url_for('veiculos.editar_veiculo', id_veiculo=id_veiculo) }}" id="formVeiculo">
+    <form method="POST" action="{{ url_for('veiculos.editar_veiculo', id_veiculo=id_veiculo) }}" id="formVeiculo" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label>Foto Atual:</label>
+            {% if veiculo.imagem %}
+                <div style="margin: 10px 0;">
+                    <img src="{{ url_for('static', filename='img/veiculos/' + veiculo.imagem) }}" alt="Foto atual" style="max-width: 200px; border-radius: 8px; border: 1px solid #ccc;">
+                </div>
+            {% else %}
+                <p style="color: #777; font-size: 0.9em;">(Sem foto cadastrada)</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="imagem">Alterar Foto (Deixe vazio para manter a atual)</label>
+            <input type="file" name="imagem" id="imagem" accept="image/*">
+        </div>
 
         <div class="form-group"><label for="placaVeiculo">Placa</label><input type="text" name="placaVeiculo" id="placaVeiculo" required value="{{ veiculo.placa }}" /></div>
         <div class="form-group"><label for="chassiVeiculo">Chassi</label><input type="text" name="chassiVeiculo" id="chassiVeiculo" required value="{{ veiculo.chassi }}" /></div>
         <div class="form-group"><label for="anoVeiculo">Ano</label><input type="number" name="anoVeiculo" id="anoVeiculo" required value="{{ veiculo.ano }}" /></div>
-        <div class="form-group"><label for="corVeiculo">Cor</label><input type="text" name="corVeiculo" id="corVeiculo" required value="{{ veiculo.cor }}" /></div>
 
         <div class="form-group">
             <label for="transmissaoVeiculo">Transmissão</label>

@@ -6,8 +6,8 @@ class ClienteModel:
     relacionadas aos clientes.
     """
 
+    # Cadastro de um novo cliente
     def cadastrar(self, dados_cliente, dados_endereco, dados_cnh):
-        """Insere um novo cliente, endereço e CNH no banco de dados."""
         try:
             conexao = conectar()
             cursor = conexao.cursor()
@@ -34,8 +34,8 @@ class ClienteModel:
                 cursor.close()
                 conexao.close()
 
+    # Lista todos os clientes, com opção de busca por nome, CPF ou email
     def listar(self, termo_busca=None):
-        """Lista os clientes, com opção de busca."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -54,8 +54,8 @@ class ClienteModel:
                 cursor.close()
                 conexao.close()
 
+    # Busca um cliente pelo ID
     def obter_por_id(self, id_cliente):
-        """Busca um cliente completo pelo seu ID."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -67,9 +67,8 @@ class ClienteModel:
                 cursor.close()
                 conexao.close()
     
-    # --- NOVO MÉTODO ADICIONADO AQUI ---
+    # Pesquisa um cliente pelo CPF
     def buscar_por_cpf(self, cpf):
-        """Busca um cliente pelo CPF (Usado para recuperar ID após cadastro)."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)

@@ -3,8 +3,8 @@ from datetime import datetime
 
 
 class PagamentoModel:
+    # Busca os dados da locação necessários para o pagamento
     def get_dados_locacao_para_pagamento(self, id_locacao):
-        """Busca os dados da locação necessários para a página de pagamento."""
         try:
             conn = conectar()
             cursor = conn.cursor(dictionary=True)
@@ -17,8 +17,8 @@ class PagamentoModel:
                 cursor.close()
                 conn.close()
 
+    # Busca as formas de pagamento disponíveis (cartão de crédito, débito, pix, dinheiro)
     def get_formas_pagamento(self):
-        """Busca todas as formas de pagamento disponíveis."""
         try:
             conn = conectar()
             cursor = conn.cursor(dictionary=True)
@@ -30,8 +30,8 @@ class PagamentoModel:
                 cursor.close()
                 conn.close()
 
+    #   Registra um pagamento no banco de dados
     def registrar_pagamento(self, id_locacao, id_forma_pagamento, valor):
-        """Insere um novo registro de pagamento no banco de dados."""
         with conectar() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(

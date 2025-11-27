@@ -15,5 +15,5 @@ def historico_locacao():
 
 @locacao_bp.route('/editar_locacao/<int:id_locacao>')
 def editar_locacao(id_locacao):
-    # Apenas renderiza a página, o JavaScript fará o resto
+ 
     return render_template("editar_locacao.html", id_locacao=id_locacao)

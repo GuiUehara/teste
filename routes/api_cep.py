@@ -3,6 +3,8 @@ import requests
 
 cep_api = Blueprint("cep_api", __name__)
 
+# API externa para buscar informações de CEP
+
 @cep_api.route("/api/cep/<cep>", methods=["GET"])
 def buscar_cep(cep):
     cep = cep.replace("-", "").replace(".", "").replace(" ", "")

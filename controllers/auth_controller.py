@@ -37,7 +37,6 @@ class AuthController:
 
     # Rota para o login do usuário.
     def login(self):
-        """Processa o login do usuário."""
         if request.method == "POST":
             email = request.form.get("email")
             senha = request.form.get("senha")
@@ -112,7 +111,7 @@ class AuthController:
                 # Salva o processo antes de limpar a sessão
                 processo = session.get("processo")
                 
-                # Limpa dados temporários AGORA (antes do return)
+                # Limpa dados temporários
                 for key in ['email_temp', 'senha_temp', 'perfil_temp', 'codigo_verificacao', 'processo']:
                     session.pop(key, None)
 
@@ -121,7 +120,6 @@ class AuthController:
                     session["perfil"] = perfil_temp
                     flash("Login realizado com sucesso!", "success")
                     
-                    # MUDANÇA AQUI: Redireciona para a página inicial (index)
                     return redirect(url_for("index"))
                 
                 elif processo == "cadastro":
@@ -136,7 +134,6 @@ class AuthController:
 
                     flash("Cadastro completo. Bem-vindo!", "success")
                     
-                    # MUDANÇA AQUI: Redireciona para a página inicial (index)
                     return redirect(url_for("index"))
             else:
                 flash("Código incorreto. Tente novamente.", "error")

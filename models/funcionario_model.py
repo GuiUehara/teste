@@ -7,8 +7,8 @@ class FuncionarioModel:
     relacionadas aos funcionários.
     """
 
+    # Cadastro de um novo funcionário
     def cadastrar(self, dados_funcionario, dados_usuario, dados_endereco):
-        """Cadastra um novo funcionário, usuário e endereço de forma transacional."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -46,8 +46,8 @@ class FuncionarioModel:
                 cursor.close()
                 conexao.close()
 
+    # Lista todos os funcionários
     def listar(self, termo_busca=None):
-        """Lista os funcionários, com opção de busca."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -73,8 +73,8 @@ class FuncionarioModel:
                 cursor.close()
                 conexao.close()
 
+    # Busca um funcionário pelo ID do usuário
     def obter_por_id_usuario(self, id_usuario):
-        """Busca um funcionário completo pelo ID do usuário."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)
@@ -95,8 +95,8 @@ class FuncionarioModel:
                 cursor.close()
                 conexao.close()
 
+    # Deleta um funcionário 
     def deletar(self, id_usuario):
-        """Deleta um funcionário e seus dados associados (usuário e endereço)."""
         try:
             conexao = conectar()
             cursor = conexao.cursor(dictionary=True)

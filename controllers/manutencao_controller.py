@@ -1,14 +1,14 @@
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from models.manutencao_model import ManutencaoModel
-from db import conectar  # Usado para pegar o id_veiculo em atualizar_status
+from db import conectar 
 
 
 class ManutencaoController:
     def __init__(self):
         self.manutencao_model = ManutencaoModel()
 
+    # Cadastro de nova manutenção.
     def cadastrar(self):
-        """Processa o cadastro de uma nova manutenção."""
         if "usuario_logado" not in session or session.get("perfil") not in ["Gerente", "Mecânico"]:
             abort(403)
 
@@ -34,16 +34,16 @@ class ManutencaoController:
         veiculos = self.manutencao_model.listar_veiculos_para_manutencao()
         return render_template("cadastro_manutencao.html", veiculos=veiculos)
 
+    # Histórico de manutenções
     def historico(self):
-        """Exibe o histórico de manutenções."""
         if "usuario_logado" not in session or session.get("perfil") not in ["Gerente", "Mecânico"]:
             abort(403)
 
         manutencoes = self.manutencao_model.listar_historico()
         return render_template("historico_manutencao.html", manutencoes=manutencoes)
 
+    # Atualização do status da manutenção (Em andamento, Concluída)
     def atualizar_status(self, id_manutencao):
-        """Atualiza o status de uma manutenção."""
         if "usuario_logado" not in session or session.get("perfil") not in ["Gerente", "Mecânico"]:
             abort(403)
 
@@ -52,7 +52,6 @@ class ManutencaoController:
             flash("Status inválido!", "error")
             return redirect(url_for("manutencao.historico_manutencao"))
 
-        # Esta pequena consulta poderia ir para o model, mas para simplificar, mantemos aqui.
         conexao = conectar()
         cursor = conexao.cursor(dictionary=True)
         cursor.execute(

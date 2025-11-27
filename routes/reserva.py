@@ -12,7 +12,7 @@ def reservar_veiculo(id_veiculo):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-            SELECT v.id_veiculo, v.placa, v.ano, v.cor, m.nome_modelo, ma.nome_marca,
+            SELECT v.id_veiculo, v.placa, v.ano, m.nome_modelo, ma.nome_marca,
                    c.nome_categoria, c.valor_diaria
             FROM veiculo v 
             JOIN modelo m ON v.id_modelo = m.id_modelo
@@ -27,12 +27,12 @@ def reservar_veiculo(id_veiculo):
         cursor.close()
         conn.close()
         flash("Veículo não encontrado.", "error")
-        # Correção já estava ok, mantido por consistência.
+       
         return redirect(url_for("veiculos.grupo_carros"))
 
     return render_template("reserva_veiculo.html", veiculo=veiculo)
 
-
+# Calcula o valor em tempo real
 @reserva_bp.route("/api/valor-previsto-reserva", methods=["POST"])
 def api_valor_previsto_reserva():
     dados = request.get_json()

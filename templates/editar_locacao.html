@@ -195,7 +195,6 @@
         const locacao = data.locacao;
         const opcionais = data.opcionais;
 
-        // ... (resto da população de dados)
         document.getElementById('locacao-id-titulo').textContent = locacao.id_locacao;
         document.getElementById('status').value = locacao.status;
         document.getElementById('data_retirada').value = formatarDataParaInput(locacao.data_retirada);
@@ -208,7 +207,7 @@
              document.getElementById('data_devolucao_real').value = '';
         }
 
-        // NOVO: Valor Total Previsto
+        // Valor Total Previsto
         document.getElementById('valor_total_previsto').value = parseFloat(locacao.valor_total_previsto || 0).toFixed(2);
         
         // Cliente

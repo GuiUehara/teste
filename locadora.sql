@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS veiculo (
     id_status_veiculo INT NOT NULL,
     id_combustivel INT NOT NULL,
     id_seguro INT NULL,
+    imagem VARCHAR(255) NULL,
     PRIMARY KEY (id_veiculo),
     FOREIGN KEY (id_modelo) REFERENCES modelo(id_modelo),
     FOREIGN KEY (id_status_veiculo) REFERENCES status_veiculo(id_status_veiculo),

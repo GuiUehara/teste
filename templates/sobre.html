@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nós - Rider Mobility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* Fundo suave */
+        body { background-color: #f4f4f4; }
+
+        .sobre-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .sobre-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .sobre-header h1 {
+            color: #004d26;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .sobre-content p {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        /* Cards de Missão/Visão */
+        .cards-valores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .card-valor {
+            background: #e9f5ec;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 5px solid #004d26;
+            transition: transform 0.3s;
+        }
+
+        .card-valor:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-valor h3 {
+            color: #004d26;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .sobre-container { padding: 20px; margin: 20px; }
+            .sobre-header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo-container">
+      <a href="{{ url_for('index') }}" class="logo-link" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ url_for('static', filename='img/pagina_inicial/logo.png') }}" alt="Logo Rider Mobility" class="logo">
+        <span class="brand-name">Rider Mobility</span>
+      </a>
+    </div>
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    <nav id="top-menu">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Início</a></li>
+        <li><a href="{{ url_for('veiculos.grupo_carros') }}">Grupo de Carros</a></li>
+        
+        {% if session.get('usuario_logado') %}
+            <li class="menu-item">Históricos
+                <ul class="dropdown">
+                    <li><a href="{{ url_for('locacao.historico_locacao') }}">Meus Aluguéis</a></li>
+                </ul>
+            </li>
+        {% endif %}
+        
+        <li><a href="{{ url_for('institucional.contato') }}">Contato</a></li>
+
+        <li class="menu-item">
+          <a href="#" class="login-link"><img src="{{ url_for('static', filename='img/pagina_inicial/conta.png') }}" class="login-icon"> Conta</a>
+          <ul class="dropdown">
+            {% if session.get('usuario_logado') %}
+                <li><a href="{{ url_for('redefinir_senha.solicitar_redefinir') }}">Trocar Senha</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.cadastro') }}">Cadastro</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+    <div class="sobre-container">
+        <div class="sobre-header">
+            <h1>Sobre Nós</h1>
+            <p>Conectando famílias a destinos inesquecíveis.</p>
+        </div>
+
+        <div class="sobre-content">
+            <p>A <strong>Rider Mobility</strong> nasceu da necessidade de tornar as viagens familiares mais seguras, confortáveis e acessíveis. Fundada em 2025, nossa missão é oferecer uma experiência de locação descomplicada, com transparência total e foco na satisfação do cliente.</p>
+            
+            <p>Entendemos que cada viagem é única. Por isso, trabalhamos com uma frota diversificada e rigorosamente revisada, garantindo que você se preocupe apenas com o destino, e não com o meio de transporte.</p>
+        </div>
+
+        <div class="cards-valores">
+            <div class="card-valor">
+                <h3>🎯 Nossa Missão</h3>
+                <p>Proporcionar liberdade de movimento com segurança, oferecendo veículos de qualidade e um atendimento que supera expectativas.</p>
+            </div>
+            <div class="card-valor">
+                <h3>👁️ Nossa Visão</h3>
+                <p>Ser referência nacional em mobilidade familiar, reconhecida pela inovação tecnológica e excelência no serviço.</p>
+            </div>
+            <div class="card-valor">
+                <h3>🤝 Nossos Valores</h3>
+                <ul style="list-style-position: inside; color: #555;">
+                    <li>Segurança em primeiro lugar</li>
+                    <li>Transparência e Ética</li>
+                    <li>Inovação constante</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 50px;">
+            <a href="{{ url_for('veiculos.grupo_carros') }}" class="btn-hero">Conheça Nossa Frota</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+  <div class="footer-content" style="text-align: center; padding: 20px; background: #004d26; color: white;">
+      <p>&copy; 2025 Rider Mobility. Todos os direitos reservados.</p>
+      <div style="margin-top: 10px; font-size: 0.9rem;">
+          <a href="{{ url_for('institucional.termos') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Termos de Uso</a> |
+          <a href="{{ url_for('institucional.privacidade') }}" style="color: #b2ff59; text-decoration: none; margin: 0 10px;">Privacidade</a>
+      </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('menu-toggle').addEventListener('click', () => {
+    document.getElementById('top-menu').classList.toggle('active');
+  });
+</script>
+
+</body>
+</html>

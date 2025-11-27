@@ -4,11 +4,15 @@
 <div class="form-container">
     <h2>Cadastro de Veículo</h2>
 
-    <form method="POST" action="{{ url_for('veiculos.cadastro_veiculo') }}" id="formVeiculo">
+    <form method="POST" action="{{ url_for('veiculos.cadastro_veiculo') }}" id="formVeiculo" enctype="multipart/form-data">
+        
+        <div class="form-group">
+            <label for="imagem">Foto do Veículo</label>
+            <input type="file" name="imagem" id="imagem" accept="image/*">
+        </div>
         <div class="form-group"><label for="placaVeiculo">Placa</label><input type="text" name="placaVeiculo" id="placaVeiculo" required /></div>
         <div class="form-group"><label for="chassiVeiculo">Chassi</label><input type="text" name="chassiVeiculo" id="chassiVeiculo" required /></div>
         <div class="form-group"><label for="anoVeiculo">Ano</label><input type="number" name="anoVeiculo" id="anoVeiculo" required /></div>
-        <div class="form-group"><label for="corVeiculo">Cor</label><input type="text" name="corVeiculo" id="corVeiculo" required /></div>
 
         <div class="form-group">
             <label for="transmissaoVeiculo">Transmissão</label>

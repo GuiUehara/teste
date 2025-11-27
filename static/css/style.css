@@ -80,29 +80,28 @@ header {
 nav ul {
   list-style: none;
   display: flex;
-  gap: 20px;
+  gap: 15px; /* Espaço entre os botões */
   align-items: center;
 }
 
 nav ul li {
   position: relative;
+  /* O TRUQUE: Define uma largura mínima igual para todos */
+  min-width: 120px; 
+  text-align: center; /* Centraliza o texto dentro do espaço */
 }
 
 nav ul li a, nav ul li {
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  padding: 10px 12px;
+  padding: 10px 5px; /* Reduzi o padding lateral pois a largura fixa já cuida disso */
   cursor: pointer;
   transition: color 0.3s, background 0.3s;
   border-radius: 8px;
   font-size: 0.95rem;
-}
-
-nav ul li a:hover, 
-nav ul li:hover > a {
-  color: #004d26;
-  background-color: #b2ff59;
+  display: block; /* Garante que o link ocupe todo o espaço do li */
+  width: 100%;    /* Garante que o link ocupe todo o espaço do li */
 }
 
 /* DROPDOWN (Menu Suspenso) */

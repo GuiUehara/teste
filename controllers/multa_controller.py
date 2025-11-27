@@ -6,8 +6,8 @@ class MultaController:
     def __init__(self):
         self.multa_model = MultaModel()
 
+    # Histórico de multas
     def historico(self):
-        """Exibe o histórico de multas por atraso na devolução."""
         if "usuario_logado" not in session or session.get("perfil") not in ["Gerente", "Atendente"]:
             abort(403)
 
